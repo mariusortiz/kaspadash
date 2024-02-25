@@ -5,9 +5,8 @@ from plotly import graph_objects as go
 from datetime import datetime, timedelta
 
 MAPPING = {
-    'Market Monitor Only': 'mm_only.csv',
-    'SPY Only': 'spy_only.csv',
-    'Market Monitor & SPY': 'mm_and_spy.csv'
+    'Kaspa': 'kas_real_PL_extended.csv',
+    'Bitcoin': 'btc_real_PL_extended.csv',
 }
 
 st.set_page_config(layout="wide")
@@ -15,15 +14,14 @@ st.set_page_config(layout="wide")
 model = st.sidebar.selectbox(
     label='Model Features From',
     options=[
-        'Market Monitor Only',
-        'SPY Only',
-        'Market Monitor & SPY',
+        'Kaspa',
+        'Bitcoin',
     ]
 )
 
 # Load in the data for the dash
 df = pd.read_csv('data/' + MAPPING[model])
-df['Date'] = pd.to_datetime(df['Date'])
+df['Date'] = pd.to_datetime(df['date'])
 
 upper_date = st.sidebar.date_input(
     label='Upper Date',
