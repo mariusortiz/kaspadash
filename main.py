@@ -3,129 +3,364 @@ import streamlit as st
 
 from plotly import graph_objects as go
 from datetime import datetime, timedelta
+from plotly.subplots import make_subplots
+import numpy as np
 
-MAPPING = {
-    'Kaspa': 'kas_real_PL_extended.csv',
-    'Bitcoin': 'btc_real_PL_extended.csv',
-}
+
+
+
 
 st.set_page_config(layout="wide")
 
-model = st.sidebar.selectbox(
-    label='Model Features From',
+dashboard = st.sidebar.selectbox(
+    label='Select dashboard',
     options=[
-        'Kaspa',
-        'Bitcoin',
+        'Past Power Law',
+        'Future Power Law',
+        'Risk Visualization',
+        'Trend Predictor'
+
     ]
 )
 
-# Load in the data for the dash
-df = pd.read_csv('data/' + MAPPING[model])
-df['Date'] = pd.to_datetime(df['date'])
 
-upper_date = st.sidebar.date_input(
-    label='Upper Date',
-    value=df['Date'].max(),
-    max_value=df['Date'].max(),
-    min_value=df['Date'].min(),
-)
+df = pd.read_csv('data/kas_real_PL_extended.csv')
+df['date'] = pd.to_datetime(df['date'])
+max_date = df["date"].max()  # Get the last date in the DataFrame
+max_date_with_close = df.dropna(subset=['close'])['date'].max()
 
-lower_date = st.sidebar.date_input(
-    label='Lower Date',
-    value=datetime.now() - timedelta(days=2*365),
-    min_value=df['Date'].min(),
-    max_value=df['Date'].max()
-)
+# Calculate the difference from today to max_date
+days_difference = (max_date - datetime.today()).days
+# Slider for selecting the number of days from today for prediction
 
-trend_thresh = st.sidebar.slider(
-    label='Trend Probability',
-    value=0.5,
-    min_value=0.0,
-    max_value=0.99,    
-)
 
-highlight_color = st.sidebar.selectbox(
-    label='Trend Highlight Color',
-    options=['yellow', 'red', 'blue', 'green', 'orange'],    
-)
 
-highlight_opacity = st.sidebar.slider(
-    label='Highlight Opacity',
-    value=0.1,
-    min_value=0.0,
-    max_value=0.99,    
-)
-
-df = df[
-    (df['Date'] <= pd.to_datetime(upper_date))
-    & (df['Date'] >= pd.to_datetime(lower_date))      
-]
 
 df = df.reset_index(drop=True)
+if dashboard == 'Past Power Law':
+    # Load in the data for the dash
+    st.title(f'Kaspa Past Power Law Predictions')
 
-st.title('SPY Trend Prediction')
-st.write('Max Date in Data: ' + df['Date'].max().strftime('%Y-%m-%d'))
-st.write('Uptrend probability for tomorrow: ' + str(df['trend_pred'].round(2).values[-1]))
 
-fig = go.Figure()
+    df = df[df["date"] <= max_date_with_close]
 
-fig.add_trace(
-    go.Candlestick(
-        x=df['Date'],
-        open=df['Open'],
-        high=df['High'],
-        low=df['Low'],
-        close=df['Close'],
-        showlegend=False,
-    )   
-)
+    # Create subplots
+    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
+                        subplot_titles=('Actual vs Predicted Prices - KAS', 'Percentage Difference between Actual and Predicted Prices'))
 
-# Create the threshold column, so that we can see the effect of changing
-# the model "surety" - this is needed to generate the highlighted regions
-df['threshold'] = df['trend_pred'] >= float(trend_thresh)
+    # Plot Actual vs Predicted Prices
+    fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
+    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], mode='lines', name='Predicted Next Day Price', line=dict(dash='dot')), row=1, col=1)
 
-# Find the intervals where the model has detected the pattern
-df_pattern = (
-    df[df['threshold']]
-    .groupby((~df['threshold']).cumsum())
-    ['Date']
-    .agg(['first', 'last'])
-)
+    # Calculate and Plot Percentage Differences
+    differences = 100 * (df['close'] - df['predicted_next_day_price']) / df['predicted_next_day_price']
+    fig.add_trace(go.Scatter(x=df['date'], y=differences, mode='lines', name='Difference (%)'), row=2, col=1)
+    fig.add_hline(y=0, line=dict(dash='dash', color='red'), row=2, col=1)
 
-# For each interval, plot as a highlighted section
-for idx, row in df_pattern.iterrows():
-    fig.add_vrect(
-        x0=row['first'], 
-        x1=row['last'],
-        line_width=0,
-        fillcolor=highlight_color,
-        opacity=highlight_opacity,
+    # Update layout
+    fig.update_layout(height=800, width=1000,  showlegend=True)
+    fig.update_yaxes(title_text="Price ($)", row=1, col=1)
+    fig.update_yaxes(title_text="Difference (%)", row=2, col=1)
+    fig.update_xaxes(title_text="Date", row=2, col=1)
+
+
+    fig.update_layout(xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
+    st.plotly_chart(fig, use_container_width=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Assuming your CSV has been loaded into `df`
+
+if dashboard == 'Future Power Law':
+
+    days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
+                            min_value=1, 
+                            max_value=days_difference, 
+                            value=30)
+    # Slider for selecting the number of days from today for prediction
+    st.title(f'Kaspa Power Law Predictions')
+
+    # Calculate the date for the specified number of days from today
+    today = datetime.today()
+    future_date = today + timedelta(days=days_from_today)
+
+    # Find the closest date in the dataframe to the future date
+    closest_future_date = df[df['date'] >= future_date].iloc[0]['date']
+
+    # Retrieve the predicted price for that date
+    predicted_price_on_future_date = df[df['date'] == closest_future_date]['predicted_price'].values[0]
+    today_price = df.dropna(subset=['close'])['close'].values[-1]
+
+
+    # Display the predicted price
+    st.write(f"Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference")
+
+    # Plot the actual and predicted prices using Plotly
+    fig = go.Figure()
+    df = df[df['date'] <= future_date]
+
+    fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Price'))
+    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],name='Past Expected Price', mode='lines', line=dict(dash='dot')))
+    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines', name='Future Expected Price', line=dict(dash='dot', color='red')))
+
+    # Highlight the future date and predicted price
+    fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
+    fig.add_trace(go.Scatter(x=[closest_future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Price'))
+
+    fig.update_layout(title=f'Kaspa Price Prediction', xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
+    st.plotly_chart(fig, use_container_width=True)
+
+
+
+
+if dashboard == 'Risk Visualization':
+    # Load in the data for the dash
+    st.title(f'Kaspa Risk Visualization')
+
+    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
+                        subplot_titles=('Actual vs Predicted Prices - KAS', 'Percentage Difference between Actual and Predicted Prices'))
+
+    # Data preprocessing
+    df['Value'] = df['close']  # Rename 'close' to 'Value'
+    df = df[df['Value'] > 0]  # Filter out data points without a price
+
+    # Calculate the Risk Metric
+    df['Preavg'] = ((np.log(df.Value) - (df['predicted_next_day_price'])) /np.log(df['predicted_next_day_price'])) ### balanced advisor
+
+    # Normalization to 0-1 range
+    df['avg'] = (df['Preavg'] - df['Preavg'].cummin()) / (df['Preavg'].cummax() - df['Preavg'].cummin())
+    df['avg'] =1-df['avg']
+
+    # Title for the plots
+    annotation_text = f"Updated: {df['date'].iloc[-1].strftime('%Y-%m-%d')} | Price: {round(df['Value'].iloc[-1], 5)} | Risk: {round(df['avg'].iloc[-1], 2)}"
+
+
+
+    # Scatter plot of Price colored by Risk values
+    fig = go.Figure(data=go.Scatter(x=df['date'], y=df['Value'], mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', showscale=True)))
+    fig.update_yaxes(title='Price ($USD)', type='log', showgrid=False)
+    fig.update_layout(template='plotly_dark', title_text=annotation_text)
+    st.plotly_chart(fig, use_container_width=True)
+
+
+    # Plot Price and Risk Metric
+    fig = make_subplots(specs=[[{'secondary_y': True}]])
+    fig.add_trace(go.Scatter(x=df['date'], y=df['Value'], name='Price', line=dict(color='gold')))
+    fig.add_trace(go.Scatter(x=df['date'], y=df['avg'], name='Risk', line=dict(color='white')), secondary_y=True)
+
+    # Add colored risk zones
+    opacity = 0.2
+    for i in range(5, 0, -1):
+        opacity += 0.05
+        fig.add_hrect(y0=i*0.1, y1=((i-1)*0.1), line_width=0, fillcolor='green', opacity=opacity, secondary_y=True)
+    for i in range(6, 10):
+        opacity += 0.1
+        fig.add_hrect(y0=i*0.1, y1=((i+1)*0.1), line_width=0, fillcolor='red', opacity=opacity, secondary_y=True)
+
+    # Update layout
+    fig.update_xaxes(title='Date')
+    fig.update_yaxes(title='Price ($USD)', type='log', showgrid=False)
+    fig.update_yaxes(title='Risk', type='linear', secondary_y=True, showgrid=True, tick0=0.0, dtick=0.1, range=[0, 1])
+    fig.update_layout(template='plotly_dark', title={'text': annotation_text, 'y': 0.9, 'x': 0.5})
+    st.plotly_chart(fig, use_container_width=True)
+
+
+
+
+
+if dashboard == 'Trend Predictor':
+    df = pd.read_csv('data/kas_d_with_predictions.csv')
+    df['date'] = pd.to_datetime(df['date'])
+
+    trend_thresh = st.sidebar.slider(
+        label='Trend Probability >',
+        value=0.7,
+        min_value=0.0,
+        max_value=0.99,    
     )
 
-fig.update_layout(
-    xaxis_rangeslider_visible=False,
-    xaxis_title="Date",
-    yaxis_title="SPY Price ($)",
-    width=1200,
-    height=700,
-)
 
-st.plotly_chart(fig)
+    highlight_color = 'yellow'
 
-expander = st.expander('ReadME & Disclaimer')
+    highlight_opacity = 0.2
+
+
+    df = df.reset_index(drop=True)
+
+    st.write('Max Date in Data: ' + df['date'].max().strftime('%Y-%m-%d'))
+    st.write('Uptrend probability for tomorrow: ' + str(df['pred_prob'].round(2).values[-1]))
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Candlestick(
+            x=df['date'],
+            open=df['Open'],
+            high=df['High'],
+            low=df['Low'],
+            close=df['Close'],
+            showlegend=False,
+        )   
+    )
+
+    # Create the threshold column, so that we can see the effect of changing
+    # the model "surety" - this is needed to generate the highlighted regions
+    df['threshold'] = df['pred_prob'] >= float(trend_thresh)
+
+    # Find the intervals where the model has detected the pattern
+    df_pattern = (
+        df[df['threshold']]
+        .groupby((~df['threshold']).cumsum())
+        ['date']
+        .agg(['first', 'last'])
+    )
+    df_pattern['first'] += pd.Timedelta(days=1)
+    df_pattern['last'] += pd.Timedelta(days=1)
+    # For each interval, plot as a highlighted section
+    for idx, row in df_pattern.iterrows():
+        fig.add_vrect(
+            x0=row['first'], 
+            x1=row['last'],
+            line_width=0,
+            fillcolor=highlight_color,
+            opacity=highlight_opacity,
+        )
+
+    fig.update_layout(
+        xaxis_rangeslider_visible=False,
+        xaxis_title="Date",
+        yaxis_title="KAS Price ($)",
+        width=1200,
+        height=700,
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+    st.title('Kaspa Machine Learning Trend Predictor')
+
+
+    # Assuming df_test has been previously loaded or defined
+    # Ensure the 'pred' column is based on a threshold of 0.9 on 'pred_prob'
+    df['pred'] = df['pred_prob'] >= float(trend_thresh)
+
+    # Shift the 'Close' and 'Open' values to get the next day's values for calculations
+    df['next_day_close'] = df['Close'].shift(-1)
+    df['next_day_open'] = df['Open'].shift(-1)
+
+    # Calculate the returns for the next day, based on the prediction being 1 (true) or 0 (false)
+    df['return_after_pred_1'] = df.apply(lambda x: x['next_day_close'] - x['next_day_open'] if x['pred'] else 0, axis=1)
+    df['return_after_pred_0'] = df.apply(lambda x: x['next_day_close'] - x['next_day_open'] if not x['pred'] else 0, axis=1)
+
+    # Calculate win rates for predictions equal to 1 and predictions equal to 0
+    win_rate_pred_1 = df[df['pred']]['return_after_pred_1'].gt(0).mean()
+    win_rate_pred_0 = df[~df['pred']]['return_after_pred_0'].gt(0).mean()
+
+    # Determine the number of trades for both scenarios
+    num_trades_pred_1 = df['pred'].sum()
+    num_trades_pred_0 = (~df['pred']).sum()
+
+    # Output the win rates and number of trades
+    print(f"Win rate after pred=1: {win_rate_pred_1:.2%} (Number of trades: {num_trades_pred_1})")
+    print(f"Win rate after pred=0: {win_rate_pred_0:.2%} (Number of trades: {num_trades_pred_0})")
+
+
+
+    # Assuming df_test is your DataFrame and it's already been prepared as per your provided code
+    df['pred'] = df['pred_prob'] >= trend_thresh
+    # Determine the cumulative returns and generate x-axis values for trades after pred=1 and pred=0
+    df['cumulative_return_after_pred_1'] = df[df['pred']]['return_after_pred_1'].cumsum()
+    df['cumulative_return_after_pred_0'] = df[~df['pred']]['return_after_pred_0'].cumsum()
+
+    # Generate trade number sequences for plotting
+    trade_numbers_pred_1 = np.arange(1, df['pred'].sum() + 1)
+    trade_numbers_pred_0 = np.arange(1, (~df['pred']).sum() + 1)
+
+    # Create Plotly Go figure
+    fig = go.Figure()
+
+    # PnL Chart for predictions = 1
+    fig.add_trace(go.Scatter(
+        x=trade_numbers_pred_1,
+        y=df['cumulative_return_after_pred_1'].dropna(),
+        mode='lines+markers',
+        name='Prediction > threshold'
+    ))
+
+    # PnL Chart for predictions = 0
+    fig.add_trace(go.Scatter(
+        x=trade_numbers_pred_0,
+        y=df['cumulative_return_after_pred_0'].dropna(),
+        mode='lines+markers',
+        name='Prediction < threshold'
+    ))
+
+    # Update layout for a shared x-axis
+    fig.update_layout(
+        title = 'Price Action for Predictions',
+
+        xaxis_title='Trade Number',
+        yaxis_title='Returns',
+        legend_title='Scenario',
+        template='plotly_dark',  # Choose a theme, if desired
+    )
+
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Calculate win rates for predictions equal to 1 and predictions equal to 0
+    win_rate_pred_1 = df[df['pred']]['return_after_pred_1'].gt(0).mean()
+    win_rate_pred_0 = df[~df['pred']]['return_after_pred_0'].gt(0).mean()
+
+    # Determine the number of trades for both scenarios
+    num_trades_pred_1 = df['pred'].sum()
+    num_trades_pred_0 = (~df['pred']).sum()
+
+
+st.markdown(f"Win rate for prediction > {trend_thresh}: **{win_rate_pred_1:.2%}** (# trades: {num_trades_pred_1})")
+st.markdown(f"Win rate for prediction < {trend_thresh}: **{win_rate_pred_0:.2%}**(# trades: {num_trades_pred_0})")
+
+
+
+
+
+
+
+
+expander = st.expander('ReadME - about the project')
 expander.write('''
-    **Please visit and read through the 
-    [ReadME](https://github.com/GrovesD2/market_monitor_trend_dash/tree/main#readme) 
-    before using this dashboard.**
-    
-    The date of the data will appear "lagged" in the dashboard, this is due to
-    the data being refreshed from the last full trading day. Likewise, the 
-    Market Montior is also refreshed on a daily cadence, and therefore, the 
-    model cannot be updated until the Market Montior does. To be clear, this 
-    data does not update during the trading day - this is a completely free 
-    dashboard, changing it to a dynamically changing dashboard would take time 
-    and finance to develop and maintain it.
-    
-    For any questions, please contact the author on [X](https://twitter.com/DrDanobi).
+               
+
+    This project was build on the code shared by [Danny Groves Ph.D.](https://twitter.com/DrDanobi), link to original 
+               [github repository](https://github.com/GrovesD2/market_monitor_trend_dash/tree/main#readme). 
+               The idea for the Trend Predictor was as well build on "Dr Danobi"'s code and idea.
+
+               The idea that the price of some cryptocurrencies is well explained by the [Power law](https://en.wikipedia.org/wiki/Power_law) relationship
+               was proposed in 2018 by [Giovanni Santostasi](https://twitter.com/Giovann35084111) on Reddit and recently started to gain popularity on X,
+               because of how well it was able to predict Bitcoin's price. This law seems to work for KAS very well so far too, although we have much shorter price history for it.
+               
+               For the risk metric visualization (but not the calculation) was used code from [Bitcoin Raven](https://github.com/BitcoinRaven/Bitcoin-Risk-Metric-V2) 
+
+               The aim of this project is to create a suite of tools for Kaspa (and other) investors, to manage their positions inteligently, connect with like-minded people,
+               and get better in dashboard creation and machine learning.
+
+               Data is updated 23:00 UTC each day, as that is when daily candles close on Binance. Predictions are always for the next day. 
+
+
+               You can get in touch on [Twitter](https://twitter.com/AlgoTradevid) or [join beta waitlist](https://form.jotform.com/240557098994069)
+
+
 
 ''')
