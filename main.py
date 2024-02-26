@@ -12,7 +12,7 @@ import numpy as np
 st.set_page_config(layout="wide")
 instrument = st.sidebar.selectbox(
     label='Select instrument',
-    options=["Kaspa (KAS)", "Bitcoin (BTC) - *** Coming Soon ***"]
+    options=["Kaspa (KAS)", "Bitcoin (BTC)"]
 )
 if instrument == "Kaspa (KAS)":
     dashboard = st.sidebar.selectbox(
@@ -24,33 +24,38 @@ if instrument == "Kaspa (KAS)":
             'Trend Predictor',
             'DCA Simulator - *** Coming Soon ***','Smart DCA Automation - *** Coming Soon ***'
         ])
-else:
-    dashboard =""
+
     
-if dashboard in ('DCA Simulator - *** Coming Soon ***', 'Smart DCA Automation - *** Coming Soon ***', ""):
+    df = pd.read_csv('data/kas_real_PL_extended.csv')
+
+else:
+    dashboard = st.sidebar.selectbox(
+        label='Select dashboard',
+        options=[
+            'Past Power Law',
+            'Future Power Law',
+            'Risk Visualization',
+            'Trend Predictor - *** Coming Soon ***,',
+            'DCA Simulator - *** Coming Soon ***','Smart DCA Automation - *** Coming Soon ***']
+    df = pd.read_csv('data/btc_real_PL_extended.csv')
+
+if dashboard in ('DCA Simulator - *** Coming Soon ***', 'Smart DCA Automation - *** Coming Soon ***', "Trend Predictor - *** Coming Soon ***,"):
     st.title(f'Coming soon')
 
     
 
-
-
-
-df = pd.read_csv('data/kas_real_PL_extended.csv')
 df['date'] = pd.to_datetime(df['date'])
 max_date = df["date"].max()  # Get the last date in the DataFrame
 max_date_with_close = df.dropna(subset=['close'])['date'].max()
-
-# Calculate the difference from today to max_date
+    
+    # Calculate the difference from today to max_date
 days_difference = (max_date - datetime.today()).days
-# Slider for selecting the number of days from today for prediction
-
-
-
-
+    # Slider for selecting the number of days from today for prediction
 df = df.reset_index(drop=True)
+
 if dashboard == 'Past Power Law':
     # Load in the data for the dash
-    st.title(f'Kaspa Past Power Law Predictions')
+    st.title(f'{instrument} Past Power Law Predictions')
 
     chart_type = st.sidebar.select_slider(
         'Select scale type',
@@ -61,7 +66,7 @@ if dashboard == 'Past Power Law':
 
     # Create subplots
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
-                        subplot_titles=('Actual vs Predicted Prices - KAS', 'Percentage Difference between Actual and Predicted Prices'))
+                        subplot_titles=('Actual vs Predicted Prices - {instrument}', 'Percentage Difference between Actual and Predicted Prices'))
     fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
     fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], mode='lines', name='Predicted Next Day Price', line=dict(dash='dot', color='white')), row=1, col=1)
 
@@ -108,7 +113,7 @@ if dashboard == 'Future Power Law':
                             max_value=days_difference, 
                             value=30)
     # Slider for selecting the number of days from today for prediction
-    st.title(f'Kaspa Power Law Predictions')
+    st.title(f'{instrument} Power Law Predictions')
     chart_type = st.sidebar.select_slider(
         'Select scale type',
         options=['Linear', 'Logarithmic'],
@@ -142,9 +147,9 @@ if dashboard == 'Future Power Law':
     fig.add_trace(go.Scatter(x=[closest_future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Price'))
     # Update the layout based on the chart type
     if chart_type == "Linear":
-        fig.update_layout(title=f'Kaspa Price Prediction', xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
+        fig.update_layout(title=f'{instrument} Price Prediction', xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
     elif chart_type == "Logarithmic":
-        fig.update_layout(title=f'Kaspa Price Prediction', xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
+        fig.update_layout(title=f'{instrument} Price Prediction', xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
 
     st.plotly_chart(fig, use_container_width=True)
 
@@ -160,7 +165,7 @@ if dashboard == 'Risk Visualization':
         value = "Logarithmic")
 
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
-                        subplot_titles=('Actual vs Predicted Prices - KAS', 'Percentage Difference between Actual and Predicted Prices'))
+                        subplot_titles=(f'Actual vs Predicted Prices - {instrument}', 'Percentage Difference between Actual and Predicted Prices'))
 
     # Data preprocessing
     df['Value'] = df['close']  # Rename 'close' to 'Value'
