@@ -146,7 +146,7 @@ if dashboard == 'Risk Visualization':
     chart_type = st.sidebar.select_slider(
         'Select scale type',
         options=['Linear', 'Logarithmic'],
-        value = "Linear")
+        value = "Logarithmic")
 
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
                         subplot_titles=('Actual vs Predicted Prices - KAS', 'Percentage Difference between Actual and Predicted Prices'))
@@ -175,7 +175,7 @@ if dashboard == 'Risk Visualization':
     if chart_type == "Logarithmic":
         # Scatter plot of Price colored by Risk values
         fig = go.Figure(data=go.Scatter(x=df['date'], y=np.log(df['Value']), mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', showscale=True)))
-        fig.update_yaxes(title='Price ($USD)', showgrid=True)
+        fig.update_yaxes(title='Price ($USD)',type = "log", showgrid=True)
         fig.update_layout(template='plotly_dark', title_text=annotation_text)
         st.plotly_chart(fig, use_container_width=True)
 
