@@ -173,10 +173,11 @@ if dashboard == 'Risk Visualization':
     if instrument == "Bitcoin (BTC)":
         
         df = df[df.index > 1400]
-        df['Preavg'] = ((np.log(df.Value) - np.log(df['predicted_next_day_price'])) /np.log(df['predicted_next_day_price'])) ### balanced advisor
+        df['MA'] = df['predicted_next_day_price'].rolling(374, min_periods=1).mean().dropna()
+        df['Preavg'] = (np.log(df.Value) - np.log(df['MA'])) * df.index**.395
+        
         # Normalization to 0-1 range
-        df['avg'] = np.log(df['Preavg'] - df['Preavg'].cummin()) / np.log(df['Preavg'].cummax() - df['Preavg'].cummin())
-        df['avg'] =1-df['avg']
+        df['avg'] = (df['Preavg'] - df['Preavg'].cummin()) / (df['Preavg'].cummax() - df['Preavg'].cummin())
 
     else:
         # Calculate the Risk Metric
@@ -410,7 +411,7 @@ This project was built on the code shared by [Danny Groves Ph.D.](https://twitte
 
 The concept that the price of some cryptocurrencies is well explained by the [Power law](https://en.wikipedia.org/wiki/Power_law) relationship was proposed in 2018 by [Giovanni Santostasi](https://twitter.com/Giovann35084111) on Reddit and has recently started to gain popularity on X, due to its accuracy in predicting Bitcoin's price. This law seems to work very well for KAS too, although we have a much shorter price history for it.
 
-For the risk metric visualization (but not the calculation), the code from [Bitcoin Raven](https://github.com/BitcoinRaven/Bitcoin-Risk-Metric-V2) was used.
+For the risk metric visualization, the code from [Bitcoin Raven](https://github.com/BitcoinRaven/Bitcoin-Risk-Metric-V2) was used.
 
 The aim of this project is to create a suite of tools for Kaspa (and other) investors to manage their positions intelligently, connect with like-minded people, and improve my skills in dashboard creation and machine learning. You can get in touch on [Twitter](https://twitter.com/AlgoTradevid) or [join the beta waitlist](https://form.jotform.com/240557098994069).
 
