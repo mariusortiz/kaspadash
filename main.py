@@ -36,7 +36,7 @@ else:
             'Future Power Law',
             'Risk Visualization',
             'Trend Predictor - *** Coming Soon ***,',
-            'DCA Simulator - *** Coming Soon ***','Smart DCA Automation - *** Coming Soon ***']
+            'DCA Simulator - *** Coming Soon ***','Smart DCA Automation - *** Coming Soon ***'])
     df = pd.read_csv('data/btc_real_PL_extended.csv')
 
 if dashboard in ('DCA Simulator - *** Coming Soon ***', 'Smart DCA Automation - *** Coming Soon ***', "Trend Predictor - *** Coming Soon ***,"):
