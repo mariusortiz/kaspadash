@@ -156,7 +156,7 @@ if dashboard == 'Future Power Law':
 
 
 
-if dashboard == 'Risk Visualization':
+if dashboard == 'Risk Visualization' and instrument == "Kaspa (KAS)":
     # Load in the data for the dash
     st.title(f'{instrument} Risk Visualization')
     chart_type = st.sidebar.select_slider(
