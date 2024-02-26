@@ -171,13 +171,13 @@ if dashboard == 'Risk Visualization':
     df['Value'] = df['close']  # Rename 'close' to 'Value'
     df = df[df['Value'] > 0]  # Filter out data points without a price
     if instrument == "Bitcoin (BTC)":
-        df['Preavg'] = ((df.Value) - (df['predicted_next_day_price'])) /(df['predicted_next_day_price'])
+        df['Preavg'] = ((np.log(df.Value) - (df['predicted_next_day_price'])) /np.log(df['predicted_next_day_price'])) ### balanced advisor
         # Normalization to 0-1 range
-        df['avg'] = np.log(df['Preavg'] - df['Preavg'].cummin()) / np.log(df['Preavg'].cummax() - df['Preavg'].cummin())
+        df['avg'] = (df['Preavg'] - df['Preavg'].cummin()) / (df['Preavg'].cummax() - df['Preavg'].cummin())
+        df['avg'] =1-df['avg']
     else:
         # Calculate the Risk Metric
         df['Preavg'] = ((np.log(df.Value) - (df['predicted_next_day_price'])) /np.log(df['predicted_next_day_price'])) ### balanced advisor
-    
         # Normalization to 0-1 range
         df['avg'] = (df['Preavg'] - df['Preavg'].cummin()) / (df['Preavg'].cummax() - df['Preavg'].cummin())
         df['avg'] =1-df['avg']
