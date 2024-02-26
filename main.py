@@ -62,14 +62,9 @@ if dashboard == 'Past Power Law':
     # Create subplots
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
                         subplot_titles=('Actual vs Predicted Prices - KAS', 'Percentage Difference between Actual and Predicted Prices'))
-    if chart_type == "Linear":
-        # Plot Actual vs Predicted Prices
-        fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
-        fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], mode='lines', name='Predicted Next Day Price', line=dict(dash='dot')), row=1, col=1)
-    else:
-        # Plot Actual vs Predicted Prices
-        fig.add_trace(go.Scatter(x=df['date'], y=df['close'], type = "log",mode='lines', name='Actual Price'), row=1, col=1)
-        fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],type = "log", mode='lines', name='Predicted Next Day Price', line=dict(dash='dot')), row=1, col=1)    # Calculate and Plot Percentage Differences
+    fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
+    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], mode='lines', name='Predicted Next Day Price', line=dict(dash='dot')), row=1, col=1)
+
     differences = 100 * (df['close'] - df['predicted_next_day_price']) / df['predicted_next_day_price']
     fig.add_trace(go.Scatter(x=df['date'], y=differences, mode='lines', name='Difference (%)'), row=2, col=1)
     fig.add_hline(y=0, line=dict(dash='dash', color='red'), row=2, col=1)
@@ -80,8 +75,11 @@ if dashboard == 'Past Power Law':
     fig.update_yaxes(title_text="Difference (%)", row=2, col=1)
     fig.update_xaxes(title_text="Date", row=2, col=1)
 
+    if chart_type == "Linear":
+        fig.update_layout(xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
+    elif chart_type == "Logarithmic":
+        fig.update_layout(xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
 
-    fig.update_layout(xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
     st.plotly_chart(fig, use_container_width=True)
 
 
@@ -133,20 +131,21 @@ if dashboard == 'Future Power Law':
     # Plot the actual and predicted prices using Plotly
     fig = go.Figure()
     df = df[df['date'] <= future_date]
-    if chart_type == "Linear":
-        fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Price'))
-        fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],name='Past Expected Price', mode='lines', line=dict(dash='dot')))
-        fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines', name='Future Expected Price', line=dict(dash='dot', color='red')))
-    if chart_type == "Logarithmic":
-        fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines',type = "log", name='Price'))
-        fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],type = "log",name='Past Expected Price', mode='lines', line=dict(dash='dot')))
-        fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines',type = "log", name='Future Expected Price', line=dict(dash='dot', color='red')))
+
+    fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Price'))
+    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],name='Past Expected Price', mode='lines', line=dict(dash='dot')))
+    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines', name='Future Expected Price', line=dict(dash='dot', color='red')))
+
 
     # Highlight the future date and predicted price
     fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
     fig.add_trace(go.Scatter(x=[closest_future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Price'))
+    # Update the layout based on the chart type
+    if chart_type == "Linear":
+        fig.update_layout(title=f'Kaspa Price Prediction', xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
+    elif chart_type == "Logarithmic":
+        fig.update_layout(title=f'Kaspa Price Prediction', xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
 
-    fig.update_layout(title=f'Kaspa Price Prediction', xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
     st.plotly_chart(fig, use_container_width=True)
 
 
