@@ -63,7 +63,7 @@ if dashboard == 'Past Power Law':
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
                         subplot_titles=('Actual vs Predicted Prices - KAS', 'Percentage Difference between Actual and Predicted Prices'))
     fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
-    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], mode='lines', name='Predicted Next Day Price', line=dict(dash='dot')), row=1, col=1)
+    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], mode='lines', name='Predicted Next Day Price', line=dict(dash='dot', color='white'))), row=1, col=1)
 
     differences = 100 * (df['close'] - df['predicted_next_day_price']) / df['predicted_next_day_price']
     fig.add_trace(go.Scatter(x=df['date'], y=differences, mode='lines', name='Difference (%)'), row=2, col=1)
@@ -133,7 +133,7 @@ if dashboard == 'Future Power Law':
     df = df[df['date'] <= future_date]
 
     fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Price'))
-    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],name='Past Expected Price', mode='lines', line=dict(dash='dot')))
+    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],name='Past Expected Price', mode='lines', line=dict(dash='dot', color='white'))))
     fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines', name='Future Expected Price', line=dict(dash='dot', color='red')))
 
 
