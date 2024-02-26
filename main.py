@@ -22,12 +22,12 @@ if instrument == "Kaspa (KAS)":
             'Future Power Law',
             'Risk Visualization',
             'Trend Predictor',
-            'DCA Simulator - *** Coming Soon ***','Value Sniper Bot - *** Coming Soon ***'
+            'DCA Simulator - *** Coming Soon ***','Smart DCA Automation - *** Coming Soon ***'
         ])
 else:
     dashboard =""
     
-if dashboard in ('DCA Simulator - *** Coming Soon ***', 'Value Sniper Bot - *** Coming Soon ***', ""):
+if dashboard in ('DCA Simulator - *** Coming Soon ***', 'Smart DCA Automation - *** Coming Soon ***', ""):
     st.title(f'Coming soon')
 
     
@@ -143,7 +143,10 @@ if dashboard == 'Future Power Law':
 if dashboard == 'Risk Visualization':
     # Load in the data for the dash
     st.title(f'Kaspa Risk Visualization')
-
+    chart_type = st.select_slider(
+        'Select scale type',
+        options=['Linear', 'Logarithmic'],
+        value = "Linear")
 
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
                         subplot_titles=('Actual vs Predicted Prices - KAS', 'Percentage Difference between Actual and Predicted Prices'))
@@ -163,13 +166,18 @@ if dashboard == 'Risk Visualization':
     annotation_text = f"Updated: {df['date'].iloc[-1].strftime('%Y-%m-%d')} | Price: {round(df['Value'].iloc[-1], 5)} | Risk: {round(df['avg'].iloc[-1], 2)}"
 
 
-
-    # Scatter plot of Price colored by Risk values
-    fig = go.Figure(data=go.Scatter(x=df['date'], y=df['Value'], mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', showscale=True)))
-    fig.update_yaxes(title='Price ($USD)', type='log', showgrid=False)
-    fig.update_layout(template='plotly_dark', title_text=annotation_text)
-    st.plotly_chart(fig, use_container_width=True)
-
+    if chart_type == "Linear":
+        # Scatter plot of Price colored by Risk values
+        fig = go.Figure(data=go.Scatter(x=df['date'], y=df['Value'], mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', showscale=True)))
+        fig.update_yaxes(title='Price ($USD)', showgrid=True)
+        fig.update_layout(template='plotly_dark', title_text=annotation_text)
+        st.plotly_chart(fig, use_container_width=True)
+    if chart_type == "Logarithmic":
+        # Scatter plot of Price colored by Risk values
+        fig = go.Figure(data=go.Scatter(x=df['date'], y=np.log(df['Value']), mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', showscale=True)))
+        fig.update_yaxes(title='Price ($USD)', type='log', showgrid=True)
+        fig.update_layout(template='plotly_dark', title_text=annotation_text)
+        st.plotly_chart(fig, use_container_width=True)
 
     # Plot Price and Risk Metric
     fig = make_subplots(specs=[[{'secondary_y': True}]])
@@ -347,34 +355,17 @@ if dashboard == 'Trend Predictor':
     st.markdown(f"Win rate for prediction < {trend_thresh}: **{win_rate_pred_0:.2%}**(# trades: {num_trades_pred_0})")
 
 
-    
-    expander = st.expander('About the model')
-    expander.write('''
-    The model uses a Random Forest algorithm to try to predict whether the price will close above the 20-day SMA in 5 days. If the prediction "probability" (not an actual probability, but a way to quantify how confident the model is) is above the threshold (0.6-0.8 recommended; paradoxically, the highest values are not always the best as that usually indicates the trend is at its peak and may reverse), we enter at the next day's open and exit at the next day's close.
-    
-    **DISCLAIMER:** If you trade using only this model, expect to lose all your money. Anything you manage to keep should be considered a miracle.
-    
-    If you decide to trade using this early version model, make sure that you only take long positions and that the slope of the 20-day SMA is positive.               ''')
-    
 
-expander = st.expander('**JOIN BETA WAITLIST**')
+expander = st.expander('About the model')
 expander.write('''
-               
+The model uses a Random Forest algorithm to try to predict whether the price will close above the 20-day SMA in 5 days. If the prediction "probability" (not an actual probability, but a way to quantify how confident the model is) is above the threshold (0.6-0.8 recommended; paradoxically, the highest values are not always the best as that usually indicates the trend is at its peak and may reverse), we enter at the next day's open and exit at the next day's close.
 
-This project will in the future include premium features - automatic spot/ futures bot to buy KAS when it is under valued, short and long term machine learning trading algorithms, market health monitoring, etc.. 
+**DISCLAIMER:** If you trade using only this model, expect to lose all your money. Anything you manage to keep should be considered a miracle.
 
-If you want to try out the premium features first, [join the beta waitlist](https://form.jotform.com/240557098994069).
+If you decide to trade using this early version model, make sure that you only take long positions and that the slope of the 20-day SMA is positive.               ''')
 
-''')
-expander = st.expander('Get in touch')
-expander.write('''
-               
 
-The aim of this project is to create a suite of tools for Kaspa (and other) investors to manage their positions intelligently, connect with like-minded people, and improve my skills in dashboard creation and machine learning. You can get in touch on [Twitter](https://twitter.com/AlgoTradevid) or [join the beta waitlist](https://form.jotform.com/240557098994069).
 
-[READ ME](https://github.com/Augudav/market_monitor_trend_dash/blob/main/README.md)
-
-''')
 
 expander = st.expander('ReadME - about the project')
 expander.write('''
@@ -388,6 +379,6 @@ For the risk metric visualization (but not the calculation), the code from [Bitc
 
 The aim of this project is to create a suite of tools for Kaspa (and other) investors to manage their positions intelligently, connect with like-minded people, and improve my skills in dashboard creation and machine learning. You can get in touch on [Twitter](https://twitter.com/AlgoTradevid) or [join the beta waitlist](https://form.jotform.com/240557098994069).
 
-[READ ME](https://github.com/Augudav/market_monitor_trend_dash/blob/main/README.md)
+
 
 ''')
