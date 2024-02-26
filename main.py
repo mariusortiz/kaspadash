@@ -371,6 +371,6 @@ For the risk metric visualization (but not the calculation), the code from [Bitc
 
 The aim of this project is to create a suite of tools for Kaspa (and other) investors to manage their positions intelligently, connect with like-minded people, and improve my skills in dashboard creation and machine learning. You can get in touch on [Twitter](https://twitter.com/AlgoTradevid) or [join the beta waitlist](https://form.jotform.com/240557098994069).
 
-
+[READ ME](https://github.com/Augudav/market_monitor_trend_dash/blob/main/README.md)
 
 ''')
