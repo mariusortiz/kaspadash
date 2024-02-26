@@ -66,7 +66,7 @@ if dashboard == 'Past Power Law':
 
     # Create subplots
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
-                        subplot_titles=('Actual vs Predicted Prices - {instrument}', 'Percentage Difference between Actual and Predicted Prices'))
+                        subplot_titles=(f'Actual vs Predicted Prices - {instrument}', 'Percentage Difference between Actual and Predicted Prices'))
     fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
     fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], mode='lines', name='Predicted Next Day Price', line=dict(dash='dot', color='white')), row=1, col=1)
 
