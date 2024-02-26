@@ -133,7 +133,7 @@ if dashboard == 'Future Power Law':
     df = df[df['date'] <= future_date]
 
     fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Price'))
-    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],name='Past Expected Price', mode='lines', line=dict(dash='dot', color='white'))))
+    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],name='Past Expected Price', mode='lines', line=dict(dash='dot', color='white')))
     fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines', name='Future Expected Price', line=dict(dash='dot', color='red')))
 
 
