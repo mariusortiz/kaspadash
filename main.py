@@ -172,8 +172,8 @@ if dashboard == 'Risk Visualization':
     df = df[df['Value'] > 0]  # Filter out data points without a price
     if instrument == "Bitcoin (BTC)":
         
-        df = df[df.index > 1400]
-        df['MA'] = df['predicted_next_day_price'].rolling(374, min_periods=1).mean().dropna()
+        df = df[df.index > 1200]
+        df['MA'] = df['predicted_next_day_price'].rolling(2, min_periods=1).mean().dropna()
         df['Preavg'] = (np.log(df.Value) - np.log(df['MA'])) * df.index**.395
         
         # Normalization to 0-1 range
@@ -229,7 +229,7 @@ if dashboard == 'Risk Visualization':
 
 
 if dashboard == 'Trend Predictor':
-    st.title('Kaspa Machine Learning Trend Predictor v1')
+    st.title(f'{instrument} Machine Learning Trend Predictor v1')
     df = pd.read_csv('data/kas_d_with_predictions.csv')
     df['date'] = pd.to_datetime(df['date'])
     trend_thresh = st.sidebar.slider(
@@ -289,7 +289,7 @@ if dashboard == 'Trend Predictor':
     fig.update_layout(
         xaxis_rangeslider_visible=False,
         xaxis_title="Date",
-        yaxis_title="KAS Price ($)",
+        yaxis_title=f"{instrument} Price ($)",
         width=1200,
         height=700,
     )
