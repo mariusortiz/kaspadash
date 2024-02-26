@@ -174,7 +174,7 @@ if dashboard == 'Risk Visualization':
         st.plotly_chart(fig, use_container_width=True)
     if chart_type == "Logarithmic":
         # Scatter plot of Price colored by Risk values
-        fig = go.Figure(data=go.Scatter(x=df['date'], y=np.log(df['Value']), mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', showscale=True)))
+        fig = go.Figure(data=go.Scatter(x=df['date'], y=(df['Value']), mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', showscale=True)))
         fig.update_yaxes(title='Price ($USD)',type = "log", showgrid=True)
         fig.update_layout(template='plotly_dark', title_text=annotation_text)
         st.plotly_chart(fig, use_container_width=True)
