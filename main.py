@@ -372,7 +372,7 @@ if dashboard == 'Trend Predictor':
 expander = st.expander('About the model')
 expander.write('''
 The model uses a Random Forest algorithm to try to predict whether the price will close above the 20-day SMA in 5 days. If the prediction "probability" (not an actual probability, but a way to quantify how confident the model is) is above the threshold (0.6-0.8 recommended; paradoxically, the highest values are not always the best as that usually indicates the trend is at its peak and may reverse), we enter at the next day's open and exit at the next day's close.
-
+**Why is it not showing complete KAS history:** The model needs to be trained on some data, and it is unfair to then say "look how well the model does (on the data it has already seen)" that is why the performance is shown only on the interval, which the model was not trained on.
 **DISCLAIMER:** If you trade using only this model, expect to lose all your money. Anything you manage to keep should be considered a miracle.
 
 If you decide to trade using this early version model, make sure that you only take long positions and that the slope of the 20-day SMA is positive.               ''')
