@@ -173,7 +173,7 @@ if dashboard == 'Risk Visualization':
     if instrument == "Bitcoin (BTC)":
         
         df = df[df.index > 1400]
-        df['Preavg'] = ((np.log(df.Value) / (df['predicted_next_day_price'])) /np.log(df['predicted_next_day_price'])) ### balanced advisor
+        df['Preavg'] = ((np.log(df.Value) - (df['predicted_next_day_price'])) /np.log(df['predicted_next_day_price'])) ### balanced advisor
         # Normalization to 0-1 range
         df['avg'] = (df['Preavg'] - df['Preavg'].cummin()) / (df['Preavg'].cummax() - df['Preavg'].cummin())
         df['avg'] =1-df['avg']
