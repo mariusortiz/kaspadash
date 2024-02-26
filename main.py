@@ -9,19 +9,30 @@ import numpy as np
 
 
 
-
 st.set_page_config(layout="wide")
-
-dashboard = st.sidebar.selectbox(
-    label='Select dashboard',
-    options=[
-        'Past Power Law',
-        'Future Power Law',
-        'Risk Visualization',
-        'Trend Predictor'
-
-    ]
+instrument = st.sidebar.selectbox(
+    label='Select instrument',
+    options=["Kaspa (KAS)", "Bitcoin (BTC) - *** Coming Soon ***"]
 )
+if instrument == "Kaspa (KAS)":
+    dashboard = st.sidebar.selectbox(
+        label='Select dashboard',
+        options=[
+            'Past Power Law',
+            'Future Power Law',
+            'Risk Visualization',
+            'Trend Predictor',
+            'DCA Simulator - *** Coming Soon ***','Smart DCA Automation - *** Coming Soon ***'
+        ])
+else:
+    dashboard =""
+    
+if dashboard in ('DCA Simulator - *** Coming Soon ***', 'Smart DCA Automation - *** Coming Soon ***', ""):
+    st.title(f'Coming soon')
+
+    
+
+
 
 
 df = pd.read_csv('data/kas_real_PL_extended.csv')
@@ -40,6 +51,7 @@ df = df.reset_index(drop=True)
 if dashboard == 'Past Power Law':
     # Load in the data for the dash
     st.title(f'Kaspa Past Power Law Predictions')
+
 
 
     df = df[df["date"] <= max_date_with_close]
@@ -87,6 +99,7 @@ if dashboard == 'Past Power Law':
 
 if dashboard == 'Future Power Law':
 
+
     days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                             min_value=1, 
                             max_value=days_difference, 
@@ -130,6 +143,7 @@ if dashboard == 'Future Power Law':
 if dashboard == 'Risk Visualization':
     # Load in the data for the dash
     st.title(f'Kaspa Risk Visualization')
+
 
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
                         subplot_titles=('Actual vs Predicted Prices - KAS', 'Percentage Difference between Actual and Predicted Prices'))
@@ -183,9 +197,9 @@ if dashboard == 'Risk Visualization':
 
 
 if dashboard == 'Trend Predictor':
+    st.title('Kaspa Machine Learning Trend Predictor v1')
     df = pd.read_csv('data/kas_d_with_predictions.csv')
     df['date'] = pd.to_datetime(df['date'])
-
     trend_thresh = st.sidebar.slider(
         label='Trend Probability >',
         value=0.7,
@@ -249,7 +263,7 @@ if dashboard == 'Trend Predictor':
     )
 
     st.plotly_chart(fig, use_container_width=True)
-    st.title('Kaspa Machine Learning Trend Predictor')
+
 
 
     # Assuming df_test has been previously loaded or defined
@@ -329,12 +343,18 @@ if dashboard == 'Trend Predictor':
     num_trades_pred_0 = (~df['pred']).sum()
 
 
-st.markdown(f"Win rate for prediction > {trend_thresh}: **{win_rate_pred_1:.2%}** (# trades: {num_trades_pred_1})")
-st.markdown(f"Win rate for prediction < {trend_thresh}: **{win_rate_pred_0:.2%}**(# trades: {num_trades_pred_0})")
+    st.markdown(f"Win rate for prediction > {trend_thresh}: **{win_rate_pred_1:.2%}** (# trades: {num_trades_pred_1})")
+    st.markdown(f"Win rate for prediction < {trend_thresh}: **{win_rate_pred_0:.2%}**(# trades: {num_trades_pred_0})")
 
 
 
+expander = st.expander('About the model')
+expander.write('''
+The model uses a Random Forest algorithm to try to predict whether the price will close above the 20-day SMA in 5 days. If the prediction "probability" (not an actual probability, but a way to quantify how confident the model is) is above the threshold (0.6-0.8 recommended; paradoxically, the highest values are not always the best as that usually indicates the trend is at its peak and may reverse), we enter at the next day's open and exit at the next day's close.
 
+**DISCLAIMER:** If you trade using only this model, expect to lose all your money. Anything you manage to keep should be considered a miracle.
+
+If you decide to trade using this early version model, make sure that you only take long positions and that the slope of the 20-day SMA is positive.               ''')
 
 
 
@@ -343,23 +363,13 @@ expander = st.expander('ReadME - about the project')
 expander.write('''
                
 
-    This project was build on the code shared by [Danny Groves Ph.D.](https://twitter.com/DrDanobi), link to original 
-               [github repository](https://github.com/GrovesD2/market_monitor_trend_dash/tree/main#readme). 
-               The idea for the Trend Predictor was as well build on "Dr Danobi"'s code and idea.
+This project was built on the code shared by [Danny Groves Ph.D.](https://twitter.com/DrDanobi), link to the original [github repository](https://github.com/GrovesD2/market_monitor_trend_dash/tree/main#readme). The idea for the Trend Predictor was also built on "Dr. Danobi's" code and concept.
 
-               The idea that the price of some cryptocurrencies is well explained by the [Power law](https://en.wikipedia.org/wiki/Power_law) relationship
-               was proposed in 2018 by [Giovanni Santostasi](https://twitter.com/Giovann35084111) on Reddit and recently started to gain popularity on X,
-               because of how well it was able to predict Bitcoin's price. This law seems to work for KAS very well so far too, although we have much shorter price history for it.
-               
-               For the risk metric visualization (but not the calculation) was used code from [Bitcoin Raven](https://github.com/BitcoinRaven/Bitcoin-Risk-Metric-V2) 
+The concept that the price of some cryptocurrencies is well explained by the [Power law](https://en.wikipedia.org/wiki/Power_law) relationship was proposed in 2018 by [Giovanni Santostasi](https://twitter.com/Giovann35084111) on Reddit and has recently started to gain popularity on X, due to its accuracy in predicting Bitcoin's price. This law seems to work very well for KAS too, although we have a much shorter price history for it.
 
-               The aim of this project is to create a suite of tools for Kaspa (and other) investors, to manage their positions inteligently, connect with like-minded people,
-               and get better in dashboard creation and machine learning.
+For the risk metric visualization (but not the calculation), the code from [Bitcoin Raven](https://github.com/BitcoinRaven/Bitcoin-Risk-Metric-V2) was used.
 
-               Data is updated 23:00 UTC each day, as that is when daily candles close on Binance. Predictions are always for the next day. 
-
-
-               You can get in touch on [Twitter](https://twitter.com/AlgoTradevid) or [join beta waitlist](https://form.jotform.com/240557098994069)
+The aim of this project is to create a suite of tools for Kaspa (and other) investors to manage their positions intelligently, connect with like-minded people, and improve my skills in dashboard creation and machine learning. You can get in touch on [Twitter](https://twitter.com/AlgoTradevid) or [join the beta waitlist](https://form.jotform.com/240557098994069).
 
 
 
