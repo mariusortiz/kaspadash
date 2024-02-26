@@ -22,12 +22,12 @@ if instrument == "Kaspa (KAS)":
             'Future Power Law',
             'Risk Visualization',
             'Trend Predictor',
-            'DCA Simulator - *** Coming Soon ***','Smart DCA Automation - *** Coming Soon ***'
+            'DCA Simulator - *** Coming Soon ***','Value Sniper Bot - *** Coming Soon ***'
         ])
 else:
     dashboard =""
     
-if dashboard in ('DCA Simulator - *** Coming Soon ***', 'Smart DCA Automation - *** Coming Soon ***', ""):
+if dashboard in ('DCA Simulator - *** Coming Soon ***', 'Value Sniper Bot - *** Coming Soon ***', ""):
     st.title(f'Coming soon')
 
     
