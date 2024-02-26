@@ -12,7 +12,7 @@ import numpy as np
 st.set_page_config(layout="wide")
 instrument = st.sidebar.selectbox(
     label='Select instrument',
-    options=["Kaspa (KAS)", "Bitcoin (BTC)"]
+    options=["Kaspa (KAS)", "Bitcoin (BTC) - **NEW**"]
 )
 if instrument == "Kaspa (KAS)":
     dashboard = st.sidebar.selectbox(
