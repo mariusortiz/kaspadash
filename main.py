@@ -52,19 +52,24 @@ if dashboard == 'Past Power Law':
     # Load in the data for the dash
     st.title(f'Kaspa Past Power Law Predictions')
 
-
+    chart_type = st.sidebar.select_slider(
+        'Select scale type',
+        options=['Linear', 'Logarithmic'],
+        value = "Linear")
 
     df = df[df["date"] <= max_date_with_close]
 
     # Create subplots
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
                         subplot_titles=('Actual vs Predicted Prices - KAS', 'Percentage Difference between Actual and Predicted Prices'))
-
-    # Plot Actual vs Predicted Prices
-    fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
-    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], mode='lines', name='Predicted Next Day Price', line=dict(dash='dot')), row=1, col=1)
-
-    # Calculate and Plot Percentage Differences
+    if chart_type == "Linear":
+        # Plot Actual vs Predicted Prices
+        fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
+        fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], mode='lines', name='Predicted Next Day Price', line=dict(dash='dot')), row=1, col=1)
+    else:
+        # Plot Actual vs Predicted Prices
+        fig.add_trace(go.Scatter(x=df['date'], y=df['close'], type = "log",mode='lines', name='Actual Price'), row=1, col=1)
+        fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],type = "log", mode='lines', name='Predicted Next Day Price', line=dict(dash='dot')), row=1, col=1)    # Calculate and Plot Percentage Differences
     differences = 100 * (df['close'] - df['predicted_next_day_price']) / df['predicted_next_day_price']
     fig.add_trace(go.Scatter(x=df['date'], y=differences, mode='lines', name='Difference (%)'), row=2, col=1)
     fig.add_hline(y=0, line=dict(dash='dash', color='red'), row=2, col=1)
@@ -106,7 +111,10 @@ if dashboard == 'Future Power Law':
                             value=30)
     # Slider for selecting the number of days from today for prediction
     st.title(f'Kaspa Power Law Predictions')
-
+    chart_type = st.sidebar.select_slider(
+        'Select scale type',
+        options=['Linear', 'Logarithmic'],
+        value = "Linear")
     # Calculate the date for the specified number of days from today
     today = datetime.today()
     future_date = today + timedelta(days=days_from_today)
@@ -125,10 +133,14 @@ if dashboard == 'Future Power Law':
     # Plot the actual and predicted prices using Plotly
     fig = go.Figure()
     df = df[df['date'] <= future_date]
-
-    fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Price'))
-    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],name='Past Expected Price', mode='lines', line=dict(dash='dot')))
-    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines', name='Future Expected Price', line=dict(dash='dot', color='red')))
+    if chart_type == "Linear":
+        fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Price'))
+        fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],name='Past Expected Price', mode='lines', line=dict(dash='dot')))
+        fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines', name='Future Expected Price', line=dict(dash='dot', color='red')))
+    if chart_type == "Logarithmic":
+        fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines',type = "log", name='Price'))
+        fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],type = "log",name='Past Expected Price', mode='lines', line=dict(dash='dot')))
+        fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines',type = "log", name='Future Expected Price', line=dict(dash='dot', color='red')))
 
     # Highlight the future date and predicted price
     fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
