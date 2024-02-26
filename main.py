@@ -329,7 +329,8 @@ if dashboard == 'Trend Predictor':
         x=trade_numbers_pred_1,
         y=df['cumulative_return_after_pred_1'].dropna(),
         mode='lines+markers',
-        name='Prediction > threshold'
+        name='Prediction > threshold',
+        color = "green"
     ))
 
     # PnL Chart for predictions = 0
