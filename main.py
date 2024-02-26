@@ -158,7 +158,7 @@ if dashboard == 'Future Power Law':
 
 if dashboard == 'Risk Visualization':
     # Load in the data for the dash
-    st.title(f'Kaspa Risk Visualization')
+    st.title(f'{instrument} Risk Visualization')
     chart_type = st.sidebar.select_slider(
         'Select scale type',
         options=['Linear', 'Logarithmic'],
@@ -170,13 +170,17 @@ if dashboard == 'Risk Visualization':
     # Data preprocessing
     df['Value'] = df['close']  # Rename 'close' to 'Value'
     df = df[df['Value'] > 0]  # Filter out data points without a price
-
-    # Calculate the Risk Metric
-    df['Preavg'] = ((np.log(df.Value) - (df['predicted_next_day_price'])) /np.log(df['predicted_next_day_price'])) ### balanced advisor
-
-    # Normalization to 0-1 range
-    df['avg'] = (df['Preavg'] - df['Preavg'].cummin()) / (df['Preavg'].cummax() - df['Preavg'].cummin())
-    df['avg'] =1-df['avg']
+    if instrument == "Bitcoin (BTC)":
+        df['Preavg'] = ((df.Value) - (df['predicted_next_day_price'])) /(df['predicted_next_day_price'])
+        # Normalization to 0-1 range
+        df['avg'] = np.log(df['Preavg'] - df['Preavg'].cummin()) / np.log(df['Preavg'].cummax() - df['Preavg'].cummin())
+    else:
+        # Calculate the Risk Metric
+        df['Preavg'] = ((np.log(df.Value) - (df['predicted_next_day_price'])) /np.log(df['predicted_next_day_price'])) ### balanced advisor
+    
+        # Normalization to 0-1 range
+        df['avg'] = (df['Preavg'] - df['Preavg'].cummin()) / (df['Preavg'].cummax() - df['Preavg'].cummin())
+        df['avg'] =1-df['avg']
 
     # Title for the plots
     annotation_text = f"Updated: {df['date'].iloc[-1].strftime('%Y-%m-%d')} | Price: {round(df['Value'].iloc[-1], 5)} | Risk: {round(df['avg'].iloc[-1], 2)}"
