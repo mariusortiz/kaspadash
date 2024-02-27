@@ -138,18 +138,30 @@ if dashboard == 'Future Power Law':
     df = df[df['date'] <= future_date]
 
     fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Price'))
-    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],name='Past Expected Price', mode='lines', line=dict(dash='dot', color='white')))
-    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines', name='Future Expected Price', line=dict(dash='dot', color='red')))
+    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],name='Past Fair Price', mode='lines', line=dict(dash='dot', color='white')))
+    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines', name='Future Fair Price', line=dict(dash='dot', color='red')))
 
 
     # Highlight the future date and predicted price
     fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
-    fig.add_trace(go.Scatter(x=[closest_future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Price'))
+    fig.add_trace(go.Scatter(x=[closest_future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Fair Price'))
     # Update the layout based on the chart type
     if chart_type == "Linear":
         fig.update_layout(title=f'{instrument} Price Prediction', xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
     elif chart_type == "Logarithmic":
         fig.update_layout(title=f'{instrument} Price Prediction', xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
+    # Assuming you've already completed your figure setup above, now add a watermark
+    fig.add_annotation(
+        text="@ALGOTRADEVID",  # The watermark text
+        align='left',
+        opacity=0.3,  # Adjust opacity to make the watermark lighter
+        font=dict(color="black", size=25),  # Adjust font color and size
+        xref='paper',  # Position the watermark relative to the entire figure
+        yref='paper',
+        x=0.5,  # Centered horizontally
+        y=0.5,  # Centered vertically
+        showarrow=False,  # Do not show an arrow pointing to the text
+    )
 
     st.plotly_chart(fig, use_container_width=True)
 
