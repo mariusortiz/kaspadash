@@ -139,7 +139,7 @@ if dashboard == 'Future Power Law':
         value = "Linear")
     # Calculate the date for the specified number of days from today
     today = datetime.today()
-    future_date = today + timedelta(days=days_from_today)
+    future_date = today + timedelta(days=(days_from_today-1))
 
     # Find the closest date in the dataframe to the future date
     closest_future_date = df[df['date'] >= future_date].iloc[0]['date']
