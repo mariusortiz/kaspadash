@@ -98,7 +98,7 @@ if dashboard == 'Past Power Law':
     st.plotly_chart(fig, use_container_width=True)
     expander = st.expander('About the chart')
     expander.write('''
-    You might find it surprising to see the predicted value fluctuate so much. Typically, power law charts depict the fair price as a constant, straight line (on log-log charts) because they are curve-fitted on the past data for the best fit. 
+    You might find it surprising to see the predicted value fluctuate. Typically, power law charts depict the fair price as a constant, straight line (on log-log charts) because they are curve-fitted on the past data for the best fit. 
     
     However, this doesn't reveal past predictions, which is crucial for assessing the reliability of these forecasts.
     
@@ -183,7 +183,7 @@ if dashboard == 'Future Power Law':
     st.plotly_chart(fig, use_container_width=True)
     expander = st.expander('About the chart')
     expander.write('''
-    You might find it surprising to see the predicted value fluctuate so much. Typically, power law charts depict the fair price as a constant, straight line (on log-log charts) because they are curve-fitted on the past data for the best fit. 
+    You might find it surprising to see the predicted value fluctuate. Typically, power law charts depict the fair price as a constant, straight line (on log-log charts) because they are curve-fitted on the past data for the best fit. 
     
     However, this doesn't reveal past predictions, which is crucial for assessing the reliability of these forecasts.
     
