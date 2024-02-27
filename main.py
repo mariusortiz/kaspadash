@@ -155,7 +155,7 @@ if dashboard == 'Future Power Law':
         text="@ALGOTRADEVID",  # The watermark text
         align='left',
         opacity=0.3,  # Adjust opacity to make the watermark lighter
-        font=dict(color="black", size=25),  # Adjust font color and size
+        font=dict(color="yellow", size=25),  # Adjust font color and size
         xref='paper',  # Position the watermark relative to the entire figure
         yref='paper',
         x=0.5,  # Centered horizontally
