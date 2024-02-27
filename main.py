@@ -78,7 +78,7 @@ if dashboard == 'Past Power Law':
         yref='paper',
         x=0.5,  # Centered horizontally
         y=0.5,  # Centered vertically
-        showarrow=False,  # Do not show an arrow pointing to the text
+        showarrow=False)  # Do not show an arrow pointing to the text)
     differences = 100 * (df['close'] - df['predicted_next_day_price']) / df['predicted_next_day_price']
     fig.add_trace(go.Scatter(x=df['date'], y=differences, mode='lines', name='Difference (%)'), row=2, col=1)
     fig.add_hline(y=0, line=dict(dash='dash', color='red'), row=2, col=1)
@@ -94,7 +94,7 @@ if dashboard == 'Past Power Law':
     elif chart_type == "Logarithmic":
         fig.update_layout(xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
 
-    )
+
     st.plotly_chart(fig, use_container_width=True)
 
 
