@@ -14,6 +14,8 @@ instrument = st.sidebar.selectbox(
     label='Select instrument',
     options=["Kaspa (KAS)", "Bitcoin (BTC)"]
 )
+st.warning("[**Join Beta Waitlist**](https://form.jotform.com/240557098994069) **For AI DCA Bot**", icon="🤖")  # Adjust font color and size
+
 if instrument == "Kaspa (KAS)":
     dashboard = st.sidebar.selectbox(
         label='Select dashboard',
@@ -474,8 +476,9 @@ if dashboard == 'Trend Predictor':
     
     If you decide to trade using this early version model, make sure that you only take long positions and that the slope of the 20-day SMA is positive.               ''')
     
-    
-expander = st.expander('**JOIN BETA WAITLIST**')
+st.warning("[**Join Beta Waitlist**](https://form.jotform.com/240557098994069) **For AI DCA Bot**", icon="🤖")  # Adjust font color and size
+
+expander = st.expander('**Contact**')
 expander.write('''
                
 
