@@ -55,7 +55,7 @@ df = df.reset_index(drop=True)
 
 if dashboard == 'Past Power Law':
     # Load in the data for the dash
-    st.title(f'{instrument} Past Power Law Predictions')
+    st.title(f'{instrument} Historical Power Law Predictions')
 
     chart_type = st.sidebar.select_slider(
         'Select scale type',
@@ -66,7 +66,7 @@ if dashboard == 'Past Power Law':
 
     # Create subplots
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
-                        subplot_titles=(f'Actual vs Predicted Prices - {instrument}', 'Percentage Difference between Actual and Predicted Prices'))
+                        subplot_titles=(f'Actual vs Predicted Prices - {instrument}', 'Percentage Difference between Actual and  Historical Predicted Prices'))
     fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
     fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], mode='lines', name='Predicted Next Day Price', line=dict(dash='dot', color='white')), row=1, col=1)
     fig.add_annotation(
@@ -96,7 +96,14 @@ if dashboard == 'Past Power Law':
 
 
     st.plotly_chart(fig, use_container_width=True)
-
+    expander = st.expander('About the chart')
+    expander.write('''
+    You might find it surprising to see the predicted value fluctuate so much. Typically, power law charts depict the fair price as a constant, straight line (on log-log charts) because they are curve-fitted on the past data for the best fit. 
+    
+    However, this doesn't reveal past predictions, which is crucial for assessing the reliability of these forecasts.
+    
+    This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
+    ''')
 
 
 
@@ -148,7 +155,7 @@ if dashboard == 'Future Power Law':
     df = df[df['date'] <= future_date]
 
     fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Price'))
-    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],name='Past Fair Price', mode='lines', line=dict(dash='dot', color='white')))
+    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],name='Historical Fair Price', mode='lines', line=dict(dash='dot', color='white')))
     fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines', name='Future Fair Price', line=dict(dash='dot', color='red')))
 
 
@@ -174,8 +181,14 @@ if dashboard == 'Future Power Law':
     )
 
     st.plotly_chart(fig, use_container_width=True)
-
-
+    expander = st.expander('About the chart')
+    expander.write('''
+    You might find it surprising to see the predicted value fluctuate so much. Typically, power law charts depict the fair price as a constant, straight line (on log-log charts) because they are curve-fitted on the past data for the best fit. 
+    
+    However, this doesn't reveal past predictions, which is crucial for assessing the reliability of these forecasts.
+    
+    This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
+    ''')
 
 
 if dashboard == 'Risk Visualization':
