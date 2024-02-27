@@ -69,7 +69,16 @@ if dashboard == 'Past Power Law':
                         subplot_titles=(f'Actual vs Predicted Prices - {instrument}', 'Percentage Difference between Actual and Predicted Prices'))
     fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
     fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], mode='lines', name='Predicted Next Day Price', line=dict(dash='dot', color='white')), row=1, col=1)
-
+    fig.add_annotation(
+        text="KASPING.STREAMLIT.APP",  # The watermark text
+        align='left',
+        opacity=0.2,  # Adjust opacity to make the watermark lighter
+        font=dict(color="yellow", size=35),  # Adjust font color and size
+        xref='paper',  # Position the watermark relative to the entire figure
+        yref='paper',
+        x=0.5,  # Centered horizontally
+        y=0.5,  # Centered vertically
+        showarrow=False,  # Do not show an arrow pointing to the text
     differences = 100 * (df['close'] - df['predicted_next_day_price']) / df['predicted_next_day_price']
     fig.add_trace(go.Scatter(x=df['date'], y=differences, mode='lines', name='Difference (%)'), row=2, col=1)
     fig.add_hline(y=0, line=dict(dash='dash', color='red'), row=2, col=1)
@@ -84,16 +93,7 @@ if dashboard == 'Past Power Law':
         fig.update_layout(xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
     elif chart_type == "Logarithmic":
         fig.update_layout(xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
-    fig.add_annotation(
-        text="KASPING.STREAMLIT.APP",  # The watermark text
-        align='left',
-        opacity=0.3,  # Adjust opacity to make the watermark lighter
-        font=dict(color="yellow", size=35),  # Adjust font color and size
-        xref='paper',  # Position the watermark relative to the entire figure
-        yref='paper',
-        x=0.5,  # Centered horizontally
-        y=0.5,  # Centered vertically
-        showarrow=False,  # Do not show an arrow pointing to the text
+
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -164,7 +164,7 @@ if dashboard == 'Future Power Law':
     fig.add_annotation(
         text="KASPING.STREAMLIT.APP",  # The watermark text
         align='left',
-        opacity=0.3,  # Adjust opacity to make the watermark lighter
+        opacity=0.2,  # Adjust opacity to make the watermark lighter
         font=dict(color="yellow", size=35),  # Adjust font color and size
         xref='paper',  # Position the watermark relative to the entire figure
         yref='paper',
@@ -227,7 +227,7 @@ if dashboard == 'Risk Visualization':
     fig.add_annotation(
         text="KASPING.STREAMLIT.APP",  # The watermark text
         align='left',
-        opacity=0.3,  # Adjust opacity to make the watermark lighter
+        opacity=0.2,  # Adjust opacity to make the watermark lighter
         font=dict(color="yellow", size=35),  # Adjust font color and size
         xref='paper',  # Position the watermark relative to the entire figure
         yref='paper',
@@ -262,7 +262,7 @@ if dashboard == 'Risk Visualization':
     fig.add_annotation(
         text="KASPING.STREAMLIT.APP",  # The watermark text
         align='left',
-        opacity=0.3,  # Adjust opacity to make the watermark lighter
+        opacity=0.2,  # Adjust opacity to make the watermark lighter
         font=dict(color="yellow", size=35),  # Adjust font color and size
         xref='paper',  # Position the watermark relative to the entire figure
         yref='paper',
@@ -347,7 +347,7 @@ if dashboard == 'Trend Predictor':
     fig.add_annotation(
         text="KASPING.STREAMLIT.APP",  # The watermark text
         align='left',
-        opacity=0.3,  # Adjust opacity to make the watermark lighter
+        opacity=0.2,  # Adjust opacity to make the watermark lighter
         font=dict(color="yellow", size=35),  # Adjust font color and size
         xref='paper',  # Position the watermark relative to the entire figure
         yref='paper',
@@ -429,7 +429,7 @@ if dashboard == 'Trend Predictor':
     fig.add_annotation(
         text="KASPING.STREAMLIT.APP",  # The watermark text
         align='left',
-        opacity=0.3,  # Adjust opacity to make the watermark lighter
+        opacity=0.2,  # Adjust opacity to make the watermark lighter
         font=dict(color="yellow", size=35),  # Adjust font color and size
         xref='paper',  # Position the watermark relative to the entire figure
         yref='paper',
