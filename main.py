@@ -237,7 +237,7 @@ if dashboard == 'Risk Visualization':
     )
 
         
-        st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
 
     # Plot Price and Risk Metric
     fig = make_subplots(specs=[[{'secondary_y': True}]])
