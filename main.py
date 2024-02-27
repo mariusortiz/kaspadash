@@ -84,7 +84,17 @@ if dashboard == 'Past Power Law':
         fig.update_layout(xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
     elif chart_type == "Logarithmic":
         fig.update_layout(xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
-
+    fig.add_annotation(
+        text="KASPING.STREAMLIT.APP",  # The watermark text
+        align='left',
+        opacity=0.3,  # Adjust opacity to make the watermark lighter
+        font=dict(color="yellow", size=35),  # Adjust font color and size
+        xref='paper',  # Position the watermark relative to the entire figure
+        yref='paper',
+        x=0.5,  # Centered horizontally
+        y=0.5,  # Centered vertically
+        showarrow=False,  # Do not show an arrow pointing to the text
+    )
     st.plotly_chart(fig, use_container_width=True)
 
 
@@ -152,10 +162,10 @@ if dashboard == 'Future Power Law':
         fig.update_layout(title=f'{instrument} Price Prediction', xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
     # Assuming you've already completed your figure setup above, now add a watermark
     fig.add_annotation(
-        text="@ALGOTRADEVID",  # The watermark text
+        text="KASPING.STREAMLIT.APP",  # The watermark text
         align='left',
         opacity=0.3,  # Adjust opacity to make the watermark lighter
-        font=dict(color="yellow", size=25),  # Adjust font color and size
+        font=dict(color="yellow", size=35),  # Adjust font color and size
         xref='paper',  # Position the watermark relative to the entire figure
         yref='paper',
         x=0.5,  # Centered horizontally
@@ -213,6 +223,20 @@ if dashboard == 'Risk Visualization':
         fig = go.Figure(data=go.Scatter(x=df['date'], y=(df['Value']), mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', showscale=True)))
         fig.update_yaxes(title='Price ($USD)',type = "log", showgrid=True)
         fig.update_layout(template='plotly_dark', title_text=annotation_text)
+
+    fig.add_annotation(
+        text="KASPING.STREAMLIT.APP",  # The watermark text
+        align='left',
+        opacity=0.3,  # Adjust opacity to make the watermark lighter
+        font=dict(color="yellow", size=35),  # Adjust font color and size
+        xref='paper',  # Position the watermark relative to the entire figure
+        yref='paper',
+        x=0.5,  # Centered horizontally
+        y=0.5,  # Centered vertically
+        showarrow=False,  # Do not show an arrow pointing to the text
+    )
+
+        
         st.plotly_chart(fig, use_container_width=True)
 
     # Plot Price and Risk Metric
@@ -234,6 +258,21 @@ if dashboard == 'Risk Visualization':
     fig.update_yaxes(title='Price ($USD)', type='log', showgrid=False)
     fig.update_yaxes(title='Risk', type='linear', secondary_y=True, showgrid=True, tick0=0.0, dtick=0.1, range=[0, 1])
     fig.update_layout(template='plotly_dark', title={'text': annotation_text, 'y': 0.9, 'x': 0.5})
+
+    fig.add_annotation(
+        text="KASPING.STREAMLIT.APP",  # The watermark text
+        align='left',
+        opacity=0.3,  # Adjust opacity to make the watermark lighter
+        font=dict(color="yellow", size=35),  # Adjust font color and size
+        xref='paper',  # Position the watermark relative to the entire figure
+        yref='paper',
+        x=0.5,  # Centered horizontally
+        y=0.5,  # Centered vertically
+        showarrow=False,  # Do not show an arrow pointing to the text
+    )
+
+
+
     st.plotly_chart(fig, use_container_width=True)
 
 
@@ -305,7 +344,17 @@ if dashboard == 'Trend Predictor':
         width=1200,
         height=700,
     )
-
+    fig.add_annotation(
+        text="KASPING.STREAMLIT.APP",  # The watermark text
+        align='left',
+        opacity=0.3,  # Adjust opacity to make the watermark lighter
+        font=dict(color="yellow", size=35),  # Adjust font color and size
+        xref='paper',  # Position the watermark relative to the entire figure
+        yref='paper',
+        x=0.5,  # Centered horizontally
+        y=0.5,  # Centered vertically
+        showarrow=False,  # Do not show an arrow pointing to the text
+    )
     st.plotly_chart(fig, use_container_width=True)
 
 
@@ -377,7 +426,17 @@ if dashboard == 'Trend Predictor':
         template='plotly_dark',  # Choose a theme, if desired
     )
 
-
+    fig.add_annotation(
+        text="KASPING.STREAMLIT.APP",  # The watermark text
+        align='left',
+        opacity=0.3,  # Adjust opacity to make the watermark lighter
+        font=dict(color="yellow", size=35),  # Adjust font color and size
+        xref='paper',  # Position the watermark relative to the entire figure
+        yref='paper',
+        x=0.5,  # Centered horizontally
+        y=0.5,  # Centered vertically
+        showarrow=False,  # Do not show an arrow pointing to the text
+    )
     st.plotly_chart(fig, use_container_width=True)
 
     # Calculate win rates for predictions equal to 1 and predictions equal to 0
