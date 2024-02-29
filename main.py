@@ -321,10 +321,10 @@ if dashboard == 'Trend Predictor':
     fig.add_trace(
         go.Candlestick(
             x=df['date'],
-            open=df['Open'],
-            high=df['High'],
-            low=df['Low'],
-            close=df['Close'],
+            open=df['open'],
+            high=df['high'],
+            low=df['low'],
+            close=df['close'],
             showlegend=False,
         )   
     )
@@ -379,8 +379,8 @@ if dashboard == 'Trend Predictor':
     df['pred'] = df['pred_prob'] >= float(trend_thresh)
 
     # Shift the 'Close' and 'Open' values to get the next day's values for calculations
-    df['next_day_close'] = df['Close'].shift(-1)
-    df['next_day_open'] = df['Open'].shift(-1)
+    df['next_day_close'] = df['close'].shift(-1)
+    df['next_day_open'] = df['open'].shift(-1)
 
     # Calculate the returns for the next day, based on the prediction being 1 (true) or 0 (false)
     df['return_after_pred_1'] = df.apply(lambda x: x['next_day_close'] - x['next_day_open'] if x['pred'] else 0, axis=1)
