@@ -211,9 +211,9 @@ if dashboard == 'Future Power Law':
     fig.add_trace(go.Scatter(x=[closest_future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Fair Price'))
     # Update the layout based on the chart type
     if chart_type == "Linear":
-        fig.update_layout(title=f'{instrument} Price Prediction', xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
+        fig.update_layout(xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
     elif chart_type == "Logarithmic":
-        fig.update_layout(title=f'{instrument} Price Prediction', xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
+        fig.update_layout(xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
     # Assuming you've already completed your figure setup above, now add a watermark
     fig.add_annotation(
         text="KASPING.STREAMLIT.APP",  # The watermark text
@@ -521,7 +521,7 @@ if dashboard == 'Trend Predictor':
     
     If you decide to trade using this early version model, make sure that you only take long positions and that the slope of the 20-day SMA is positive.               ''')
     
-st.warning("[**Join Beta Waitlist**](https://form.jotform.com/240557098994069) **For AI DCA Bot**", icon="🤖")  # Adjust font color and size
+st.warning("**Follow us on** [Twitter](https://twitter.com/KaspingApp)", icon="💸")  # Adjust font color and size
 
 expander = st.expander('**Contact**')
 expander.write('''
