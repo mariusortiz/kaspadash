@@ -362,7 +362,9 @@ if dashboard == 'Trend Predictor':
 
 
     df = df.reset_index(drop=True)
-    st.markdown(f"<h4 style='text-align: center;'>Uptrend probability for tomorrow: {df['pred_prob'].round(2).values[-1]}, Updated: {df['date'].max().strftime('%Y-%m-%d')}</h4>", unsafe_allow_html=True)
+    up_prob = df['pred_prob'].round(2).values[-1]
+    date_updated = df['date'].max().strftime('%Y-%m-%d')
+    st.markdown(f"<h4 style='text-align: center;'>Uptrend probability for tomorrow: {up_prob}, Updated: {date_updated}</h4>", unsafe_allow_html=True)
     fig = go.Figure()
 
     fig.add_trace(
