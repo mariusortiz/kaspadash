@@ -12,6 +12,8 @@ import base64
 import io
 import os
 
+
+st.markdown(center_css, unsafe_allow_html=True)
 st.set_page_config(layout="wide")
 
 
@@ -240,7 +242,13 @@ if dashboard == 'Future Power Law':
 
 if dashboard == 'Risk Visualization':
     # Load in the data for the dash
-    st.title(f'{instrument} Risk Visualization')
+    #st.title(f'{instrument} Risk Visualization')
+
+    col1, col2, col3 = st.columns([1,6,1])  # Adjust the ratio to better center the title
+    
+    with col2:
+        st.title(f'{instrument} Risk Visualization')
+    
     chart_type = st.sidebar.select_slider(
         'Select scale type',
         options=['Linear', 'Logarithmic'],
