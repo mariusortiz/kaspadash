@@ -17,7 +17,7 @@ import os
 import streamlit as st
 
 
-def un_encrypt_file(file_name):
+def un_encrypt_files(file_name):
     try:
         # Read the encrypted file and extract the salt
         with open(fr"{file_name}", 'rb') as encrypted_file:
@@ -52,6 +52,8 @@ def un_encrypt_file(file_name):
 
     return decrypted_df
 
+def un_encrypt_files(file_name):
+    decrypted_df = pd.read_csv(file_name)
 
 
 st.set_page_config(layout="wide")
