@@ -27,7 +27,7 @@ import streamlit as st
 
 st.warning("[**Join Beta Waitlist**](https://form.jotform.com/240557098994069) **For AI DCA Bot**", icon="🤖")  # Adjust font color and size
 
-ENCRYPTION_PASSWORD =st.secrets["ENCRYPTION_PASSWORD"])
+ENCRYPTION_PASSWORD =st.secrets["ENCRYPTION_PASSWORD"]
 
 def un_encrypt_file(file_name):
 # Read the encrypted file and extract the salt
