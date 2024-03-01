@@ -4,7 +4,13 @@ from plotly import graph_objects as go
 from datetime import datetime, timedelta
 from plotly.subplots import make_subplots
 import numpy as np
-
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.fernet import Fernet
+import base64
+import io
+import os
 
 st.set_page_config(layout="wide")
 
@@ -14,16 +20,6 @@ instrument = st.sidebar.selectbox(
     options=["Kaspa (KAS)", "Bitcoin (BTC)"]
 )
 
-st.warning("**A site migration is in progress for the next 30 minutes, thank you for your patience with any issues that arise.**")  # Adjust font color and size
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
-from cryptography.fernet import Fernet
-import pandas as pd
-import base64
-import io
-import os
-import streamlit as st
 
 st.warning("[**Join Beta Waitlist**](https://form.jotform.com/240557098994069) **For AI DCA Bot**", icon="🤖")  # Adjust font color and size
 
