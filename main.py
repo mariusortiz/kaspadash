@@ -480,9 +480,10 @@ if dashboard == 'Trend Predictor':
         name='Prediction < threshold'
     ))
 
+    st.markdown(f"<h4 style='text-align: center;'>Price Action after Prediction</h4>", unsafe_allow_html=True)
+
     # Update layout for a shared x-axis
     fig.update_layout(
-        title = 'Price Action for Predictions',
 
         xaxis_title='Trade Number',
         yaxis_title='Returns',
