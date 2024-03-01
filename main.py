@@ -55,7 +55,6 @@ def un_encrypt_file(file_name):
         decrypted_df = pd.read_csv(io.StringIO(decrypted_content.decode()))
     
         # Display the head of the DataFrame
-        print(decrypted_df.head())
         return decrypted_df
     except:
         decrypted_df = pd.read_csv('data/kas_real_PL_extended.csv')
@@ -241,9 +240,8 @@ if dashboard == 'Future Power Law':
 
 if dashboard == 'Risk Visualization':
 
-    st.markdown("<h1 style='text-align: center;'>Some title</h1>", unsafe_allow_html=True)
+    st.markdown(f"<h1 style='text-align: center;'>{instrument} Risk Visualization</h1>", unsafe_allow_html=True)
 
-    #st.title(f'{instrument} Risk Visualization')
 
     
     chart_type = st.sidebar.select_slider(
