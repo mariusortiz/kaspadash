@@ -9,9 +9,6 @@ import numpy as np
 
 st.warning("**A site migration is in progress for the next 30 minutes, thank you for your patience with any issues that arise.**")  # Adjust font color and size
 
-
-
-
 st.set_page_config(layout="wide")
 instrument = st.sidebar.selectbox(
     label='Select instrument',
@@ -509,5 +506,7 @@ For the risk metric visualization, the code from [Bitcoin Raven](https://github.
 The aim of this project is to create a suite of tools for Kaspa (and other) investors to manage their positions intelligently, connect with like-minded people, and improve my skills in dashboard creation and machine learning. You can get in touch on [Twitter](https://twitter.com/AlgoTradevid) or [join the beta waitlist](https://form.jotform.com/240557098994069).
 
 
+
+''')
 
 ''')
