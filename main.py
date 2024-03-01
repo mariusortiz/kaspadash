@@ -1,6 +1,5 @@
 import pandas as pd
 import streamlit as st
-!install cryptography
 from plotly import graph_objects as go
 from datetime import datetime, timedelta
 from plotly.subplots import make_subplots
