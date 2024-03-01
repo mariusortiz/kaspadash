@@ -479,6 +479,11 @@ if dashboard == 'Trend Predictor':
         mode='lines+markers',
         name='Prediction < threshold'
     ))
+    st.markdown(f"<h4 style='text-align: center;'></h4>", unsafe_allow_html=True)
+    st.markdown(f"<h4 style='text-align: center;'></h4>", unsafe_allow_html=True)
+    st.markdown(f"<h4 style='text-align: center;'></h4>", unsafe_allow_html=True)
+    st.markdown(f"<h4 style='text-align: center;'></h4>", unsafe_allow_html=True)
+
 
     st.markdown(f"<h4 style='text-align: center;'>Price Action after Prediction</h4>", unsafe_allow_html=True)
 
