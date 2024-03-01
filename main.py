@@ -11,9 +11,9 @@ from cryptography.fernet import Fernet
 import base64
 import io
 import os
-st.markdown("xx")
 st.set_page_config(layout="wide")
 
+st.markdown("xx")
 
 instrument = st.sidebar.selectbox(
     label='Select instrument',
