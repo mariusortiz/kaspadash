@@ -14,10 +14,6 @@ instrument = st.sidebar.selectbox(
     label='Select instrument',
     options=["Kaspa (KAS)", "Bitcoin (BTC)"]
 )
-try:
-    st.write("DB username:", st.secrets["TEST"])
-except:
-    print()
 
 st.warning("[**Join Beta Waitlist**](https://form.jotform.com/240557098994069) **For AI DCA Bot**", icon="🤖")  # Adjust font color and size
 
