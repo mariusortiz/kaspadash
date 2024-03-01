@@ -16,6 +16,15 @@ instrument = st.sidebar.selectbox(
 
 st.write("testing:", st.secrets["TEST"])
 st.warning("**A site migration is in progress for the next 30 minutes, thank you for your patience with any issues that arise.**")  # Adjust font color and size
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.fernet import Fernet
+import pandas as pd
+import base64
+import io
+import os
+import streamlit as st
 
 st.warning("[**Join Beta Waitlist**](https://form.jotform.com/240557098994069) **For AI DCA Bot**", icon="🤖")  # Adjust font color and size
 
