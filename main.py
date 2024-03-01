@@ -20,10 +20,6 @@ import streamlit as st
 
 
 
-def un_encrypt_file(file_name):
-    decrypted_df = pd.read_csv(file_name)
-
-
 st.set_page_config(layout="wide")
 instrument = st.sidebar.selectbox(
     label='Select instrument',
@@ -45,8 +41,7 @@ if instrument == "Kaspa (KAS)":
         ])
 
     
-    #df = pd.read_csv('data/kas_real_PL_extended.csv')
-    df = un_encrypt_file('data/kas_real_PL_extended.csv')
+    df = pd.read_csv('data/kas_real_PL_extended.csv')
 else:
     dashboard = st.sidebar.selectbox(
         label='Select dashboard',
@@ -56,7 +51,8 @@ else:
             'Risk Visualization',
             'Trend Predictor - *** Coming Soon ***,',
             'DCA Simulator - *** Coming Soon ***','Smart DCA Automation - *** Coming Soon ***'])
-    df = un_encrypt_file('data/btc_real_PL_extended.csv')
+    #    df = un_encrypt_file('data/btc_real_PL_extended.csv')
+    df = pd.read_csv('data/btc_real_PL_extended.csv')
 
 if dashboard in ('DCA Simulator - *** Coming Soon ***', 'Smart DCA Automation - *** Coming Soon ***', "Trend Predictor - *** Coming Soon ***,"):
     st.title(f'Coming soon')
