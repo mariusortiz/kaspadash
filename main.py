@@ -5,17 +5,6 @@ from plotly import graph_objects as go
 from datetime import datetime, timedelta
 from plotly.subplots import make_subplots
 import numpy as np
-'''
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
-from cryptography.fernet import Fernet
-'''
-import pandas as pd
-import base64
-import io
-import os
-import streamlit as st
 
 
 
@@ -25,7 +14,8 @@ instrument = st.sidebar.selectbox(
     label='Select instrument',
     options=["Kaspa (KAS)", "Bitcoin (BTC)"]
 )
-st.write(st.secrets["TEST"])
+
+st.write("testing:", st.secrets["TEST"])
 
 st.warning("[**Join Beta Waitlist**](https://form.jotform.com/240557098994069) **For AI DCA Bot**", icon="🤖")  # Adjust font color and size
 
@@ -42,6 +32,7 @@ if instrument == "Kaspa (KAS)":
 
     
     df = pd.read_csv('data/kas_real_PL_extended.csv')
+
 else:
     dashboard = st.sidebar.selectbox(
         label='Select dashboard',
@@ -51,7 +42,6 @@ else:
             'Risk Visualization',
             'Trend Predictor - *** Coming Soon ***,',
             'DCA Simulator - *** Coming Soon ***','Smart DCA Automation - *** Coming Soon ***'])
-    #    df = un_encrypt_file('data/btc_real_PL_extended.csv')
     df = pd.read_csv('data/btc_real_PL_extended.csv')
 
 if dashboard in ('DCA Simulator - *** Coming Soon ***', 'Smart DCA Automation - *** Coming Soon ***', "Trend Predictor - *** Coming Soon ***,"):
@@ -310,8 +300,6 @@ if dashboard == 'Risk Visualization':
 if dashboard == 'Trend Predictor':
     st.title(f'{instrument} Machine Learning Trend Predictor v1')
     df = pd.read_csv('data/kas_d_with_predictions.csv')
-    #df = un_encrypt_file('data/kas_d_with_predictions.csv')
-
     df['date'] = pd.to_datetime(df['date'])
     trend_thresh = st.sidebar.slider(
         label='Trend Probability >',
