@@ -18,40 +18,7 @@ import os
 import streamlit as st
 
 
-def un_encrypt_files(file_name):
-    try:
-        # Read the encrypted file and extract the salt
-        with open(fr"{file_name}", 'rb') as encrypted_file:
-            file_content = encrypted_file.read()
-        salt = file_content[:16]  # Extract the salt (assuming you used a 16-byte salt)
-        encrypted_content = file_content[16:]
-    
-        # Re-create the KDF instance for decryption
-        password = b"{st.secrets['ENCRYPTION_PASSWORD']}"
-        kdf = PBKDF2HMAC(
-            algorithm=hashes.SHA256(),
-            length=32,
-            salt=salt,
-            iterations=100000,
-            backend=default_backend()
-        )
-    
-        # Derive the key using the same password and the extracted salt
-        key = base64.urlsafe_b64encode(kdf.derive(password))
-    
-        # Decrypt the content
-        cipher_suite = Fernet(key)
-        decrypted_content = cipher_suite.decrypt(encrypted_content)
-    
-        # Convert the decrypted content back to a DataFrame
-        decrypted_df = pd.read_csv(io.StringIO(decrypted_content.decode()))
-    
-        # Display the head of the DataFrame
-        #print(decrypted_df.head())
-    except:
-        decrypted_df = pd.read_csv(file_name)
 
-    return decrypted_df
 
 def un_encrypt_file(file_name):
     decrypted_df = pd.read_csv(file_name)
