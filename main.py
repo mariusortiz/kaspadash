@@ -14,7 +14,6 @@ instrument = st.sidebar.selectbox(
     options=["Kaspa (KAS)", "Bitcoin (BTC)"]
 )
 
-st.write("testing:", st.secrets["TEST"])
 st.warning("**A site migration is in progress for the next 30 minutes, thank you for your patience with any issues that arise.**")  # Adjust font color and size
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.backends import default_backend
@@ -27,6 +26,44 @@ import os
 import streamlit as st
 
 st.warning("[**Join Beta Waitlist**](https://form.jotform.com/240557098994069) **For AI DCA Bot**", icon="🤖")  # Adjust font color and size
+
+ENCRYPTION_PASSWORD =st.secrets["ENCRYPTION_PASSWORD"])
+
+def un_encrypt_file(file_name):
+# Read the encrypted file and extract the salt
+    try:
+        with open(fr"{file_name}", 'rb') as encrypted_file:
+            file_content = encrypted_file.read()
+        salt = file_content[:16]  # Extract the salt (assuming you used a 16-byte salt)
+        encrypted_content = file_content[16:]
+    
+        # Re-create the KDF instance for decryption
+        password = bf"{ENCRYPTION_PASSWORD}"
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=100000,
+            backend=default_backend()
+        )
+    
+        # Derive the key using the same password and the extracted salt
+        key = base64.urlsafe_b64encode(kdf.derive(password))
+    
+        # Decrypt the content
+        cipher_suite = Fernet(key)
+        decrypted_content = cipher_suite.decrypt(encrypted_content)
+    
+        # Convert the decrypted content back to a DataFrame
+        decrypted_df = pd.read_csv(io.StringIO(decrypted_content.decode()))
+    
+        # Display the head of the DataFrame
+        print(decrypted_df.head())
+        return decrypted_df
+    except:
+        decrypted_df = pd.read_csv('data/kas_real_PL_extended.csv')
+        return decrypted_df
+
 
 if instrument == "Kaspa (KAS)":
     dashboard = st.sidebar.selectbox(
