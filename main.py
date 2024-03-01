@@ -358,7 +358,7 @@ if dashboard == 'Trend Predictor':
 
     df = df.reset_index(drop=True)
 
-    st.write('Max Date in Data: ' + df['date'].max().strftime('%Y-%m-%d'))
+    st.write('Updated: ' + df['date'].max().strftime('%Y-%m-%d'))
     st.write('Uptrend probability for tomorrow: ' + str(df['pred_prob'].round(2).values[-1]))
 
     fig = go.Figure()
