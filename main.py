@@ -102,7 +102,8 @@ df = df.reset_index(drop=True)
 
 if dashboard == 'Past Power Law':
     # Load in the data for the dash
-    st.title(f'{instrument} Historical Power Law Predictions')
+    st.markdown(f"<h1 style='text-align: center;'>{instrument} Historical Power Law Predictions</h1>", unsafe_allow_html=True)
+
 
     chart_type = st.sidebar.select_slider(
         'Select scale type',
@@ -177,7 +178,8 @@ if dashboard == 'Future Power Law':
                             max_value=days_difference, 
                             value=30)
     # Slider for selecting the number of days from today for prediction
-    st.title(f'{instrument} Power Law Predictions')
+    st.markdown(f"<h1 style='text-align: center;'>{instrument} Power Law Predictions</h1>", unsafe_allow_html=True)
+
     chart_type = st.sidebar.select_slider(
         'Select scale type',
         options=['Linear', 'Logarithmic'],
@@ -195,7 +197,8 @@ if dashboard == 'Future Power Law':
 
 
     # Display the predicted price
-    st.write(f"Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference")
+    #st.write(f"Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference")
+    st.markdown(f"<h3 style='text-align: center;'>Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference</h3>", unsafe_allow_html=True)
 
     # Plot the actual and predicted prices using Plotly
     fig = go.Figure()
@@ -343,7 +346,8 @@ if dashboard == 'Risk Visualization':
 
 
 if dashboard == 'Trend Predictor':
-    st.title(f'{instrument} Machine Learning Trend Predictor v1')
+    st.markdown(f"<h1 style='text-align: center;'>{instrument} Machine Learning Trend Predictor v1</h1>", unsafe_allow_html=True)
+
     df = un_encrypt_file('data/kas_d_with_predictions.csv')
     df['date'] = pd.to_datetime(df['date'])
     trend_thresh = st.sidebar.slider(
