@@ -38,7 +38,7 @@ def un_encrypt_file(file_name):
         encrypted_content = file_content[16:]
     
         # Re-create the KDF instance for decryption
-        password = bf"{ENCRYPTION_PASSWORD}"
+        #password = bf"{ENCRYPTION_PASSWORD}"
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,
