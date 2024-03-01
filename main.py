@@ -241,7 +241,7 @@ if dashboard == 'Future Power Law':
 
 if dashboard == 'Risk Visualization':
 
-    st.title("<h1 style='text-align: center; color: red;'>Some title</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center;'>Some title</h1>", unsafe_allow_html=True)
 
     #st.title(f'{instrument} Risk Visualization')
 
