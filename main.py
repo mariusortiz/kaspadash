@@ -7,6 +7,9 @@ from plotly.subplots import make_subplots
 import numpy as np
 
 
+st.warning("**A site migration is in progress for the next 30 minutes, thank you for your patience with any issues that arise.**)  # Adjust font color and size
+
+
 
 
 st.set_page_config(layout="wide")
