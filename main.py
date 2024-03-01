@@ -77,7 +77,7 @@ if instrument == "Kaspa (KAS)":
         ])
 
     
-    df = pd.read_csv('data/kas_real_PL_extended.csv')
+    df = un_encrypt_file('data/kas_real_PL_extended.csv')
 
 else:
     dashboard = st.sidebar.selectbox(
@@ -88,7 +88,7 @@ else:
             'Risk Visualization',
             'Trend Predictor - *** Coming Soon ***,',
             'DCA Simulator - *** Coming Soon ***','Smart DCA Automation - *** Coming Soon ***'])
-    df = pd.read_csv('data/btc_real_PL_extended.csv')
+    df = un_encrypt_file('data/btc_real_PL_extended.csv')
 
 if dashboard in ('DCA Simulator - *** Coming Soon ***', 'Smart DCA Automation - *** Coming Soon ***', "Trend Predictor - *** Coming Soon ***,"):
     st.title(f'Coming soon')
@@ -345,7 +345,7 @@ if dashboard == 'Risk Visualization':
 
 if dashboard == 'Trend Predictor':
     st.title(f'{instrument} Machine Learning Trend Predictor v1')
-    df = pd.read_csv('data/kas_d_with_predictions.csv')
+    df = un_encrypt_file('data/kas_d_with_predictions.csv')
     df['date'] = pd.to_datetime(df['date'])
     trend_thresh = st.sidebar.slider(
         label='Trend Probability >',
