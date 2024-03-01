@@ -5,11 +5,12 @@ from plotly import graph_objects as go
 from datetime import datetime, timedelta
 from plotly.subplots import make_subplots
 import numpy as np
-
+'''
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.fernet import Fernet
+'''
 import pandas as pd
 import base64
 import io
