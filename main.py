@@ -134,12 +134,12 @@ if dashboard == 'Past Power Law':
     fig.update_layout(height=800, width=1000,  showlegend=True)
     fig.update_yaxes(title_text="Price ($)", row=1, col=1)
     fig.update_yaxes(title_text="Difference (%)", row=2, col=1)
-    #fig.update_xaxes(title_text="Date", row=2, col=1)
+    fig.update_xaxes(title_text="Date", row=2, col=1)
 
     if chart_type == "Linear":
-        fig.update_layout(xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
+        fig.update_layout(yaxis_title='Price', xaxis_rangeslider_visible=False)
     elif chart_type == "Logarithmic":
-        fig.update_layout(xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
+        fig.update_layout(yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
 
 
     st.plotly_chart(fig, use_container_width=True)
