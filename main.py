@@ -240,16 +240,10 @@ if dashboard == 'Future Power Law':
 
 
 if dashboard == 'Risk Visualization':
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.write(' ')
-    
-    with col2:
-        st.title(f'{instrument} Risk Visualization')
-    
-    with col3:
-        st.write(' ')
+
+    st.title("<h1 style='text-align: center; color: red;'>Some title</h1>", unsafe_allow_html=True)
+
+    #st.title(f'{instrument} Risk Visualization')
 
     
     chart_type = st.sidebar.select_slider(
