@@ -13,7 +13,6 @@ import io
 import os
 st.set_page_config(layout="wide")
 
-st.markdown("xx")
 
 instrument = st.sidebar.selectbox(
     label='Select instrument',
