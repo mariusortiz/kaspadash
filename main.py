@@ -13,7 +13,6 @@ import io
 import os
 
 
-st.markdown(center_css, unsafe_allow_html=True)
 st.set_page_config(layout="wide")
 
 
