@@ -52,7 +52,7 @@ def un_encrypt_files(file_name):
 
     return decrypted_df
 
-def un_encrypt_files(file_name):
+def un_encrypt_file(file_name):
     decrypted_df = pd.read_csv(file_name)
 
 
