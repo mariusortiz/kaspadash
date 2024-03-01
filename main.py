@@ -509,4 +509,3 @@ The aim of this project is to create a suite of tools for Kaspa (and other) inve
 
 ''')
 
-''')
