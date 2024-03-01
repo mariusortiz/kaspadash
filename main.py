@@ -7,15 +7,15 @@ from plotly.subplots import make_subplots
 import numpy as np
 
 
-st.warning("**A site migration is in progress for the next 30 minutes, thank you for your patience with any issues that arise.**")  # Adjust font color and size
 
-st.set_page_config(layout="wide")
+
 instrument = st.sidebar.selectbox(
     label='Select instrument',
     options=["Kaspa (KAS)", "Bitcoin (BTC)"]
 )
 
 st.write("testing:", st.secrets["TEST"])
+st.warning("**A site migration is in progress for the next 30 minutes, thank you for your patience with any issues that arise.**")  # Adjust font color and size
 
 st.warning("[**Join Beta Waitlist**](https://form.jotform.com/240557098994069) **For AI DCA Bot**", icon="🤖")  # Adjust font color and size
 
