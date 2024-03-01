@@ -345,8 +345,8 @@ if dashboard == 'Risk Visualization':
 
 if dashboard == 'Trend Predictor':
     st.title(f'{instrument} Machine Learning Trend Predictor v1')
-    #df = pd.read_csv('data/kas_d_with_predictions.csv')
-    df = un_encrypt_file('data/kas_d_with_predictions.csv')
+    df = pd.read_csv('data/kas_d_with_predictions.csv')
+    #df = un_encrypt_file('data/kas_d_with_predictions.csv')
 
     df['date'] = pd.to_datetime(df['date'])
     trend_thresh = st.sidebar.slider(
