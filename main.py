@@ -8,6 +8,8 @@ import numpy as np
 
 
 
+st.set_page_config(layout="wide")
+
 
 instrument = st.sidebar.selectbox(
     label='Select instrument',
