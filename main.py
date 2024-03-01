@@ -6,6 +6,51 @@ from datetime import datetime, timedelta
 from plotly.subplots import make_subplots
 import numpy as np
 
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.fernet import Fernet
+import pandas as pd
+import base64
+import io
+import os
+import streamlit as st
+
+
+def un_encrypt_file(file_name):
+    try:
+        # Read the encrypted file and extract the salt
+        with open(fr"{file_name}", 'rb') as encrypted_file:
+            file_content = encrypted_file.read()
+        salt = file_content[:16]  # Extract the salt (assuming you used a 16-byte salt)
+        encrypted_content = file_content[16:]
+    
+        # Re-create the KDF instance for decryption
+        password = b"{st.secrets["ENCRYPTION_PASSWORD"]}"
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=100000,
+            backend=default_backend()
+        )
+    
+        # Derive the key using the same password and the extracted salt
+        key = base64.urlsafe_b64encode(kdf.derive(password))
+    
+        # Decrypt the content
+        cipher_suite = Fernet(key)
+        decrypted_content = cipher_suite.decrypt(encrypted_content)
+    
+        # Convert the decrypted content back to a DataFrame
+        decrypted_df = pd.read_csv(io.StringIO(decrypted_content.decode()))
+    
+        # Display the head of the DataFrame
+        #print(decrypted_df.head())
+    except:
+        decrypted_df = pd.read_csv(file_name)
+
+    return decrypted_df
 
 
 
@@ -14,6 +59,7 @@ instrument = st.sidebar.selectbox(
     label='Select instrument',
     options=["Kaspa (KAS)", "Bitcoin (BTC)"]
 )
+st.write(st.secrets["TEST"])
 
 st.warning("[**Join Beta Waitlist**](https://form.jotform.com/240557098994069) **For AI DCA Bot**", icon="🤖")  # Adjust font color and size
 
@@ -29,8 +75,8 @@ if instrument == "Kaspa (KAS)":
         ])
 
     
-    df = pd.read_csv('data/kas_real_PL_extended.csv')
-
+    #df = pd.read_csv('data/kas_real_PL_extended.csv')
+    df = un_encrypt_file('data/kas_real_PL_extended.csv')
 else:
     dashboard = st.sidebar.selectbox(
         label='Select dashboard',
@@ -40,7 +86,7 @@ else:
             'Risk Visualization',
             'Trend Predictor - *** Coming Soon ***,',
             'DCA Simulator - *** Coming Soon ***','Smart DCA Automation - *** Coming Soon ***'])
-    df = pd.read_csv('data/btc_real_PL_extended.csv')
+    df = un_encrypt_file('data/btc_real_PL_extended.csv')
 
 if dashboard in ('DCA Simulator - *** Coming Soon ***', 'Smart DCA Automation - *** Coming Soon ***', "Trend Predictor - *** Coming Soon ***,"):
     st.title(f'Coming soon')
@@ -297,7 +343,9 @@ if dashboard == 'Risk Visualization':
 
 if dashboard == 'Trend Predictor':
     st.title(f'{instrument} Machine Learning Trend Predictor v1')
-    df = pd.read_csv('data/kas_d_with_predictions.csv')
+    #df = pd.read_csv('data/kas_d_with_predictions.csv')
+    df = un_encrypt_file('data/kas_d_with_predictions.csv')
+
     df['date'] = pd.to_datetime(df['date'])
     trend_thresh = st.sidebar.slider(
         label='Trend Probability >',
