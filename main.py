@@ -11,6 +11,7 @@ from cryptography.fernet import Fernet
 import base64
 import io
 import os
+from sklearn.linear_model import LinearRegression
 st.set_page_config(layout="wide")
 
 
@@ -63,10 +64,13 @@ if instrument == "Kaspa (KAS)":
     dashboard = st.sidebar.selectbox(
         label='Select dashboard',
         options=[
+                                                            'Rainbow chart',
+
             'Past Power Law',
             'Future Power Law',
             'Risk Visualization',
             'Trend Predictor',
+
             'DCA Simulator - *** Coming Soon ***','Smart DCA Automation - *** Coming Soon ***'
         ])
 
@@ -77,6 +81,8 @@ else:
     dashboard = st.sidebar.selectbox(
         label='Select dashboard',
         options=[
+                                                'Rainbow chart',
+
             'Past Power Law',
             'Future Power Law',
             'Risk Visualization',
@@ -97,7 +103,166 @@ max_date_with_close = df.dropna(subset=['close'])['date'].max()
 days_difference = (max_date - datetime.today()).days
     # Slider for selecting the number of days from today for prediction
 df = df.reset_index(drop=True)
+if dashboard == 'Rainbow chart':
+    # Load in the data for the dash
 
+
+    st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
+    pct_change = st.sidebar.slider('Select increase/decrease in % for prediction:', 
+                            min_value=-99, 
+                            max_value=500, 
+                            value=0)
+    colors = ['blue','green','yellow', 'orange', 'red' ]
+
+    # Ensure the 'Date' column is in datetime format and calculate days from genesis
+    if instrument == "Kaspa (KAS)":
+        genesis_date = datetime(2021, 7, 11)
+        start_date = '2022-01-04'
+        future_days = np.arange(1, 365*2)
+
+    if instrument == "Bitcoin (BTC)":
+        genesis_date = datetime(2008, 9, 1)
+        start_date = '2012-01-03'
+        future_days = np.arange(1, 365*4)
+
+    df['date'] = pd.to_datetime(df['date'])
+    df = df[df["date"] <= max_date_with_close]
+    # Let's define the cut_off_date and start_date
+
+
+    # Calculate the start and end dates for the slider
+
+    start_date_for_slider = df['date'].iloc[99].date()  # The 100th day
+    end_date_for_slider = df['date'].iloc[-1].date() # The last day in your dataset
+
+    cut_off_date = st.sidebar.slider(
+        "Select the cut-off date:",
+        value=end_date_for_slider,  # Default value
+        min_value=start_date_for_slider,
+        max_value=end_date_for_slider,
+        #format="%Y/%m/%d"  # Corrected date format
+    )
+
+    df['days_from_genesis'] = (df['date'] - genesis_date).dt.days
+    # Assuming 'Predicted_Log_Close' contains the original regression predictions
+    # Filter out rows with Days_From_Genesis < 0, if any exist due to data before the genesis date
+    df = df[df['days_from_genesis'] >= 0]
+
+    # Transpose 'Close' and 'Days_From_Genesis' to log scale
+    df['log_close'] = np.log(df['close'])
+    df['log_days_from_genesis'] = np.log(df['days_from_genesis'])  # Adding 1 to avoid log(0)
+
+    # Perform linear regression on the log-log data
+    X = df[['log_days_from_genesis']]
+    y = df['log_close']
+    model = LinearRegression().fit(X, y)
+
+
+    # Calculate predictions for the regression line
+    df['predicted_log_close'] = model.predict(X)
+    # Original Linear Regression for reference
+    model = LinearRegression().fit(df[['log_days_from_genesis']], df['log_close'])
+    df['predicted_log_close'] = model.predict(df[['log_days_from_genesis']])
+
+
+    # Convert strings to datetime
+    cut_off_date = pd.to_datetime(cut_off_date)
+    start_date = pd.to_datetime(start_date)
+
+    # Filter data for regression up to the cut_off_date
+    df_filtered_for_fit = df[df['date'] <= cut_off_date]
+
+    # Perform linear regression on the filtered data
+    X_fit = df_filtered_for_fit[['log_days_from_genesis']]
+    y_fit = df_filtered_for_fit['log_close']
+    model = LinearRegression().fit(X_fit, y_fit)
+
+    # Calculate residuals for all data after start_date
+    df_after_start = df[df['date'] >= start_date]
+    df['predicted_log_close'] = model.predict(df[['log_days_from_genesis']])
+    df_after_start['residuals'] = df_after_start['log_close'] - df_after_start['predicted_log_close']
+
+    # Find the points with the highest and lowest residuals
+    highest_residual_index = df_after_start['residuals'].idxmax()
+    lowest_residual_index = df_after_start['residuals'].idxmin()
+
+    # Keeping the same slope, calculate intercepts for lines through highest and lowest residual points
+    slope = model.coef_[0]
+    intercept_high = df.loc[highest_residual_index, 'log_close'] - (slope * df.loc[highest_residual_index, 'log_days_from_genesis'])
+    intercept_low = df.loc[lowest_residual_index, 'log_close'] - (slope * df.loc[lowest_residual_index, 'log_days_from_genesis'])
+
+    # Increase the slope by the specified percentage
+    slope_increase_percentage = pct_change
+    adjusted_slope = slope * (1 + slope_increase_percentage / 100)
+
+    # Calculate new intercepts based on the adjusted slope for continuity
+    last_day_from_genesis = np.log(df_filtered_for_fit['days_from_genesis'].max() + 1)
+    intercept_high_adjusted = df.loc[highest_residual_index, 'log_close'] - (adjusted_slope * last_day_from_genesis)
+    intercept_low_adjusted = df.loc[lowest_residual_index, 'log_close'] - (adjusted_slope * last_day_from_genesis)
+    # Generate predictions for the next 365 days
+    
+
+
+
+    future_log_days_from_genesis = np.log(df_filtered_for_fit['days_from_genesis'].max() + 1 + future_days)
+    future_days_from_genesis = np.exp(future_log_days_from_genesis)
+
+    # Convert future log days from genesis back to actual dates for plotting
+    future_dates = [genesis_date + timedelta(days=int(day)) for day in future_days_from_genesis]
+
+    # Create a Plotly figure
+    fig = go.Figure()
+    fig.add_annotation(
+        text="KASPING.STREAMLIT.APP",  # The watermark text
+        align='left',
+        opacity=0.2,  # Adjust opacity to make the watermark lighter
+        font=dict(color="yellow", size=35),  # Adjust font color and size
+        xref='paper',  # Position the watermark relative to the entire figure
+        yref='paper',
+        x=0.5,  # Centered horizontally
+        y=0.5,  # Centered vertically
+        showarrow=False,  # Do not show an arrow pointing to the text
+    )
+    # Add scatter plot for original data
+    fig.add_trace(go.Scatter(x=df['date'], y=np.exp(df['log_close']), mode='lines', name='Log of Close Prices', marker=dict(color='lightgray')))
+    num_bands = 3
+
+    intercepts_original = []
+
+    # Add original regression lines and bands
+    for i in range(num_bands + 2):
+        intercept_band = intercept_low + i * (intercept_high - intercept_low) / (num_bands + 1)
+        y_values = slope * df_filtered_for_fit['log_days_from_genesis'] + intercept_band
+        color = colors[i % len(colors)]  # Use modulo to cycle through colors if not enough are defined
+
+        fig.add_trace(go.Scatter(x=df_filtered_for_fit['date'], y=np.exp(y_values), mode='lines',  line=dict(color=color, dash='solid')))
+    for i in range(num_bands + 2):
+        intercept_band = intercept_low + i * (intercept_high - intercept_low) / (num_bands + 1)
+        last_y_value = slope * last_day_from_genesis + intercept_band
+
+        intercepts_original.append(last_y_value - adjusted_slope * last_day_from_genesis)
+    # Add adjusted regression lines and bands for future dates
+    for i, intercept_adjusted in enumerate(intercepts_original):
+        y_values = adjusted_slope * future_log_days_from_genesis + intercept_adjusted
+        color = colors[i % len(colors)]  # Use modulo to cycle through colors if not enough are defined
+
+        fig.add_trace(go.Scatter(x=future_dates, y=np.exp(y_values), mode='lines', name='Adjusted Bands' if i == 0 else "", line=dict(color=color, dash='dot')))
+    
+    # Update layout for readability
+    fig.update_layout(      height=800,  # Custom height in pixels
+    width=1200,  # Custom width in pixels
+  yaxis_type="log",  # Set y-axis to logarithmic scale
+   xaxis=dict(
+       
+        showgrid=True,  # Show grid lines for x-axis
+        gridwidth=1,title='Date',tickangle=-45),
+  
+                    yaxis_title='Close Price',
+                    showlegend=False
+                    )
+
+
+    st.plotly_chart(fig, use_container_width=True)
 if dashboard == 'Past Power Law':
     # Load in the data for the dash
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Historical Power Law Predictions</h2>", unsafe_allow_html=True)
