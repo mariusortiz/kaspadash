@@ -3,4 +3,3 @@ pandas
 plotly
 cryptography
 scikit-learn
-sklearn
