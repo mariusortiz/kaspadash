@@ -263,6 +263,14 @@ if dashboard == 'Rainbow chart':
 
 
     st.plotly_chart(fig, use_container_width=True)
+    expander = st.expander('About the model')
+    expander.write('''
+    This model calculates the linear regression on the log-log scaled data and then creates an envelope around the price action - for the date specified. It is a gross simplification, as the middle band **is not** the fair price as dictated by power law, but just middle between the lowest 
+    and highest regression lines. Also both "support" and "resistance" lines have the same slope, a proper model should find a separate fit for the bottoms and tops. To view such a model check [this](https://hcburger.com/blog/poweroscillator/index.html) and to watch a more complex rainbow chart go  [here](https://www.blockchaincenter.net/en/bitcoin-rainbow-chart/).
+
+    The aim of this graphic is to demonstrate how do such predictions change with more data.''')
+    
+
 if dashboard == 'Past Power Law':
     # Load in the data for the dash
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Historical Power Law Predictions</h2>", unsafe_allow_html=True)
