@@ -21,7 +21,7 @@ instrument = st.sidebar.selectbox(
 )
 
 
-st.warning("**Follow us on** [Twitter](https://twitter.com/KaspingApp)", icon="💸")  # Adjust font color and size
+st.warning("[**Join Beta Waitlist**](https://form.jotform.com/240557098994069)**Automate Your Crypto Trading**", icon="💸")  # Adjust font color and size
 
 ENCRYPTION_PASSWORD =st.secrets["ENCRYPTION_PASSWORD"]
 
