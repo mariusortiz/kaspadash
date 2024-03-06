@@ -138,21 +138,21 @@ if dashboard == 'Rainbow chart':
 
     # Ensure the 'Date' column is in datetime format and calculate days from genesis
     if instrument == "Kaspa (KAS)":
-        genesis_date = datetime(2021, 7, 11)
+        genesis_date = datetime(2021, 11, 7)
         start_date = '2022-01-04'
         future_days = np.arange(1, 365*2)
 
     if instrument == "Bitcoin (BTC)":
-        genesis_date = datetime(2008, 9, 1)
+        genesis_date = datetime(2008, 1, 9)
         start_date = '2012-01-03'
         future_days = np.arange(1, 365*4)
     if instrument == "Bittensor - Temporary":
-        genesis_date = datetime(2023, 31, 10)
+        genesis_date = datetime(2023, 10, 31)
         start_date = '2023-01-11'
         future_days = np.arange(1, 365*2)
     if instrument == "Ethereum - Temporary":
         genesis_date = datetime(2017, 1, 1)
-        start_date = '2027-08-08'
+        start_date = '2017-08-08'
         future_days = np.arange(1, 365*2)
 
     df['date'] = pd.to_datetime(df['date'])
