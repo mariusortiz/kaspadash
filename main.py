@@ -101,7 +101,7 @@ elif instrument == "Bittensor - Temporary":
 ])
     df = un_encrypt_file('data/tao_real_PL_extended.csv')
     
-    elif instrument == "Ethereum - Temporary":
+elif instrument == "Ethereum - Temporary":
     dashboard = st.sidebar.selectbox(
         label='Select dashboard',
         options=[
