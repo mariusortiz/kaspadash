@@ -17,11 +17,11 @@ st.set_page_config(layout="wide")
 
 instrument = st.sidebar.selectbox(
     label='Select instrument',
-    options=["Kaspa (KAS)", "Bitcoin (BTC)"]
+    options=["Kaspa (KAS)", "Bitcoin (BTC)", "Bittensor - Temporary", "Ethereum - Temporary"]
 )
 
 
-st.warning("[**Join Beta Waitlist**](https://form.jotform.com/240557098994069)**Automate Your Crypto Trading**", icon="💸")  # Adjust font color and size
+st.warning("[**Join Beta Waitlist** ](https://form.jotform.com/240557098994069)**Automate Your Crypto Investing**", icon="💸")  # Adjust font color and size
 
 ENCRYPTION_PASSWORD =st.secrets["ENCRYPTION_PASSWORD"]
 
@@ -77,7 +77,7 @@ if instrument == "Kaspa (KAS)":
     
     df = un_encrypt_file('data/kas_real_PL_extended.csv')
 
-else:
+elif instrument == "Bitcoin (BTC)":
     dashboard = st.sidebar.selectbox(
         label='Select dashboard',
         options=[
@@ -89,6 +89,28 @@ else:
             'Trend Predictor - *** Coming Soon ***,',
             'DCA Simulator - *** Coming Soon ***','Smart DCA Automation - *** Coming Soon ***'])
     df = un_encrypt_file('data/btc_real_PL_extended.csv')
+    
+elif instrument == "Bittensor - Temporary":
+    dashboard = st.sidebar.selectbox(
+        label='Select dashboard',
+        options=[
+                                                'Rainbow chart',
+
+            'Past Power Law',
+            'Future Power Law',
+])
+    df = un_encrypt_file('data/tao_real_PL_extended.csv')
+    
+    elif instrument == "Ethereum - Temporary":
+    dashboard = st.sidebar.selectbox(
+        label='Select dashboard',
+        options=[
+                                                'Rainbow chart',
+
+            'Past Power Law',
+            'Future Power Law'
+])
+    df = un_encrypt_file('data/eth_real_PL_extended.csv')
 
 if dashboard in ('DCA Simulator - *** Coming Soon ***', 'Smart DCA Automation - *** Coming Soon ***', "Trend Predictor - *** Coming Soon ***,"):
     st.title(f'Coming soon')
@@ -124,6 +146,14 @@ if dashboard == 'Rainbow chart':
         genesis_date = datetime(2008, 9, 1)
         start_date = '2012-01-03'
         future_days = np.arange(1, 365*4)
+    if instrument == "Bittensor - Temporary":
+        genesis_date = datetime(2023, 31, 10)
+        start_date = '2023-01-11'
+        future_days = np.arange(1, 365*2)
+    if instrument == "Ethereum - Temporary":
+        genesis_date = datetime(2017, 1, 1)
+        start_date = '2027-08-08'
+        future_days = np.arange(1, 365*2)
 
     df['date'] = pd.to_datetime(df['date'])
     df = df[df["date"] <= max_date_with_close]
