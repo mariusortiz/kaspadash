@@ -246,7 +246,7 @@ if dashboard == 'Rainbow chart':
         text="KASPING.STREAMLIT.APP",  # The watermark text
         align='left',
         opacity=0.4,  # Adjust opacity to make the watermark lighter
-        font=dict(color="yellow", size=35),  # Adjust font color and size
+        font=dict(color="red", size=35),  # Adjust font color and size
         xref='paper',  # Position the watermark relative to the entire figure
         yref='paper',
         x=0.5,  # Centered horizontally
@@ -322,7 +322,7 @@ if dashboard == 'Past Power Law':
         text="KASPING.STREAMLIT.APP",  # The watermark text
         align='left',
         opacity=0.4,  # Adjust opacity to make the watermark lighter
-        font=dict(color="yellow", size=35),  # Adjust font color and size
+        font=dict(color="red", size=35),  # Adjust font color and size
         xref='paper',  # Position the watermark relative to the entire figure
         yref='paper',
         x=0.5,  # Centered horizontally
@@ -424,7 +424,7 @@ if dashboard == 'Future Power Law':
         align='left',
         opacity=0.4,  # Adjust opacity to make the watermark lighter
         
-        font=dict(color="yellow", size=35),  # Adjust font color and size
+        font=dict(color="red", size=35),  # Adjust font color and size
         xref='paper',  # Position the watermark relative to the entire figure
         yref='paper',
         x=0.5,  # Centered horizontally
@@ -496,7 +496,7 @@ if dashboard == 'Risk Visualization':
         text="KASPING.STREAMLIT.APP",  # The watermark text
         align='left',
         opacity=0.4,  # Adjust opacity to make the watermark lighter
-        font=dict(color="yellow", size=35),  # Adjust font color and size
+        font=dict(color="red", size=35),  # Adjust font color and size
         xref='paper',  # Position the watermark relative to the entire figure
         yref='paper',
         x=0.5,  # Centered horizontally
@@ -531,7 +531,7 @@ if dashboard == 'Risk Visualization':
         text="KASPING.STREAMLIT.APP",  # The watermark text
         align='left',
         opacity=0.4,  # Adjust opacity to make the watermark lighter
-        font=dict(color="yellow", size=35),  # Adjust font color and size
+        font=dict(color="red", size=35),  # Adjust font color and size
         xref='paper',  # Position the watermark relative to the entire figure
         yref='paper',
         x=0.5,  # Centered horizontally
@@ -616,7 +616,7 @@ if dashboard == 'Trend Predictor':
         text="KASPING.STREAMLIT.APP",  # The watermark text
         align='left',
         opacity=0.4,  # Adjust opacity to make the watermark lighter
-        font=dict(color="yellow", size=35),  # Adjust font color and size
+        font=dict(color="red", size=35),  # Adjust font color and size
         xref='paper',  # Position the watermark relative to the entire figure
         yref='paper',
         x=0.5,  # Centered horizontally
@@ -704,7 +704,7 @@ if dashboard == 'Trend Predictor':
         text="KASPING.STREAMLIT.APP",  # The watermark text
         align='left',
         opacity=0.4,  # Adjust opacity to make the watermark lighter
-        font=dict(color="yellow", size=35),  # Adjust font color and size
+        font=dict(color="red", size=35),  # Adjust font color and size
         xref='paper',  # Position the watermark relative to the entire figure
         yref='paper',
         x=0.5,  # Centered horizontally
