@@ -9,22 +9,25 @@ from sklearn.linear_model import LinearRegression
 # Configurer la page
 st.set_page_config(layout="wide")
 
-# Récupérer le mot de passe depuis st.secrets
-PASSWORD = st.secrets["PASSWORD"]
+# Vérifier si le mot de passe existe dans st.secrets
+if "general" in st.secrets and "password" in st.secrets["general"]:
+    PASSWORD = st.secrets["general"]["password"]
+    require_password = True
+else:
+    require_password = False
 
 def main():
-    st.title("Application protégée par mot de passe")
+    if require_password:
+        st.title("Application protégée par mot de passe")
+        password = st.text_input("Entrez le mot de passe", type="password")
 
-    # Afficher un champ de saisie de mot de passe
-    password = st.text_input("Entrez le mot de passe", type="password")
-
-    if password == PASSWORD:
-        st.success("Accès autorisé")
-        st.markdown("Bienvenue dans l'application protégée.")
-        # Placer ici le contenu de votre application
+        if password == PASSWORD:
+            st.success("Accès autorisé")
+            display_dashboard()
+        elif password:
+            st.error("Mot de passe incorrect")
+    else:
         display_dashboard()
-    elif password:
-        st.error("Mot de passe incorrect")
 
 def display_dashboard():
     # Charger le fichier CSV
@@ -205,8 +208,8 @@ def display_dashboard():
         fig.update_yaxes(title='Risk', type='linear', secondary_y=True, showgrid=True, tick0=0.0, dtick=0.1, range=[0, 1])
         fig.update_layout(template='plotly_dark', title={'text': annotation_text, 'y': 0.9, 'x': 0.5})
 
-
         st.plotly_chart(fig, use_container_width=True)
+
 
     # Affichage des graphiques en fonction de la sélection de l'utilisateur
     if dashboard == 'Rainbow chart':
@@ -216,4 +219,3 @@ def display_dashboard():
 
 if __name__ == "__main__":
     main()
-
