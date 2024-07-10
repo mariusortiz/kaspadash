@@ -21,6 +21,7 @@ def calculate_predicted_price(df):
     df['predicted_price'] = df['predicted_next_day_price']
     return df
 
+    
 def plot_rainbow_chart(df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
     pct_change = st.sidebar.slider('Select increase/decrease in % for prediction:', min_value=-99, max_value=500, value=0)
@@ -255,13 +256,16 @@ def plot_future_power_law(df, instrument):
     today = datetime.today()
     future_date = today + timedelta(days=(days_from_today - 1))
 
+    # Utiliser les données des 6 derniers mois pour l'entraînement
+    recent_df = df[df['date'] >= df['date'].max() - timedelta(days=180)].copy()
+
     # Étendre les dates futures dans le DataFrame
-    last_date = df['date'].max()
+    last_date = recent_df['date'].max()
     future_dates = pd.date_range(start=last_date + timedelta(days=1), end=future_date)
     future_df = pd.DataFrame({'date': future_dates})
 
     # Ajouter les dates futures au DataFrame existant
-    df_extended = pd.concat([df, future_df]).reset_index(drop=True)
+    df_extended = pd.concat([recent_df, future_df]).reset_index(drop=True)
 
     # Calculer les valeurs futures prédictes en utilisant le modèle de régression
     df_extended['log_close'] = np.log(df_extended['close'])
