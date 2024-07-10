@@ -14,11 +14,14 @@ def exponential_smoothing(series, alpha):
     return result
 
 def calculate_predicted_price(df):
+    # Use RANSAC regression for predicted price
     df = df.dropna(subset=['close'])  # Ensure there are no NaNs in 'close'
-    alpha = 0.1  # Smoothing factor
-    df['predicted_next_day_price'] = exponential_smoothing(df['close'], alpha)
-    df['predicted_price'] = df['predicted_next_day_price']
-    return df
+    X = np.log(df['days_from_genesis'].values).reshape(-1, 1)
+    y = np.log(df['close'].values)
+    ransac = RANSACRegressor()
+    ransac.fit(X, y)
+    df['predicted_price'] = np.exp(ransac.predict(X))
+    return df, ransac
 
 def plot_rainbow_chart(df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
@@ -235,7 +238,7 @@ def plot_past_power_law(df, instrument):
     This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
     ''')
 
-def plot_future_power_law(df, instrument):
+def plot_future_power_law(df, instrument, ransac):
     days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                                         min_value=1, 
                                         max_value=365,  # Assurez-vous que la plage de valeurs est raisonnable
@@ -278,8 +281,7 @@ def plot_future_power_law(df, instrument):
     df_to_plot = df[df['date'] <= future_date]
 
     fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['close'], mode='lines', name='Price'))
-    fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['predicted_next_day_price'], name='Historical Fair Price', mode='lines', line=dict(color='cyan')))
-    fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['predicted_price'], mode='lines', name='Future Fair Price', line=dict(color='red')))
+    fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['predicted_price'], mode='lines', name='Predicted Fair Price', line=dict(color='red')))
 
     fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
     fig.add_trace(go.Scatter(x=[closest_future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Fair Price'))
@@ -299,7 +301,6 @@ def plot_future_power_law(df, instrument):
     This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
     ''')
 
-
 def main():
     st.set_page_config(layout="wide")
 
@@ -308,7 +309,8 @@ def main():
     df['date'] = pd.to_datetime(df['date'])
 
     instrument = "Kaspa (KAS)"
-    df = calculate_predicted_price(df)
+    df['days_from_genesis'] = (df['date'] - df['date'].min()).dt.days
+    df, ransac = calculate_predicted_price(df)
 
     dashboard = st.sidebar.selectbox(
         label='Select dashboard',
@@ -322,7 +324,7 @@ def main():
     elif dashboard == 'Past Power Law':
         plot_past_power_law(df, instrument)
     elif dashboard == 'Future Power Law':
-        plot_future_power_law(df, instrument)
+        plot_future_power_law(df, instrument, ransac)
 
 if __name__ == "__main__":
     main()
