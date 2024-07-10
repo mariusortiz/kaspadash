@@ -20,7 +20,7 @@ def calculate_predicted_price(df):
     df['predicted_next_day_price'] = exponential_smoothing(df['close'], alpha)
     df['predicted_price'] = df['predicted_next_day_price']
     return df
-    
+
 
 def plot_rainbow_chart(df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
@@ -284,7 +284,7 @@ def plot_future_power_law(df, instrument):
     predicted_log_close = model.predict(np.array([[future_log_days]]))[0]
     predicted_price_on_future_date = np.exp(predicted_log_close)
     
-    today_price = df.dropna(subset(['close'])['close'].values[-1]
+    today_price = df.dropna(subset=['close'])['close'].values[-1]
     
     st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference</h4>", unsafe_allow_html=True)
 
@@ -308,18 +308,6 @@ def plot_future_power_law(df, instrument):
     elif chart_type == "Logarithmic":
         fig.update_layout(xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
 
-    fig.add_annotation(
-        text="KASPING.STREAMLIT.APP",  # The watermark text
-        align='left',
-        opacity=0.4,  # Adjust opacity to make the watermark lighter
-        font=dict(color="red", size=35),  # Adjust font color and size
-        xref='paper',  # Position the watermark relative to the entire figure
-        yref='paper',
-        x=0.5,  # Centered horizontally
-        y=0.5,  # Centered vertically
-        showarrow=False,  # Do not show an arrow pointing to the text
-    )
-
     st.plotly_chart(fig, use_container_width=True)
     expander = st.expander('About the chart')
     expander.write('''
@@ -329,31 +317,3 @@ def plot_future_power_law(df, instrument):
 
     This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
     ''')
-
-# Intégration de la fonction dans l'application principale
-def main():
-    st.set_page_config(layout="wide")
-
-    csv_file = 'kas_d.csv'
-    df = pd.read_csv(csv_file)
-    df['date'] = pd.to_datetime(df['date'])
-
-    instrument = "Kaspa (KAS)"
-    df = calculate_predicted_price(df)
-
-    dashboard = st.sidebar.selectbox(
-        label='Select dashboard',
-        options=['Rainbow chart', 'Risk Visualization', 'Past Power Law', 'Future Power Law']
-    )
-
-    if dashboard == 'Rainbow chart':
-        plot_rainbow_chart(df, instrument)
-    elif dashboard == 'Risk Visualization':
-        plot_risk_visualization(df, instrument)
-    elif dashboard == 'Past Power Law':
-        plot_past_power_law(df, instrument)
-    elif dashboard == 'Future Power Law':
-        plot_future_power_law(df, instrument)
-
-if __name__ == "__main__":
-    main()
