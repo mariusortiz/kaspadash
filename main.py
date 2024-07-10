@@ -3,6 +3,7 @@ import streamlit as st
 from plotly import graph_objects as go
 from datetime import datetime, timedelta
 from plotly.subplots import make_subplots
+from sklearn.linear_model import LinearRegression
 import numpy as np
 
 def exponential_smoothing(series, alpha):
