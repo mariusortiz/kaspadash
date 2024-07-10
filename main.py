@@ -20,8 +20,8 @@ def calculate_predicted_price(df):
     df['predicted_next_day_price'] = exponential_smoothing(df['close'], alpha)
     df['predicted_price'] = df['predicted_next_day_price']
     return df
-
     
+
 def plot_rainbow_chart(df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
     pct_change = st.sidebar.slider('Select increase/decrease in % for prediction:', min_value=-99, max_value=500, value=0)
@@ -239,6 +239,7 @@ def plot_past_power_law(df, instrument):
     ''')
 
 
+
 def plot_future_power_law(df, instrument):
     days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                                         min_value=1, 
@@ -249,7 +250,7 @@ def plot_future_power_law(df, instrument):
     chart_type = st.sidebar.select_slider(
         'Select scale type',
         options=['Linear', 'Logarithmic'],
-        value="Linear"
+        value="Logarithmic"
     )
 
     # Calculer la date pour le nombre de jours spécifié à partir d'aujourd'hui
@@ -268,8 +269,9 @@ def plot_future_power_law(df, instrument):
     df_extended = pd.concat([recent_df, future_df]).reset_index(drop=True)
 
     # Calculer les valeurs futures prédictes en utilisant le modèle de régression
+    df_extended['days_from_genesis'] = (df_extended['date'] - df_extended['date'].min()).dt.days + 1
     df_extended['log_close'] = np.log(df_extended['close'])
-    df_extended['log_days'] = np.log((df_extended['date'] - df_extended['date'].min()).dt.days + 1)
+    df_extended['log_days'] = np.log(df_extended['days_from_genesis'])
 
     # Remplacer les NaNs dans log_close par des valeurs interpolées
     df_extended['log_close'] = df_extended['log_close'].interpolate()
