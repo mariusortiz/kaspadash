@@ -20,7 +20,7 @@ def calculate_predicted_price(df):
     df['predicted_next_day_price'] = exponential_smoothing(df['close'], alpha)
     df['predicted_price'] = df['predicted_next_day_price']
     return df
-    
+
 
 def plot_rainbow_chart(df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
@@ -202,18 +202,7 @@ def plot_past_power_law(df, instrument):
     fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
     fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], mode='lines', name='Predicted Next Day Price', line=dict(color='cyan')), row=1, col=1)
     
-    fig.add_annotation(
-        text="KASPING.STREAMLIT.APP",
-        align='left',
-        opacity=0.4,
-        font=dict(color="red", size=35),
-        xref='paper',
-        yref='paper',
-        x=0.5,
-        y=0.5,
-        showarrow=False
-    )
-    
+
     differences = 100 * (df['close'] - df['predicted_next_day_price']) / df['predicted_next_day_price']
     fig.add_trace(go.Scatter(x=df['date'], y=differences, mode='lines', name='Difference (%)'), row=2, col=1)
     fig.add_hline(y=0, line=dict(dash='dash', color='red'), row=2, col=1)
@@ -307,18 +296,6 @@ def plot_future_power_law(df, instrument):
         fig.update_layout(xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
     elif chart_type == "Logarithmic":
         fig.update_layout(xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
-
-    fig.add_annotation(
-        text="KASPING.STREAMLIT.APP",  # The watermark text
-        align='left',
-        opacity=0.4,  # Adjust opacity to make the watermark lighter
-        font=dict(color="red", size=35),  # Adjust font color and size
-        xref='paper',  # Position the watermark relative to the entire figure
-        yref='paper',
-        x=0.5,  # Centered horizontally
-        y=0.5,  # Centered vertically
-        showarrow=False,  # Do not show an arrow pointing to the text
-    )
 
     st.plotly_chart(fig, use_container_width=True)
     expander = st.expander('About the chart')
