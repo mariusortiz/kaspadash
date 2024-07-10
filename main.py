@@ -6,25 +6,18 @@ from plotly.subplots import make_subplots
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
-# Récupérer le mot de passe depuis st.secrets
-PASSWORD = st.secrets["general"].get("password", None)
-
 def main():
-    st.title("Application protégée par mot de passe")
-
-    # Afficher un champ de saisie de mot de passe
-    if PASSWORD:
+    if "general" in st.secrets and "password" in st.secrets["general"]:
+        PASSWORD = st.secrets["general"]["password"]
         password = st.text_input("Entrez le mot de passe", type="password")
-
-        if password == PASSWORD:
-            st.success("Accès autorisé")
-            show_dashboard()
-        elif password:
+        if password != PASSWORD:
             st.error("Mot de passe incorrect")
+            return
+        else:
+            st.success("Accès autorisé")
     else:
-        show_dashboard()
+        st.info("Pas de mot de passe requis")
 
-def show_dashboard():
     st.set_page_config(layout="wide")
 
     # Charger le fichier CSV
