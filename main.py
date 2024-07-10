@@ -258,13 +258,13 @@ def plot_future_power_law(df, instrument):
     future_date = today + timedelta(days=(days_from_today - 1))
 
     # Vérifier si les données existent pour la date future
-    closest_future_date = df[df['date'] >= future_date]
-    if closest_future_date.empty:
+    future_data = df[df['date'] >= future_date]
+    if future_data.empty:
         st.error(f"No data available for the future date: {future_date.strftime('%Y-%m-%d')}")
         return
 
-    closest_future_date = closest_future_date.iloc[0]['date']
-    predicted_price_on_future_date = df[df['date'] == closest_future_date]['predicted_price'].values[0]
+    closest_future_date = future_data.iloc[0]['date']
+    predicted_price_on_future_date = future_data.iloc[0]['predicted_price']
     today_price = df.dropna(subset=['close'])['close'].values[-1]
 
     st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date - today_price) / today_price) * 100:.0f}% difference</h4>", unsafe_allow_html=True)
@@ -312,6 +312,7 @@ df = pd.read_csv(csv_file)
 df['date'] = pd.to_datetime(df['date'])
 df = calculate_predicted_price(df)
 plot_future_power_law(df, 'Kaspa (KAS)')
+
 
 def main():
     st.set_page_config(layout="wide")
