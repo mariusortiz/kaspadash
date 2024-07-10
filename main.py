@@ -16,8 +16,9 @@ def exponential_smoothing(series, alpha):
 
 def calculate_predicted_price(df):
     df = df.sort_values(by='date')
-    df['predicted_next_day_price'] = df['close'].shift(-1)
-    df['predicted_next_day_price'] = ExponentialSmoothing(df['close'], trend="add", seasonal="add", seasonal_periods=12).fit().fittedvalues.shift(-1)
+    window_size = 5
+    df['predicted_next_day_price'] = df['close'].rolling(window=window_size).mean().shift(-1)
+    df['predicted_price'] = df['predicted_next_day_price']
     return df
 
 def plot_rainbow_chart(df, instrument):
