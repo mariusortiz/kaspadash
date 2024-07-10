@@ -307,7 +307,7 @@ def plot_future_power_law(df, instrument):
     ''')
 
 # Utilisation de la fonction
-df = pd.read_csv('path_to_your_csv.csv')
+df = pd.read_csv('kas_d.csv')
 df['date'] = pd.to_datetime(df['date'])
 df = calculate_predicted_price(df)
 plot_future_power_law(df, 'Kaspa (KAS)')
