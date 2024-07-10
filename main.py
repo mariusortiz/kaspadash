@@ -20,6 +20,7 @@ def calculate_predicted_price(df):
     df['predicted_price'] = df['predicted_next_day_price']
     return df
 
+
 def plot_rainbow_chart(df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
     pct_change = st.sidebar.slider('Select increase/decrease in % for prediction:', min_value=-99, max_value=500, value=0)
