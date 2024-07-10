@@ -24,12 +24,29 @@ def calculate_predicted_price(df):
     X = df['log_days_from_genesis'].values.reshape(-1, 1)
     y = np.log(df['close'].values)
 
-    ransac = RANSACRegressor()
-    ransac.fit(X, y)
+    model = LinearRegression()
+    model.fit(X, y)
 
-    df['predicted_next_day_price'] = np.exp(ransac.predict(X))
+    df['predicted_next_day_price'] = np.exp(model.predict(X))
     df['predicted_price'] = df['predicted_next_day_price']
-    return df, ransac
+    return df, model
+
+def generate_future_dates(df, days_from_today, model):
+    max_date_in_df = df['date'].max()
+    future_date = max_date_in_df + timedelta(days=days_from_today)
+
+    # Generate future dates if necessary
+    if future_date > max_date_in_df:
+        future_dates = pd.date_range(start=max_date_in_df + timedelta(days=1), end=future_date)
+        future_df = pd.DataFrame({'date': future_dates})
+        future_df['days_from_genesis'] = (future_df['date'] - df['date'].min()).dt.days
+        future_df['log_days_from_genesis'] = np.log(future_df['days_from_genesis'])
+
+        future_df['predicted_price'] = np.exp(model.predict(future_df[['log_days_from_genesis']]))
+
+        df = pd.concat([df, future_df], ignore_index=True)
+
+    return df
 
 
 
@@ -249,10 +266,10 @@ def plot_past_power_law(df, instrument):
     This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
     ''')
 
-def plot_future_power_law(df, instrument, ransac):
+def plot_future_power_law(df, instrument, model):
     days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                                         min_value=1, 
-                                        max_value=365,  # Assurez-vous que la plage de valeurs est raisonnable
+                                        max_value=365, 
                                         value=30)
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Power Law Predictions</h2>", unsafe_allow_html=True)
 
@@ -262,27 +279,13 @@ def plot_future_power_law(df, instrument, ransac):
         value="Linear"
     )
 
+    # Ensure future data is generated
+    df = generate_future_dates(df, days_from_today, model)
+
     today = datetime.today()
     future_date = today + timedelta(days=days_from_today)
 
-    # Si la date future est au-delà des données actuelles, nous devons prédire les prix futurs
-    max_date_in_df = df['date'].max()
-    if future_date > max_date_in_df:
-        # Générer des dates futures
-        future_dates = pd.date_range(start=max_date_in_df + timedelta(days=1), end=future_date)
-        future_df = pd.DataFrame({'date': future_dates})
-
-        # Prédire les prix futurs en utilisant le modèle de régression ajusté
-        future_df['days_from_genesis'] = (future_df['date'] - df['date'].min()).dt.days
-        future_df['log_days_from_genesis'] = np.log(future_df['days_from_genesis'])
-
-        # Utiliser le modèle RANSAC pour prédire les prix futurs
-        future_df['predicted_price'] = np.exp(ransac.predict(future_df[['log_days_from_genesis']]))
-
-        # Ajouter les prédictions futures au DataFrame existant
-        df = pd.concat([df, future_df], ignore_index=True)
-
-    # Vérifier si nous avons des données pour la date future sélectionnée
+    # Ensure we have data for the selected future date
     future_data = df[df['date'] >= future_date]
     if future_data.empty:
         st.error(f"No data available for the selected future date: {future_date.strftime('%Y-%m-%d')}")
@@ -328,7 +331,7 @@ def main():
 
     instrument = "Kaspa (KAS)"
     df['days_from_genesis'] = (df['date'] - df['date'].min()).dt.days
-    df, ransac = calculate_predicted_price(df)
+    df, model = calculate_predicted_price(df)
 
     dashboard = st.sidebar.selectbox(
         label='Select dashboard',
@@ -342,7 +345,7 @@ def main():
     elif dashboard == 'Past Power Law':
         plot_past_power_law(df, instrument)
     elif dashboard == 'Future Power Law':
-        plot_future_power_law(df, instrument, ransac)
+        plot_future_power_law(df, instrument, model)
 
 if __name__ == "__main__":
     main()
