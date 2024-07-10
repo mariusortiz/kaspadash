@@ -282,12 +282,17 @@ def plot_future_power_law(df, instrument):
     
     st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference</h4>", unsafe_allow_html=True)
 
+    # Prédire les prix futurs pour toutes les dates futures
+    future_df['log_days'] = np.log((future_df['date'] - df_extended['date'].min()).dt.days + 1)
+    future_df['predicted_log_close'] = model.predict(future_df[['log_days']])
+    future_df['predicted_price'] = np.exp(future_df['predicted_log_close'])
+
     fig = go.Figure()
     df_filtered = df[df['date'] <= future_date].copy()
 
     fig.add_trace(go.Scatter(x=df_filtered['date'], y=df_filtered['close'], mode='lines', name='Price'))
     fig.add_trace(go.Scatter(x=df_filtered['date'], y=df_filtered['predicted_next_day_price'], name='Historical Fair Price', mode='lines', line=dict(color='cyan')))
-    fig.add_trace(go.Scatter(x=future_dates, y=[predicted_price_on_future_date]*len(future_dates), mode='lines', name='Future Fair Price', line=dict(color='red')))
+    fig.add_trace(go.Scatter(x=future_df['date'], y=future_df['predicted_price'], mode='lines', name='Future Fair Price', line=dict(color='red')))
     
     fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
     fig.add_trace(go.Scatter(x=[future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Fair Price'))
