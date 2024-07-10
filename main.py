@@ -251,18 +251,32 @@ def plot_future_power_law(df, instrument):
 
     today = datetime.today()
     future_date = today + timedelta(days=(days_from_today-1))
-    closest_future_date = df[df['date'] >= future_date].iloc[0]['date']
-    predicted_price_on_future_date = df[df['date'] == closest_future_date]['predicted_price'].values[0]
+    
+    # Préparation des données pour le futur
+    future_dates = pd.date_range(start=today, periods=days_from_today)
+    future_predictions = pd.DataFrame({'date': future_dates})
+    future_predictions['predicted_price'] = np.nan  # Placeholder pour les prédictions futures
+    
+    # Concaténer les données actuelles avec les données futures
+    df_extended = pd.concat([df, future_predictions], ignore_index=True)
+    
+    # Prédictions pour les dates futures
+    df_extended['log_days_from_genesis'] = np.log((df_extended['date'] - df_extended['date'].min()).dt.days + 1)
+    model = LinearRegression().fit(df[['log_days_from_genesis']], df['close'])
+    df_extended['predicted_price'] = model.predict(df_extended[['log_days_from_genesis']])
+    
+    closest_future_date = df_extended[df_extended['date'] >= future_date].iloc[0]['date']
+    predicted_price_on_future_date = df_extended[df_extended['date'] == closest_future_date]['predicted_price'].values[0]
     today_price = df.dropna(subset=['close'])['close'].values[-1]
 
-    st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference</h4>", unsafe_allow_html=True)
+    st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date - today_price) / today_price) * 100:.0f}% difference</h4>", unsafe_allow_html=True)
 
     fig = go.Figure()
-    df = df[df['date'] <= future_date]
+    df_filtered = df_extended[df_extended['date'] <= future_date]
 
-    fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Price'))
-    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],name='Historical Fair Price', mode='lines', line=dict(color='cyan')))
-    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines', name='Future Fair Price', line=dict(color='red')))
+    fig.add_trace(go.Scatter(x=df_filtered['date'], y=df_filtered['close'], mode='lines', name='Price'))
+    fig.add_trace(go.Scatter(x=df_filtered['date'], y=df_filtered['predicted_next_day_price'], name='Historical Fair Price', mode='lines', line=dict(color='cyan')))
+    fig.add_trace(go.Scatter(x=df_filtered['date'], y=df_filtered['predicted_price'], mode='lines', name='Future Fair Price', line=dict(color='red')))
 
     fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
     fig.add_trace(go.Scatter(x=[closest_future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Fair Price'))
@@ -272,6 +286,17 @@ def plot_future_power_law(df, instrument):
     elif chart_type == "Logarithmic":
         fig.update_layout(xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
 
+    fig.add_annotation(
+        text="KASPING.STREAMLIT.APP",
+        align='left',
+        opacity=0.4,
+        font=dict(color="red", size=35),
+        xref='paper',
+        yref='paper',
+        x=0.5,
+        y=0.5,
+        showarrow=False,
+    )
 
     st.plotly_chart(fig, use_container_width=True)
     expander = st.expander('About the chart')
