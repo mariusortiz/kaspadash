@@ -246,7 +246,7 @@ def plot_past_power_law(df, instrument):
     This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
     ''')
 
-def plot_future_power_law(df, instrument, ransac):
+ddef plot_future_power_law(df, instrument, ransac):
     days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                                         min_value=1, 
                                         max_value=365,  # Assurez-vous que la plage de valeurs est raisonnable
