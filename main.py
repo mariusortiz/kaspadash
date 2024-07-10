@@ -210,6 +210,7 @@ def display_dashboard():
 
         st.plotly_chart(fig, use_container_width=True)
 
+
     # Fonction pour la visualisation des prédictions passées de la loi de puissance
     def plot_past_power_law(df, instrument):
         st.markdown(f"<h2 style='text-align: center;'>{instrument} Historical Power Law Predictions</h2>", unsafe_allow_html=True)
@@ -226,17 +227,7 @@ def display_dashboard():
                             subplot_titles=(f'Actual vs Predicted Prices - {instrument}', 'Percentage Difference between Actual and Historical Predicted Prices'))
         fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
         fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], mode='lines', name='Predicted Next Day Price', line=dict(color='white')), row=1, col=1)
-        fig.add_annotation(
-            text="KASPING.STREAMLIT.APP",
-            align='left',
-            opacity=0.4,
-            font=dict(color="red", size=35),
-            xref='paper',
-            yref='paper',
-            x=0.5,
-            y=0.5,
-            showarrow=False
-        )
+   
         differences = 100 * (df['close'] - df['predicted_next_day_price']) / df['predicted_next_day_price']
         fig.add_trace(go.Scatter(x=df['date'], y=differences, mode='lines', name='Difference (%)'), row=2, col=1)
         fig.add_hline(y=0, line=dict(dash='dash', color='red'), row=2, col=1)
@@ -299,18 +290,6 @@ def display_dashboard():
             fig.update_layout(xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
         elif chart_type == "Logarithmic":
             fig.update_layout(xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
-
-        fig.add_annotation(
-            text="KASPING.STREAMLIT.APP",
-            align='left',
-            opacity=0.4,
-            font=dict(color="red", size=35),
-            xref='paper',
-            yref='paper',
-            x=0.5,
-            y=0.5,
-            showarrow=False,
-        )
 
         st.plotly_chart(fig, use_container_width=True)
         expander = st.expander('About the chart')
