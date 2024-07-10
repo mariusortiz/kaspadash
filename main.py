@@ -15,10 +15,10 @@ def exponential_smoothing(series, alpha):
     return result
 
 def calculate_predicted_price(df):
-    df = df.sort_values(by='date')
-    window_size = 5
-    df['predicted_next_day_price'] = df['close'].rolling(window=window_size).mean().shift(-1)
-    df['predicted_price'] = df['predicted_next_day_price']
+    # Use exponential smoothing for predicted price
+    df = df.dropna(subset=['close'])  # Ensure there are no NaNs in 'close'
+    alpha = 0.1  # Smoothing factor
+    df['predicted_next_day_price'] = exponential_smoothing(df['close'], alpha)
     return df
 
 def plot_rainbow_chart(df, instrument):
@@ -238,13 +238,10 @@ def plot_past_power_law(df, instrument):
     ''')
 
 def plot_future_power_law(df, instrument):
-    days_difference = (df['date'].max() - df['date'].min()).days
-
     days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                             min_value=1, 
-                            max_value=days_difference, 
+                            max_value=(df['date'].max() - datetime.today()).days, 
                             value=30)
-
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Power Law Predictions</h2>", unsafe_allow_html=True)
 
     chart_type = st.sidebar.select_slider(
@@ -254,24 +251,18 @@ def plot_future_power_law(df, instrument):
     )
 
     today = datetime.today()
-    future_date = today + timedelta(days=(days_from_today - 1))
-
-    closest_future_date = df[df['date'] >= future_date]
-    if closest_future_date.empty:
-        st.error(f"No data available for the future date: {future_date.strftime('%Y-%m-%d')}")
-        return
-
-    closest_future_date = closest_future_date.iloc[0]['date']
+    future_date = today + timedelta(days=(days_from_today-1))
+    closest_future_date = df[df['date'] >= future_date].iloc[0]['date']
     predicted_price_on_future_date = df[df['date'] == closest_future_date]['predicted_price'].values[0]
     today_price = df.dropna(subset=['close'])['close'].values[-1]
 
-    st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date - today_price) / today_price) * 100:.0f}% difference</h4>", unsafe_allow_html=True)
+    st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference</h4>", unsafe_allow_html=True)
 
     fig = go.Figure()
     df = df[df['date'] <= future_date]
 
     fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Price'))
-    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], name='Historical Fair Price', mode='lines', line=dict(color='white')))
+    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],name='Historical Fair Price', mode='lines', line=dict(color='cyan')))
     fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines', name='Future Fair Price', line=dict(color='red')))
 
     fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
@@ -282,33 +273,16 @@ def plot_future_power_law(df, instrument):
     elif chart_type == "Logarithmic":
         fig.update_layout(xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
 
-    fig.add_annotation(
-        text="KASPING.STREAMLIT.APP",
-        align='left',
-        opacity=0.4,
-        font=dict(color="red", size=35),
-        xref='paper',
-        yref='paper',
-        x=0.5,
-        y=0.5,
-        showarrow=False,
-    )
 
     st.plotly_chart(fig, use_container_width=True)
     expander = st.expander('About the chart')
     expander.write('''
     You might find it surprising to see the predicted value fluctuate. Typically, power law charts depict the fair price as a constant, straight line (on log-log charts) because they are curve-fitted on the past data for the best fit.
-    
+
     However, this doesn't reveal past predictions, which is crucial for assessing the reliability of these forecasts.
-    
+
     This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
     ''')
-
-# Utilisation de la fonction
-df = pd.read_csv('path_to_your_csv.csv')
-df['date'] = pd.to_datetime(df['date'])
-df = calculate_predicted_price(df)
-plot_future_power_law(df, 'Kaspa (KAS)')
 
 def main():
     st.set_page_config(layout="wide")
