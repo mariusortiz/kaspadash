@@ -9,7 +9,7 @@ from sklearn.linear_model import LinearRegression
 st.set_page_config(layout="wide")
 
 # Charger le fichier CSV
-csv_file = 'chemin/vers/votre_fichier.csv'  # Remplacez par le chemin de votre fichier CSV
+csv_file = 'kas_d.csv'  # Remplacez par le chemin de votre fichier CSV
 df = pd.read_csv(csv_file)
 df['date'] = pd.to_datetime(df['date'])
 
