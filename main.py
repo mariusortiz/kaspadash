@@ -6,6 +6,7 @@ from plotly.subplots import make_subplots
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
+
 # Fonction de lissage exponentiel
 def exponential_smoothing(series, alpha):
     result = [series.iloc[0]]  # première valeur est identique à la série
@@ -236,10 +237,11 @@ def plot_past_power_law(df, instrument):
     This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
     ''')
 
+
 def plot_future_power_law(df, instrument):
     days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                                         min_value=1, 
-                                        max_value=(df['date'].max() - datetime.today()).days, 
+                                        max_value=30, 
                                         value=30)
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Power Law Predictions</h2>", unsafe_allow_html=True)
 
@@ -253,23 +255,26 @@ def plot_future_power_law(df, instrument):
     today = datetime.today()
     future_date = today + timedelta(days=(days_from_today - 1))
 
-    # Vérifier s'il y a des dates futures disponibles dans le DataFrame
-    future_dates_df = df[df['date'] >= future_date]
-    if future_dates_df.empty:
-        st.error(f"No data available for the selected future date: {future_date.strftime('%Y-%m-%d')}")
-        return
-    
-    closest_future_date = future_dates_df.iloc[0]['date']
+    # Étendre les dates futures dans le DataFrame
+    last_date = df['date'].max()
+    future_dates = pd.date_range(start=last_date + timedelta(days=1), end=future_date)
+    future_df = pd.DataFrame({'date': future_dates})
 
-    # Calculer les prédictions basées sur le modèle de régression
-    df['log_close'] = np.log(df['close'])
-    df['log_days'] = np.log((df['date'] - df['date'].min()).dt.days + 1)
+    # Ajouter les dates futures au DataFrame existant
+    df_extended = pd.concat([df, future_df]).reset_index(drop=True)
 
-    X = df[['log_days']]
-    y = df['log_close']
+    # Calculer les valeurs futures prédictes en utilisant le modèle de régression
+    df_extended['log_close'] = np.log(df_extended['close'])
+    df_extended['log_days'] = np.log((df_extended['date'] - df_extended['date'].min()).dt.days + 1)
+
+    # Remplacer les NaNs dans log_close par des valeurs interpolées
+    df_extended['log_close'] = df_extended['log_close'].interpolate()
+
+    X = df_extended[['log_days']]
+    y = df_extended['log_close']
     model = LinearRegression().fit(X, y)
 
-    future_log_days = np.log((future_date - df['date'].min()).days + 1)
+    future_log_days = np.log((future_date - df_extended['date'].min()).days + 1)
     predicted_log_close = model.predict(np.array([[future_log_days]]))[0]
     predicted_price_on_future_date = np.exp(predicted_log_close)
     
@@ -282,10 +287,10 @@ def plot_future_power_law(df, instrument):
 
     fig.add_trace(go.Scatter(x=df_filtered['date'], y=df_filtered['close'], mode='lines', name='Price'))
     fig.add_trace(go.Scatter(x=df_filtered['date'], y=df_filtered['predicted_next_day_price'], name='Historical Fair Price', mode='lines', line=dict(color='cyan')))
-    fig.add_trace(go.Scatter(x=df_filtered['date'], y=df_filtered['predicted_price'], mode='lines', name='Future Fair Price', line=dict(color='red')))
+    fig.add_trace(go.Scatter(x=future_dates, y=[predicted_price_on_future_date]*len(future_dates), mode='lines', name='Future Fair Price', line=dict(color='red')))
     
     fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
-    fig.add_trace(go.Scatter(x=[closest_future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Fair Price'))
+    fig.add_trace(go.Scatter(x=[future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Fair Price'))
 
     if chart_type == "Linear":
         fig.update_layout(xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
