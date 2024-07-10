@@ -8,18 +8,17 @@ from sklearn.linear_model import LinearRegression
 
 # Fonction de lissage exponentiel
 def exponential_smoothing(series, alpha):
-    result = [series[0]]  # première valeur est identique à la série
+    result = [series.iloc[0]]  # première valeur est identique à la série
     for n in range(1, len(series)):
-        result.append(alpha * series[n] + (1 - alpha) * result[n - 1])
+        result.append(alpha * series.iloc[n] + (1 - alpha) * result[n - 1])
     return result
 
 def calculate_predicted_price(df):
-    df = df.dropna(subset=['close'])  # Ensure there are no NaNs in 'close'
+    df = df.dropna(subset=['close']).copy()  # Ensure there are no NaNs in 'close' and create a copy
     alpha = 0.1  # Smoothing factor
     df['predicted_next_day_price'] = exponential_smoothing(df['close'], alpha)
     df['predicted_price'] = df['predicted_next_day_price']
     return df
-
 
 def plot_rainbow_chart(df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
@@ -254,9 +253,14 @@ def plot_future_power_law(df, instrument):
     today = datetime.today()
     future_date = today + timedelta(days=(days_from_today - 1))
 
-    # Trouver la date la plus proche dans le dataframe par rapport à la future date
-    closest_future_date = df[df['date'] >= future_date].iloc[0]['date']
+    # Vérifier s'il y a des dates futures disponibles dans le DataFrame
+    future_dates_df = df[df['date'] >= future_date]
+    if future_dates_df.empty:
+        st.error(f"No data available for the selected future date: {future_date.strftime('%Y-%m-%d')}")
+        return
     
+    closest_future_date = future_dates_df.iloc[0]['date']
+
     # Calculer les prédictions basées sur le modèle de régression
     df['log_close'] = np.log(df['close'])
     df['log_days'] = np.log((df['date'] - df['date'].min()).dt.days + 1)
@@ -274,11 +278,11 @@ def plot_future_power_law(df, instrument):
     st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference</h4>", unsafe_allow_html=True)
 
     fig = go.Figure()
-    df = df[df['date'] <= future_date]
+    df_filtered = df[df['date'] <= future_date].copy()
 
-    fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Price'))
-    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], name='Historical Fair Price', mode='lines', line=dict(color='cyan')))
-    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines', name='Future Fair Price', line=dict(color='red')))
+    fig.add_trace(go.Scatter(x=df_filtered['date'], y=df_filtered['close'], mode='lines', name='Price'))
+    fig.add_trace(go.Scatter(x=df_filtered['date'], y=df_filtered['predicted_next_day_price'], name='Historical Fair Price', mode='lines', line=dict(color='cyan')))
+    fig.add_trace(go.Scatter(x=df_filtered['date'], y=df_filtered['predicted_price'], mode='lines', name='Future Fair Price', line=dict(color='red')))
     
     fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
     fig.add_trace(go.Scatter(x=[closest_future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Fair Price'))
