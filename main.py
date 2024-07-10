@@ -52,8 +52,8 @@ def plot_rainbow_chart(df, instrument):
 
     X = df[['log_days_from_genesis']]
     y = df['log_close']
-    ransac = RANSACRegressor(LinearRegression()).fit(X, y)
-    df['predicted_log_close'] = ransac.predict(X)
+    model = RANSACRegressor().fit(X, y)
+    df['predicted_log_close'] = model.predict(X)
 
     cut_off_date = pd.to_datetime(cut_off_date)
     start_date = pd.to_datetime(start_date)
@@ -62,16 +62,16 @@ def plot_rainbow_chart(df, instrument):
 
     X_fit = df_filtered_for_fit[['log_days_from_genesis']]
     y_fit = df_filtered_for_fit['log_close']
-    ransac.fit(X_fit, y_fit)
+    model = RANSACRegressor().fit(X_fit, y_fit)
 
     df_after_start = df[df['date'] >= start_date]
-    df['predicted_log_close'] = ransac.predict(df[['log_days_from_genesis']])
+    df['predicted_log_close'] = model.predict(df[['log_days_from_genesis']])
     df_after_start['residuals'] = df_after_start['log_close'] - df_after_start['predicted_log_close']
 
     highest_residual_index = df_after_start['residuals'].idxmax()
     lowest_residual_index = df_after_start['residuals'].idxmin()
 
-    slope = ransac.estimator_.coef_[0]
+    slope = model.estimator_.coef_[0]
     intercept_high = df.loc[highest_residual_index, 'log_close'] - (slope * df.loc[highest_residual_index, 'log_days_from_genesis'])
     intercept_low = df.loc[lowest_residual_index, 'log_close'] - (slope * df.loc[lowest_residual_index, 'log_days_from_genesis'])
 
@@ -163,7 +163,6 @@ def plot_risk_visualization(df, instrument):
     fig.update_layout(title=annotation_text)
     st.plotly_chart(fig, use_container_width=True)
 
-    # Deuxième graphique avec des zones de risque colorées
     fig = make_subplots(specs=[[{'secondary_y': True}]])
     fig.add_trace(go.Scatter(x=df['date'], y=df['Value'], name='Price', line=dict(color='cyan', width=3)))
     fig.add_trace(go.Scatter(x=df['date'], y=df['avg'], name='Risk', line=dict(color='purple', width=2)), secondary_y=True)
@@ -251,14 +250,13 @@ def plot_future_power_law(df, instrument):
 
     today = datetime.today()
     future_date = today + timedelta(days=(days_from_today-1))
-    df_filtered = df[df['date'] >= future_date]
 
-    if df_filtered.empty:
+    closest_future_date = df[df['date'] >= future_date]
+    if closest_future_date.empty:
         st.error(f"No data available for the selected future date: {future_date.strftime('%Y-%m-%d')}")
         return
-
-    closest_future_date = df_filtered.iloc[0]['date']
-    predicted_price_on_future_date = df_filtered.iloc[0]['predicted_price']
+    closest_future_date = closest_future_date.iloc[0]['date']
+    predicted_price_on_future_date = df[df['date'] == closest_future_date]['predicted_price'].values[0]
     today_price = df.dropna(subset=['close'])['close'].values[-1]
 
     st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference</h4>", unsafe_allow_html=True)
