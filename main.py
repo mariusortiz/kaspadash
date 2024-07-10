@@ -89,17 +89,6 @@ def plot_rainbow_chart(df, instrument):
     future_dates = [genesis_date + timedelta(days=int(day)) for day in future_days_from_genesis]
 
     fig = go.Figure()
-    fig.add_annotation(
-        text="KASPING.STREAMLIT.APP",
-        align='left',
-        opacity=0.4,
-        font=dict(color="red", size=35),
-        xref='paper',
-        yref='paper',
-        x=0.5,
-        y=0.5,
-        showarrow=False,
-    )
     fig.add_trace(go.Scatter(x=df['date'], y=np.exp(df['log_close']), mode='lines', name='Log of Close Prices', marker=dict(color='lightgray')))
     num_bands = 3
 
@@ -158,7 +147,7 @@ def plot_risk_visualization(df, instrument):
     df = df[df['Value'] > 0]
 
     if not df.empty:
-        if instrument == "Bitcoin (BTC)":
+        if instrument == "Kaspa (KAS)":
             df = df[df.index > 1200]
             df['MA'] = df['Value'].rolling(2, min_periods=1).mean().dropna()
             df['Preavg'] = (np.log(df.Value) - np.log(df['MA'])) * df.index ** .395
@@ -179,17 +168,6 @@ def plot_risk_visualization(df, instrument):
             fig.update_yaxes(title='Price ($USD)', type="log", showgrid=True)
             fig.update_layout(template='plotly_dark', title_text=annotation_text)
 
-        fig.add_annotation(
-            text="KASPING.STREAMLIT.APP",
-            align='left',
-            opacity=0.4,
-            font=dict(color="red", size=35),
-            xref='paper',
-            yref='paper',
-            x=0.5,
-            y=0.5,
-            showarrow=False
-        )
 
         st.plotly_chart(fig, use_container_width=True)
 
@@ -213,17 +191,7 @@ def plot_risk_visualization(df, instrument):
         fig.update_yaxes(title='Risk', type='linear', secondary_y=True, showgrid=True, tick0=0.0, dtick=0.1, range=[0, 1])
         fig.update_layout(template='plotly_dark', title={'text': annotation_text, 'y': 0.9, 'x': 0.5})
 
-        fig.add_annotation(
-            text="KASPING.STREAMLIT.APP",
-            align='left',
-            opacity=0.4,
-            font=dict(color="red", size=35),
-            xref='paper',
-            yref='paper',
-            x=0.5,
-            y=0.5,
-            showarrow=False
-        )
+    
 
         st.plotly_chart(fig, use_container_width=True)
     else:
