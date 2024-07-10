@@ -3,10 +3,7 @@ import streamlit as st
 from plotly import graph_objects as go
 from datetime import datetime, timedelta
 from plotly.subplots import make_subplots
-from sklearn.linear_model import LinearRegression
 import numpy as np
-from statsmodels.tsa.holtwinters import ExponentialSmoothing
-
 
 def exponential_smoothing(series, alpha):
     result = [series[0]]
@@ -199,7 +196,7 @@ def plot_past_power_law(df, instrument):
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
                         subplot_titles=(f'Actual vs Predicted Prices - {instrument}', 'Percentage Difference between Actual and Historical Predicted Prices'))
     fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
-    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], mode='lines', name='Predicted Next Day Price', line=dict(color='cyan')), row=1, col=1)
+    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], mode='lines', name='Predicted Next Day Price', line=dict(color='white')), row=1, col=1)
     
     fig.add_annotation(
         text="KASPING.STREAMLIT.APP",
