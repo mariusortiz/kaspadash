@@ -238,9 +238,9 @@ def plot_past_power_law(df, instrument):
 
 def plot_future_power_law(df, instrument):
     days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
-                            min_value=1, 
-                            max_value=(df['date'].max() - datetime.today()).days, 
-                            value=30)
+                                        min_value=1, 
+                                        max_value=(df['date'].max() - datetime.today()).days, 
+                                        value=30)
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Power Law Predictions</h2>", unsafe_allow_html=True)
 
     chart_type = st.sidebar.select_slider(
@@ -249,41 +249,36 @@ def plot_future_power_law(df, instrument):
         value="Linear"
     )
 
+    # Calculer la date pour le nombre de jours spécifié à partir d'aujourd'hui
     today = datetime.today()
-    future_date = today + timedelta(days=(days_from_today-1))
+    future_date = today + timedelta(days=(days_from_today - 1))
 
-    # Assurez-vous que la colonne 'log_days_from_genesis' est créée correctement
-    df['days_from_genesis'] = (df['date'] - df['date'].min()).dt.days
-    df['log_days_from_genesis'] = np.log(df['days_from_genesis'] + 1)
+    # Trouver la date la plus proche dans le dataframe par rapport à la future date
+    closest_future_date = df[df['date'] >= future_date].iloc[0]['date']
+    
+    # Calculer les prédictions basées sur le modèle de régression
+    df['log_close'] = np.log(df['close'])
+    df['log_days'] = np.log((df['date'] - df['date'].min()).dt.days + 1)
 
-    # Utiliser uniquement les données historiques pour ajuster le modèle
-    historical_data = df.dropna(subset=['close'])
+    X = df[['log_days']]
+    y = df['log_close']
+    model = LinearRegression().fit(X, y)
 
-    model = LinearRegression().fit(historical_data[['log_days_from_genesis']], historical_data['close'])
-
-    # Préparation des données pour le futur
-    future_dates = pd.date_range(start=today, periods=days_from_today)
-    future_predictions = pd.DataFrame({'date': future_dates})
-    future_predictions['days_from_genesis'] = (future_predictions['date'] - df['date'].min()).dt.days
-    future_predictions['log_days_from_genesis'] = np.log(future_predictions['days_from_genesis'] + 1)
-    future_predictions['predicted_price'] = model.predict(future_predictions[['log_days_from_genesis']])
-
-    # Concaténer les données actuelles avec les données futures
-    df_extended = pd.concat([df, future_predictions], ignore_index=True)
-
-    closest_future_date = df_extended[df_extended['date'] >= future_date].iloc[0]['date']
-    predicted_price_on_future_date = df_extended[df_extended['date'] == closest_future_date]['predicted_price'].values[0]
+    future_log_days = np.log((future_date - df['date'].min()).days + 1)
+    predicted_log_close = model.predict(np.array([[future_log_days]]))[0]
+    predicted_price_on_future_date = np.exp(predicted_log_close)
+    
     today_price = df.dropna(subset=['close'])['close'].values[-1]
-
-    st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date - today_price) / today_price) * 100:.0f}% difference</h4>", unsafe_allow_html=True)
+    
+    st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference</h4>", unsafe_allow_html=True)
 
     fig = go.Figure()
-    df_filtered = df_extended[df_extended['date'] <= future_date]
+    df = df[df['date'] <= future_date]
 
-    fig.add_trace(go.Scatter(x=df_filtered['date'], y=df_filtered['close'], mode='lines', name='Price'))
-    fig.add_trace(go.Scatter(x=df_filtered['date'], y=df_filtered['predicted_next_day_price'], name='Historical Fair Price', mode='lines', line=dict(color='cyan')))
-    fig.add_trace(go.Scatter(x=df_filtered['date'], y=df_filtered['predicted_price'], mode='lines', name='Future Fair Price', line=dict(color='red')))
-
+    fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Price'))
+    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], name='Historical Fair Price', mode='lines', line=dict(color='cyan')))
+    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines', name='Future Fair Price', line=dict(color='red')))
+    
     fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
     fig.add_trace(go.Scatter(x=[closest_future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Fair Price'))
 
@@ -293,15 +288,15 @@ def plot_future_power_law(df, instrument):
         fig.update_layout(xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
 
     fig.add_annotation(
-        text="KASPING.STREAMLIT.APP",
+        text="KASPING.STREAMLIT.APP",  # The watermark text
         align='left',
-        opacity=0.4,
-        font=dict(color="red", size=35),
-        xref='paper',
+        opacity=0.4,  # Adjust opacity to make the watermark lighter
+        font=dict(color="red", size=35),  # Adjust font color and size
+        xref='paper',  # Position the watermark relative to the entire figure
         yref='paper',
-        x=0.5,
-        y=0.5,
-        showarrow=False,
+        x=0.5,  # Centered horizontally
+        y=0.5,  # Centered vertically
+        showarrow=False,  # Do not show an arrow pointing to the text
     )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -314,6 +309,7 @@ def plot_future_power_law(df, instrument):
     This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
     ''')
 
+# Intégration de la fonction dans l'application principale
 def main():
     st.set_page_config(layout="wide")
 
