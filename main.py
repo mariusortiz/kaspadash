@@ -160,15 +160,15 @@ def plot_risk_visualization(df, instrument):
         annotation_text = f"Updated: {df['date'].iloc[-1].strftime('%Y-%m-%d')} | Price: {round(df['Value'].iloc[-1], 5)} | Risk: {round(df['avg'].iloc[-1], 2)}"
 
         if chart_type == "Linear":
-            fig = go.Figure(data=go.Scatter(x=df['date'], y=df['Value'], mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', showscale=True)))
+            fig = go.Figure(data=go.Scatter(x=df['date'], y=df['Value'], mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', cmin=0, cmax=1, showscale=True)))
             fig.update_yaxes(title='Price ($USD)', showgrid=True)
             fig.update_layout(template='plotly_dark', title_text=annotation_text)
         else:
-            fig = go.Figure(data=go.Scatter(x=df['date'], y=(df['Value']), mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', showscale=True)))
+            fig = go.Figure(data=go.Scatter(x=df['date'], y=(df['Value']), mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', cmin=0, cmax=1, showscale=True)))
             fig.update_yaxes(title='Price ($USD)', type="log", showgrid=True)
             fig.update_layout(template='plotly_dark', title_text=annotation_text)
 
-
+  
         st.plotly_chart(fig, use_container_width=True)
 
         # Plot Price and Risk Metric
@@ -191,7 +191,6 @@ def plot_risk_visualization(df, instrument):
         fig.update_yaxes(title='Risk', type='linear', secondary_y=True, showgrid=True, tick0=0.0, dtick=0.1, range=[0, 1])
         fig.update_layout(template='plotly_dark', title={'text': annotation_text, 'y': 0.9, 'x': 0.5})
 
-    
 
         st.plotly_chart(fig, use_container_width=True)
     else:
