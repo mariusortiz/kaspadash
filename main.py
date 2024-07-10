@@ -6,30 +6,27 @@ from plotly.subplots import make_subplots
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
-# Configurer la page
-st.set_page_config(layout="wide")
-
-# Vérifier si le mot de passe existe dans st.secrets
-if "general" in st.secrets and "password" in st.secrets["general"]:
-    PASSWORD = st.secrets["general"]["password"]
-    require_password = True
-else:
-    require_password = False
+# Récupérer le mot de passe depuis st.secrets
+PASSWORD = st.secrets["general"].get("password", None)
 
 def main():
-    if require_password:
-        st.title("Application protégée par mot de passe")
+    st.title("Application protégée par mot de passe")
+
+    # Afficher un champ de saisie de mot de passe
+    if PASSWORD:
         password = st.text_input("Entrez le mot de passe", type="password")
 
         if password == PASSWORD:
             st.success("Accès autorisé")
-            display_dashboard()
+            show_dashboard()
         elif password:
             st.error("Mot de passe incorrect")
     else:
-        display_dashboard()
+        show_dashboard()
 
-def display_dashboard():
+def show_dashboard():
+    st.set_page_config(layout="wide")
+
     # Charger le fichier CSV
     csv_file = 'kas_d.csv'  # Remplacez par le chemin de votre fichier CSV
     df = pd.read_csv(csv_file)
@@ -208,10 +205,10 @@ def display_dashboard():
         fig.update_yaxes(title='Risk', type='linear', secondary_y=True, showgrid=True, tick0=0.0, dtick=0.1, range=[0, 1])
         fig.update_layout(template='plotly_dark', title={'text': annotation_text, 'y': 0.9, 'x': 0.5})
 
+
         st.plotly_chart(fig, use_container_width=True)
 
-
-    # Fonction pour la visualisation des prédictions passées de la loi de puissance
+    # Fonction pour le Past Power Law
     def plot_past_power_law(df, instrument):
         st.markdown(f"<h2 style='text-align: center;'>{instrument} Historical Power Law Predictions</h2>", unsafe_allow_html=True)
 
@@ -221,17 +218,28 @@ def display_dashboard():
             value="Linear"
         )
 
-        df = df[df["date"] <= df.dropna(subset=['close'])['date'].max()]
+        df = df[df["date"] <= max_date_with_close]
 
+        # Create subplots
         fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
                             subplot_titles=(f'Actual vs Predicted Prices - {instrument}', 'Percentage Difference between Actual and Historical Predicted Prices'))
         fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
         fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], mode='lines', name='Predicted Next Day Price', line=dict(color='white')), row=1, col=1)
-   
+        fig.add_annotation(
+            text="KASPING.STREAMLIT.APP",  # The watermark text
+            align='left',
+            opacity=0.4,  # Adjust opacity to make the watermark lighter
+            font=dict(color="red", size=35),  # Adjust font color and size
+            xref='paper',  # Position the watermark relative to the entire figure
+            yref='paper',
+            x=0.5,  # Centered horizontally
+            y=0.5,  # Centered vertically
+            showarrow=False)  # Do not show an arrow pointing to the text)
         differences = 100 * (df['close'] - df['predicted_next_day_price']) / df['predicted_next_day_price']
         fig.add_trace(go.Scatter(x=df['date'], y=differences, mode='lines', name='Difference (%)'), row=2, col=1)
         fig.add_hline(y=0, line=dict(dash='dash', color='red'), row=2, col=1)
 
+        # Update layout
         fig.update_layout(height=800, width=1000, showlegend=True)
         fig.update_yaxes(title_text="Price ($)", row=1, col=1)
         fig.update_yaxes(title_text="Difference (%)", row=2, col=1)
@@ -245,21 +253,22 @@ def display_dashboard():
         st.plotly_chart(fig, use_container_width=True)
         expander = st.expander('About the chart')
         expander.write('''
-        You might find it surprising to see the predicted value fluctuate. Typically, power law charts depict the fair price as a constant, straight line (on log-log charts) because they are curve-fitted on the past data for the best fit.
-
+        You might find it surprising to see the predicted value fluctuate. Typically, power law charts depict the fair price as a constant, straight line (on log-log charts) because they are curve-fitted on the past data for the best fit. 
+        
         However, this doesn't reveal past predictions, which is crucial for assessing the reliability of these forecasts.
-
+        
         This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
         ''')
 
-    # Fonction pour la visualisation des prédictions futures de la loi de puissance
+    # Fonction pour le Future Power Law
     def plot_future_power_law(df, instrument):
         days_difference = (df['date'].max() - df['date'].min()).days
-        days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
-                                min_value=1, 
-                                max_value=days_difference, 
-                                value=30)
 
+        days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
+                                            min_value=1, 
+                                            max_value=days_difference, 
+                                            value=30)
+        # Slider for selecting the number of days from today for prediction
         st.markdown(f"<h2 style='text-align: center;'>{instrument} Power Law Predictions</h2>", unsafe_allow_html=True)
 
         chart_type = st.sidebar.select_slider(
@@ -267,37 +276,58 @@ def display_dashboard():
             options=['Linear', 'Logarithmic'],
             value="Linear"
         )
-
+        # Calculate the date for the specified number of days from today
         today = datetime.today()
         future_date = today + timedelta(days=(days_from_today-1))
+
+        # Find the closest date in the dataframe to the future date
         closest_future_date = df[df['date'] >= future_date].iloc[0]['date']
+
+        # Retrieve the predicted price for that date
         predicted_price_on_future_date = df[df['date'] == closest_future_date]['predicted_price'].values[0]
         today_price = df.dropna(subset=['close'])['close'].values[-1]
 
+        # Display the predicted price
         st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference</h4>", unsafe_allow_html=True)
 
+        # Plot the actual and predicted prices using Plotly
         fig = go.Figure()
         df = df[df['date'] <= future_date]
 
         fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Price'))
-        fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],name='Historical Fair Price', mode='lines', line=dict(color='white')))
+        fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], name='Historical Fair Price', mode='lines', line=dict(color='white')))
         fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines', name='Future Fair Price', line=dict(color='red')))
 
+        # Highlight the future date and predicted price
         fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
         fig.add_trace(go.Scatter(x=[closest_future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Fair Price'))
 
+        # Update the layout based on the chart type
         if chart_type == "Linear":
             fig.update_layout(xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
         elif chart_type == "Logarithmic":
             fig.update_layout(xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
 
+        # Add a watermark
+        fig.add_annotation(
+            text="KASPING.STREAMLIT.APP",  # The watermark text
+            align='left',
+            opacity=0.4,  # Adjust opacity to make the watermark lighter
+            font=dict(color="red", size=35),  # Adjust font color and size
+            xref='paper',  # Position the watermark relative to the entire figure
+            yref='paper',
+            x=0.5,  # Centered horizontally
+            y=0.5,  # Centered vertically
+            showarrow=False,  # Do not show an arrow pointing to the text
+        )
+
         st.plotly_chart(fig, use_container_width=True)
         expander = st.expander('About the chart')
         expander.write('''
-        You might find it surprising to see the predicted value fluctuate. Typically, power law charts depict the fair price as a constant, straight line (on log-log charts) because they are curve-fitted on the past data for the best fit.
-
+        You might find it surprising to see the predicted value fluctuate. Typically, power law charts depict the fair price as a constant, straight line (on log-log charts) because they are curve-fitted on the past data for the best fit. 
+        
         However, this doesn't reveal past predictions, which is crucial for assessing the reliability of these forecasts.
-
+        
         This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
         ''')
 
