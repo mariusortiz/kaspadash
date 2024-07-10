@@ -281,7 +281,7 @@ def plot_past_power_law(df, instrument):
         value="Linear"
     )
     
-    max_date_with_close = df.dropna(subset(['close'])['date'].max()
+    max_date_with_close = df.dropna(subset(['close'])['date'].max())
     df = df[df["date"] <= max_date_with_close]
     
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
