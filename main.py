@@ -14,14 +14,22 @@ def exponential_smoothing(series, alpha):
     return result
 
 def calculate_predicted_price(df):
-    # Use RANSAC regression for predicted price
     df = df.dropna(subset=['close'])  # Ensure there are no NaNs in 'close'
-    X = np.log(df['days_from_genesis'].values).reshape(-1, 1)
+    df = df[df['days_from_genesis'] > 0]  # Ensure days_from_genesis is positive
+    df['log_days_from_genesis'] = np.log(df['days_from_genesis'])
+
+    # Filter out any infinite or extremely large values
+    df = df.replace([np.inf, -np.inf], np.nan).dropna(subset=['log_days_from_genesis', 'close'])
+
+    X = df['log_days_from_genesis'].values.reshape(-1, 1)
     y = np.log(df['close'].values)
+
     ransac = RANSACRegressor()
     ransac.fit(X, y)
+
     df['predicted_price'] = np.exp(ransac.predict(X))
     return df, ransac
+
 
 def plot_rainbow_chart(df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
