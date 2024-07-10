@@ -251,20 +251,26 @@ def plot_future_power_law(df, instrument):
 
     today = datetime.today()
     future_date = today + timedelta(days=(days_from_today-1))
-    
+
+    # Assurez-vous que la colonne 'log_days_from_genesis' est créée correctement
+    df['days_from_genesis'] = (df['date'] - df['date'].min()).dt.days
+    df['log_days_from_genesis'] = np.log(df['days_from_genesis'] + 1)
+
+    # Utiliser uniquement les données historiques pour ajuster le modèle
+    historical_data = df.dropna(subset=['close'])
+
+    model = LinearRegression().fit(historical_data[['log_days_from_genesis']], historical_data['close'])
+
     # Préparation des données pour le futur
     future_dates = pd.date_range(start=today, periods=days_from_today)
     future_predictions = pd.DataFrame({'date': future_dates})
-    future_predictions['predicted_price'] = np.nan  # Placeholder pour les prédictions futures
-    
+    future_predictions['days_from_genesis'] = (future_predictions['date'] - df['date'].min()).days
+    future_predictions['log_days_from_genesis'] = np.log(future_predictions['days_from_genesis'] + 1)
+    future_predictions['predicted_price'] = model.predict(future_predictions[['log_days_from_genesis']])
+
     # Concaténer les données actuelles avec les données futures
     df_extended = pd.concat([df, future_predictions], ignore_index=True)
-    
-    # Prédictions pour les dates futures
-    df_extended['log_days_from_genesis'] = np.log((df_extended['date'] - df_extended['date'].min()).dt.days + 1)
-    model = LinearRegression().fit(df[['log_days_from_genesis']], df['close'])
-    df_extended['predicted_price'] = model.predict(df_extended[['log_days_from_genesis']])
-    
+
     closest_future_date = df_extended[df_extended['date'] >= future_date].iloc[0]['date']
     predicted_price_on_future_date = df_extended[df_extended['date'] == closest_future_date]['predicted_price'].values[0]
     today_price = df.dropna(subset=['close'])['close'].values[-1]
