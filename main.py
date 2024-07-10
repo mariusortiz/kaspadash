@@ -143,9 +143,15 @@ def plot_risk_visualization(df, instrument):
     df['Value'] = df['close']
     df = df[df['Value'] > 0]
 
-    # Normalisation des valeurs Preavg et avg
-    df['Preavg'] = np.log(df['Value'] / df['Value'].shift(1)).fillna(0)
-    df['avg'] = (df['Preavg'] - df['Preavg'].min()) / (df['Preavg'].max() - df['Preavg'].min())
+    diminishing_factor = 0.395
+    moving_average_days = 365
+
+    # Calculate the `Risk Metric`
+    df['MA'] = df['Value'].rolling(moving_average_days, min_periods=1).mean().dropna()
+    df['Preavg'] = (np.log(df.Value) - np.log(df['MA'])) * df.index**diminishing_factor
+
+    # Normalization to 0-1 range
+    df['avg'] = (df['Preavg'] - df['Preavg'].cummin()) / (df['Preavg'].cummax() - df['Preavg'].cummin())
 
     annotation_text = f"Updated: {df['date'].iloc[-1].strftime('%Y-%m-%d')} | Price: {round(df['Value'].iloc[-1], 5)} | Risk: {round(df['avg'].iloc[-1], 2)}"
 
