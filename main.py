@@ -31,7 +31,6 @@ def calculate_predicted_price(df):
     df['predicted_price'] = df['predicted_next_day_price']
     return df, ransac
 
-
 def plot_rainbow_chart(df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
     pct_change = st.sidebar.slider('Select increase/decrease in % for prediction:', min_value=-99, max_value=500, value=0)
@@ -333,7 +332,13 @@ def main():
         options=['Rainbow chart', 'Risk Visualization', 'Past Power Law', 'Future Power Law']
     )
 
-    if dashboard == 'Future Power Law':
+    if dashboard == 'Rainbow chart':
+        plot_rainbow_chart(df, instrument)
+    elif dashboard == 'Risk Visualization':
+        plot_risk_visualization(df, instrument)
+    elif dashboard == 'Past Power Law':
+        plot_past_power_law(df, instrument)
+    elif dashboard == 'Future Power Law':
         plot_future_power_law(df, instrument, ransac)
 
 if __name__ == "__main__":
