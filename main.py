@@ -27,7 +27,8 @@ def calculate_predicted_price(df):
     ransac = RANSACRegressor()
     ransac.fit(X, y)
 
-    df['predicted_price'] = np.exp(ransac.predict(X))
+    df['predicted_next_day_price'] = np.exp(ransac.predict(X))
+    df['predicted_price'] = df['predicted_next_day_price']
     return df, ransac
 
 
@@ -312,6 +313,7 @@ def plot_future_power_law(df, instrument, ransac):
 def main():
     st.set_page_config(layout="wide")
 
+    # Charger le fichier CSV
     csv_file = 'kas_d.csv'
     df = pd.read_csv(csv_file)
     df['date'] = pd.to_datetime(df['date'])
@@ -325,13 +327,7 @@ def main():
         options=['Rainbow chart', 'Risk Visualization', 'Past Power Law', 'Future Power Law']
     )
 
-    if dashboard == 'Rainbow chart':
-        plot_rainbow_chart(df, instrument)
-    elif dashboard == 'Risk Visualization':
-        plot_risk_visualization(df, instrument)
-    elif dashboard == 'Past Power Law':
-        plot_past_power_law(df, instrument)
-    elif dashboard == 'Future Power Law':
+    if dashboard == 'Future Power Law':
         plot_future_power_law(df, instrument, ransac)
 
 if __name__ == "__main__":
