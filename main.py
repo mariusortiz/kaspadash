@@ -259,7 +259,7 @@ def plot_future_power_law(df, instrument):
     df = df[df['date'] <= future_date]
 
     fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Price'))
-    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],name='Historical Fair Price', mode='lines', line=dict(color='white')))
+    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'],name='Historical Fair Price', mode='lines', line=dict(color='cyan')))
     fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines', name='Future Fair Price', line=dict(color='red')))
 
     fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
@@ -270,17 +270,6 @@ def plot_future_power_law(df, instrument):
     elif chart_type == "Logarithmic":
         fig.update_layout(xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
 
-    fig.add_annotation(
-        text="KASPING.STREAMLIT.APP",
-        align='left',
-        opacity=0.4,
-        font=dict(color="red", size=35),
-        xref='paper',
-        yref='paper',
-        x=0.5,
-        y=0.5,
-        showarrow=False
-    )
 
     st.plotly_chart(fig, use_container_width=True)
     expander = st.expander('About the chart')
