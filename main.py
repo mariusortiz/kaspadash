@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from plotly.subplots import make_subplots
 import numpy as np
 from sklearn.linear_model import LinearRegression
-from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
 def exponential_smoothing(series, alpha):
     result = [series[0]]
