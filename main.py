@@ -20,7 +20,7 @@ def calculate_predicted_price(df):
     df['predicted_next_day_price'] = exponential_smoothing(df['close'], alpha)
     df['predicted_price'] = df['predicted_next_day_price']
     return df
-
+    
 
 def plot_rainbow_chart(df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
@@ -284,7 +284,7 @@ def plot_future_power_law(df, instrument):
     predicted_log_close = model.predict(np.array([[future_log_days]]))[0]
     predicted_price_on_future_date = np.exp(predicted_log_close)
     
-    today_price = df.dropna(subset(['close'])['close'].values[-1]
+    today_price = df.dropna(subset=['close'])['close'].values[-1]
     
     st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference</h4>", unsafe_allow_html=True)
 
