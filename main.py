@@ -10,7 +10,7 @@ from sklearn.linear_model import LinearRegression
 st.set_page_config(layout="wide")
 
 # Récupérer le mot de passe depuis st.secrets
-PASSWORD = st.secrets["password"]
+PASSWORD = st.secrets["PASSWORD"]
 
 def main():
     st.title("Application protégée par mot de passe")
