@@ -160,17 +160,11 @@ def plot_risk_visualization(df, instrument):
     if not df.empty:
         if instrument == "Bitcoin (BTC)":
             df = df[df.index > 1200]
-            if 'predicted_next_day_price' in df.columns:
-                df['MA'] = df['predicted_next_day_price'].rolling(2, min_periods=1).mean().dropna()
-                df['Preavg'] = (np.log(df.Value) - np.log(df['MA'])) * df.index ** .395
-            else:
-                df['Preavg'] = np.log(df.Value).rolling(2, min_periods=1).mean().dropna() * df.index ** .395
+            df['MA'] = df['Value'].rolling(2, min_periods=1).mean().dropna()
+            df['Preavg'] = (np.log(df.Value) - np.log(df['MA'])) * df.index ** .395
             df['avg'] = (df['Preavg'] - df['Preavg'].cummin()) / (df['Preavg'].cummax() - df['Preavg'].cummin())
         else:
-            if 'predicted_next_day_price' in df.columns:
-                df['Preavg'] = ((np.log(df.Value) - (df['predicted_next_day_price'])) / np.log(df['predicted_next_day_price']))
-            else:
-                df['Preavg'] = ((np.log(df.Value) - (df['close'].shift(1))) / np.log(df['close'].shift(1)))
+            df['Preavg'] = ((np.log(df.Value) - np.log(df['Value'].shift(1))) / np.log(df['Value'].shift(1)))
             df['avg'] = (df['Preavg'] - df['Preavg'].cummin()) / (df['Preavg'].cummax() - df['Preavg'].cummin())
             df['avg'] = 1 - df['avg']
 
