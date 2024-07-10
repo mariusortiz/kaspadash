@@ -2,8 +2,10 @@ import pandas as pd
 import streamlit as st
 from plotly import graph_objects as go
 from datetime import datetime, timedelta
+from plotly.subplots import make_subplots
 import numpy as np
 from sklearn.linear_model import LinearRegression
+
 
 # Fonction de lissage exponentiel
 def exponential_smoothing(series, alpha):
@@ -19,95 +21,6 @@ def calculate_predicted_price(df):
     df['predicted_price'] = df['predicted_next_day_price']
     return df
 
-def plot_future_power_law(df, instrument):
-    days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
-                                        min_value=1, 
-                                        max_value=30, 
-                                        value=30)
-    st.markdown(f"<h2 style='text-align: center;'>{instrument} Power Law Predictions</h2>", unsafe_allow_html=True)
-
-    chart_type = st.sidebar.select_slider(
-        'Select scale type',
-        options=['Linear', 'Logarithmic'],
-        value="Logarithmic"
-    )
-
-    # Calculer la date pour le nombre de jours spécifié à partir d'aujourd'hui
-    today = datetime.today()
-    future_date = today + timedelta(days=(days_from_today - 1))
-
-    # Utiliser les données des 6 derniers mois pour l'entraînement
-    recent_df = df[df['date'] >= df['date'].max() - timedelta(days=180)].copy()
-
-    # Étendre les dates futures dans le DataFrame
-    last_date = recent_df['date'].max()
-    future_dates = pd.date_range(start=last_date + timedelta(days=1), end=future_date)
-    future_df = pd.DataFrame({'date': future_dates})
-
-    # Ajouter les dates futures au DataFrame existant
-    df_extended = pd.concat([recent_df, future_df]).reset_index(drop=True)
-
-    # Calculer les valeurs futures prédictes en utilisant le modèle de régression
-    df_extended['days_from_genesis'] = (df_extended['date'] - df_extended['date'].min()).dt.days + 1
-    df_extended['log_close'] = np.log(df_extended['close'])
-    df_extended['log_days'] = np.log(df_extended['days_from_genesis'])
-
-    # Remplacer les NaNs dans log_close par des valeurs interpolées
-    df_extended['log_close'] = df_extended['log_close'].interpolate()
-
-    X = df_extended[['log_days']]
-    y = df_extended['log_close']
-    model = LinearRegression().fit(X, y)
-
-    future_log_days = np.log((future_date - df_extended['date'].min()).days + 1)
-    predicted_log_close = model.predict(np.array([[future_log_days]]))[0]
-    predicted_price_on_future_date = np.exp(predicted_log_close)
-    
-    today_price = df.dropna(subset=['close'])['close'].values[-1]
-    
-    st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference</h4>", unsafe_allow_html=True)
-
-    # Prédire les prix futurs pour toutes les dates futures
-    future_df['log_days'] = np.log((future_df['date'] - df_extended['date'].min()).dt.days + 1)
-    future_df['predicted_log_close'] = model.predict(future_df[['log_days']])
-    future_df['predicted_price'] = np.exp(future_df['predicted_log_close'])
-
-    fig = go.Figure()
-    df_filtered = df[df['date'] <= future_date].copy()
-
-    fig.add_trace(go.Scatter(x=df_filtered['date'], y=df_filtered['close'], mode='lines', name='Price'))
-    fig.add_trace(go.Scatter(x=df_filtered['date'], y=df_filtered['predicted_next_day_price'], name='Historical Fair Price', mode='lines', line=dict(color='cyan')))
-    fig.add_trace(go.Scatter(x=future_df['date'], y=future_df['predicted_price'], mode='lines', name='Future Fair Price', line=dict(color='red')))
-    
-    fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
-    fig.add_trace(go.Scatter(x=[future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Fair Price'))
-
-    if chart_type == "Linear":
-        fig.update_layout(xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
-    elif chart_type == "Logarithmic":
-        fig.update_layout(xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
-
-    fig.add_annotation(
-        text="KASPING.STREAMLIT.APP",  # The watermark text
-        align='left',
-        opacity=0.4,  # Adjust opacity to make the watermark lighter
-        font=dict(color="red", size=35),  # Adjust font color and size
-        xref='paper',  # Position the watermark relative to the entire figure
-        yref='paper',
-        x=0.5,  # Centered horizontally
-        y=0.5,  # Centered vertically
-        showarrow=False,  # Do not show an arrow pointing to the text
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
-    expander = st.expander('About the chart')
-    expander.write('''
-    You might find it surprising to see the predicted value fluctuate. Typically, power law charts depict the fair price as a constant, straight line (on log-log charts) because they are curve-fitted on the past data for the best fit.
-
-    However, this doesn't reveal past predictions, which is crucial for assessing the reliability of these forecasts.
-
-    This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
-    ''')
 
 def plot_rainbow_chart(df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
@@ -281,7 +194,7 @@ def plot_past_power_law(df, instrument):
         value="Linear"
     )
     
-    max_date_with_close = df.dropna(subset(['close'])['date'].max())
+    max_date_with_close = df.dropna(subset=['close'])['date'].max()
     df = df[df["date"] <= max_date_with_close]
     
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
@@ -325,6 +238,99 @@ def plot_past_power_law(df, instrument):
     This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
     ''')
 
+
+
+def plot_future_power_law(df, instrument):
+    days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
+                                        min_value=1, 
+                                        max_value=30, 
+                                        value=30)
+    st.markdown(f"<h2 style='text-align: center;'>{instrument} Power Law Predictions</h2>", unsafe_allow_html=True)
+
+    chart_type = st.sidebar.select_slider(
+        'Select scale type',
+        options=['Linear', 'Logarithmic'],
+        value="Logarithmic"
+    )
+
+    # Calculer la date pour le nombre de jours spécifié à partir d'aujourd'hui
+    today = datetime.today()
+    future_date = today + timedelta(days=(days_from_today - 1))
+
+    # Utiliser les données des 6 derniers mois pour l'entraînement
+    recent_df = df[df['date'] >= df['date'].max() - timedelta(days=180)].copy()
+
+    # Étendre les dates futures dans le DataFrame
+    last_date = recent_df['date'].max()
+    future_dates = pd.date_range(start=last_date + timedelta(days=1), end=future_date)
+    future_df = pd.DataFrame({'date': future_dates})
+
+    # Ajouter les dates futures au DataFrame existant
+    df_extended = pd.concat([recent_df, future_df]).reset_index(drop=True)
+
+    # Calculer les valeurs futures prédictes en utilisant le modèle de régression
+    df_extended['days_from_genesis'] = (df_extended['date'] - df_extended['date'].min()).dt.days + 1
+    df_extended['log_close'] = np.log(df_extended['close'])
+    df_extended['log_days'] = np.log(df_extended['days_from_genesis'])
+
+    # Remplacer les NaNs dans log_close par des valeurs interpolées
+    df_extended['log_close'] = df_extended['log_close'].interpolate()
+
+    X = df_extended[['log_days']]
+    y = df_extended['log_close']
+    model = LinearRegression().fit(X, y)
+
+    future_log_days = np.log((future_date - df_extended['date'].min()).days + 1)
+    predicted_log_close = model.predict(np.array([[future_log_days]]))[0]
+    predicted_price_on_future_date = np.exp(predicted_log_close)
+    
+    today_price = df.dropna(subset(['close'])['close'].values[-1]
+    
+    st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference</h4>", unsafe_allow_html=True)
+
+    # Prédire les prix futurs pour toutes les dates futures
+    future_df['log_days'] = np.log((future_df['date'] - df_extended['date'].min()).dt.days + 1)
+    future_df['predicted_log_close'] = model.predict(future_df[['log_days']])
+    future_df['predicted_price'] = np.exp(future_df['predicted_log_close'])
+
+    fig = go.Figure()
+    df_filtered = df[df['date'] <= future_date].copy()
+
+    fig.add_trace(go.Scatter(x=df_filtered['date'], y=df_filtered['close'], mode='lines', name='Price'))
+    fig.add_trace(go.Scatter(x=df_filtered['date'], y=df_filtered['predicted_next_day_price'], name='Historical Fair Price', mode='lines', line=dict(color='cyan')))
+    fig.add_trace(go.Scatter(x=future_df['date'], y=future_df['predicted_price'], mode='lines', name='Future Fair Price', line=dict(color='red')))
+    
+    fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
+    fig.add_trace(go.Scatter(x=[future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Fair Price'))
+
+    if chart_type == "Linear":
+        fig.update_layout(xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
+    elif chart_type == "Logarithmic":
+        fig.update_layout(xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
+
+    fig.add_annotation(
+        text="KASPING.STREAMLIT.APP",  # The watermark text
+        align='left',
+        opacity=0.4,  # Adjust opacity to make the watermark lighter
+        font=dict(color="red", size=35),  # Adjust font color and size
+        xref='paper',  # Position the watermark relative to the entire figure
+        yref='paper',
+        x=0.5,  # Centered horizontally
+        y=0.5,  # Centered vertically
+        showarrow=False,  # Do not show an arrow pointing to the text
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+    expander = st.expander('About the chart')
+    expander.write('''
+    You might find it surprising to see the predicted value fluctuate. Typically, power law charts depict the fair price as a constant, straight line (on log-log charts) because they are curve-fitted on the past data for the best fit.
+
+    However, this doesn't reveal past predictions, which is crucial for assessing the reliability of these forecasts.
+
+    This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
+    ''')
+
+# Intégration de la fonction dans l'application principale
 def main():
     st.set_page_config(layout="wide")
 
