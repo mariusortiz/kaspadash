@@ -180,5 +180,12 @@ def plot_risk_visualization(df, instrument):
     fig.update_yaxes(title='Risk', type='linear', secondary_y=True, showgrid=True, tick0=0.0, dtick=0.1, range=[0, 1])
     fig.update_layout(template='plotly_dark', title={'text': annotation_text, 'y': 0.9, 'x': 0.5})
 
-   
+
     st.plotly_chart(fig, use_container_width=True)
+
+
+# Affichage des graphiques en fonction de la sélection de l'utilisateur
+if dashboard == 'Rainbow chart':
+    plot_rainbow_chart(df, instrument)
+elif dashboard == 'Risk Visualization':
+    plot_risk_visualization(df, instrument)
