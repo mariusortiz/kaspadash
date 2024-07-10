@@ -7,16 +7,6 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 
 def main():
-    if "general" in st.secrets and "password" in st.secrets["general"]:
-        PASSWORD = st.secrets["general"]["password"]
-        password = st.text_input("Entrez le mot de passe", type="password")
-        if password != PASSWORD:
-            st.error("Mot de passe incorrect")
-            return
-        else:
-            st.success("Accès autorisé")
-    else:
-        st.info("Pas de mot de passe requis")
 
     st.set_page_config(layout="wide")
 
