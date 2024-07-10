@@ -169,7 +169,7 @@ def plot_risk_visualization(df, instrument):
 
     # Deuxième graphique avec des zones de risque colorées
     fig = make_subplots(specs=[[{'secondary_y': True}]])
-    fig.add_trace(go.Scatter(x=df['date'], y=df['Value'], name='Price', line=dict(color='gold')))
+    fig.add_trace(go.Scatter(x=df['date'], y=df['Value'], name='Price', line=dict(color='black')))
     fig.add_trace(go.Scatter(x=df['date'], y=df['avg'], name='Risk', line=dict(color='white')), secondary_y=True)
 
     # Ajout des zones colorées
