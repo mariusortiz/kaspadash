@@ -140,15 +140,12 @@ def plot_risk_visualization(df, instrument):
         value="Logarithmic"
     )
 
-    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
-                        subplot_titles=(f'Actual vs Predicted Prices - {instrument}', 'Percentage Difference between Actual and Predicted Prices'))
-
     df['Value'] = df['close']
     df = df[df['Value'] > 0]
 
-    df['Preavg'] = ((np.log(df.Value) - (df['close'].shift(1))) / np.log(df['close'].shift(1)))
-    df['avg'] = (df['Preavg'] - df['Preavg'].cummin()) / (df['Preavg'].cummax() - df['Preavg'].cummin())
-    df['avg'] = 1 - df['avg']
+    # Normalisation des valeurs Preavg et avg
+    df['Preavg'] = np.log(df['Value'] / df['Value'].shift(1)).fillna(0)
+    df['avg'] = (df['Preavg'] - df['Preavg'].min()) / (df['Preavg'].max() - df['Preavg'].min())
 
     annotation_text = f"Updated: {df['date'].iloc[-1].strftime('%Y-%m-%d')} | Price: {round(df['Value'].iloc[-1], 5)} | Risk: {round(df['avg'].iloc[-1], 2)}"
 
@@ -164,12 +161,12 @@ def plot_risk_visualization(df, instrument):
     fig.update_layout(title=annotation_text)
     st.plotly_chart(fig, use_container_width=True)
 
-    # Plot Price and Risk Metric
+    # Deuxième graphique avec des zones de risque colorées
     fig = make_subplots(specs=[[{'secondary_y': True}]])
     fig.add_trace(go.Scatter(x=df['date'], y=df['Value'], name='Price', line=dict(color='gold')))
     fig.add_trace(go.Scatter(x=df['date'], y=df['avg'], name='Risk', line=dict(color='white')), secondary_y=True)
 
-    # Add colored risk zones
+    # Ajout des zones colorées
     opacity = 0.2
     for i in range(5, 0, -1):
         opacity += 0.05
@@ -178,17 +175,10 @@ def plot_risk_visualization(df, instrument):
         opacity += 0.1
         fig.add_hrect(y0=i*0.1, y1=((i+1)*0.1), line_width=0, fillcolor='red', opacity=opacity, secondary_y=True)
 
-    # Update layout
     fig.update_xaxes(title='Date')
     fig.update_yaxes(title='Price ($USD)', type='log', showgrid=False)
     fig.update_yaxes(title='Risk', type='linear', secondary_y=True, showgrid=True, tick0=0.0, dtick=0.1, range=[0, 1])
     fig.update_layout(template='plotly_dark', title={'text': annotation_text, 'y': 0.9, 'x': 0.5})
 
-
+   
     st.plotly_chart(fig, use_container_width=True)
-
-# Affichage des graphiques en fonction de la sélection de l'utilisateur
-if dashboard == 'Rainbow chart':
-    plot_rainbow_chart(df, instrument)
-elif dashboard == 'Risk Visualization':
-    plot_risk_visualization(df, instrument)
