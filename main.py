@@ -146,63 +146,48 @@ def plot_risk_visualization(df, instrument):
     df['Value'] = df['close']
     df = df[df['Value'] > 0]
 
-    if not df.empty:
-        if instrument == "Kaspa (KAS)":
-            df = df[df.index > 1200]
-            df['MA'] = df['Value'].rolling(2, min_periods=1).mean().dropna()
-            df['Preavg'] = (np.log(df.Value) - np.log(df['MA'])) * df.index ** .395
-            df['avg'] = (df['Preavg'] - df['Preavg'].cummin()) / (df['Preavg'].cummax() - df['Preavg'].cummin())
-        else:
-            df['Preavg'] = ((np.log(df.Value) - np.log(df['Value'].shift(1))) / np.log(df['Value'].shift(1)))
-            df['avg'] = (df['Preavg'] - df['Preavg'].cummin()) / (df['Preavg'].cummax() - df['Preavg'].cummin())
-            df['avg'] = 1 - df['avg']
+    df['Preavg'] = ((np.log(df.Value) - (df['close'].shift(1))) / np.log(df['close'].shift(1)))
+    df['avg'] = (df['Preavg'] - df['Preavg'].cummin()) / (df['Preavg'].cummax() - df['Preavg'].cummin())
+    df['avg'] = 1 - df['avg']
 
-        annotation_text = f"Updated: {df['date'].iloc[-1].strftime('%Y-%m-%d')} | Price: {round(df['Value'].iloc[-1], 5)} | Risk: {round(df['avg'].iloc[-1], 2)}"
+    annotation_text = f"Updated: {df['date'].iloc[-1].strftime('%Y-%m-%d')} | Price: {round(df['Value'].iloc[-1], 5)} | Risk: {round(df['avg'].iloc[-1], 2)}"
 
-        if chart_type == "Linear":
-            fig = go.Figure(data=go.Scatter(x=df['date'], y=df['Value'], mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', cmin=0, cmax=1, showscale=True)))
-            fig.update_yaxes(title='Price ($USD)', showgrid=True)
-            fig.update_layout(template='plotly_dark', title_text=annotation_text)
-        else:
-            fig = go.Figure(data=go.Scatter(x=df['date'], y=(df['Value']), mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', cmin=0, cmax=1, showscale=True)))
-            fig.update_yaxes(title='Price ($USD)', type="log", showgrid=True)
-            fig.update_layout(template='plotly_dark', title_text=annotation_text)
-
-  
-        st.plotly_chart(fig, use_container_width=True)
-
-        # Plot Price and Risk Metric
-        fig = make_subplots(specs=[[{'secondary_y': True}]])
-        fig.add_trace(go.Scatter(x=df['date'], y=df['Value'], name='Price', line=dict(color='gold')))
-        fig.add_trace(go.Scatter(x=df['date'], y=df['avg'], name='Risk', line=dict(color='white')), secondary_y=True)
-
-        # Add colored risk zones
-        opacity = 0.2
-        for i in range(5, 0, -1):
-            opacity += 0.05
-            fig.add_hrect(y0=i * 0.1, y1=((i - 1) * 0.1), line_width=0, fillcolor='green', opacity=opacity, secondary_y=True)
-        for i in range(6, 10):
-            opacity += 0.1
-            fig.add_hrect(y0=i * 0.1, y1=((i + 1) * 0.1), line_width=0, fillcolor='red', opacity=opacity, secondary_y=True)
-
-        # Update layout
-        fig.update_xaxes(title='Date')
-        fig.update_yaxes(title='Price ($USD)', type='log', showgrid=False)
-        fig.update_yaxes(title='Risk', type='linear', secondary_y=True, showgrid=True, tick0=0.0, dtick=0.1, range=[0, 1])
-        fig.update_layout(template='plotly_dark', title={'text': annotation_text, 'y': 0.9, 'x': 0.5})
-
-
-        st.plotly_chart(fig, use_container_width=True)
+    if chart_type == "Linear":
+        fig = go.Figure(data=go.Scatter(x=df['date'], y=df['Value'], mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', showscale=True)))
+        fig.update_yaxes(title='Price ($USD)', showgrid=True)
+        fig.update_layout(height=600, width=800, margin=dict(l=50, r=50, t=50, b=50))
     else:
-        st.warning("No data available to display.")
+        fig = go.Figure(data=go.Scatter(x=df['date'], y=df['Value'], mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', showscale=True)))
+        fig.update_yaxes(title='Price ($USD)', showgrid=True, type='log')
+        fig.update_layout(height=600, width=800, margin=dict(l=50, r=50, t=50, b=50))
 
-# Chargement des données
-df = pd.read_csv('kas_d.csv', parse_dates=['date'])
+    fig.update_layout(title=annotation_text)
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Plot Price and Risk Metric
+    fig = make_subplots(specs=[[{'secondary_y': True}]])
+    fig.add_trace(go.Scatter(x=df['date'], y=df['Value'], name='Price', line=dict(color='gold')))
+    fig.add_trace(go.Scatter(x=df['date'], y=df['avg'], name='Risk', line=dict(color='white')), secondary_y=True)
+
+    # Add colored risk zones
+    opacity = 0.2
+    for i in range(5, 0, -1):
+        opacity += 0.05
+        fig.add_hrect(y0=i*0.1, y1=((i-1)*0.1), line_width=0, fillcolor='green', opacity=opacity, secondary_y=True)
+    for i in range(6, 10):
+        opacity += 0.1
+        fig.add_hrect(y0=i*0.1, y1=((i+1)*0.1), line_width=0, fillcolor='red', opacity=opacity, secondary_y=True)
+
+    # Update layout
+    fig.update_xaxes(title='Date')
+    fig.update_yaxes(title='Price ($USD)', type='log', showgrid=False)
+    fig.update_yaxes(title='Risk', type='linear', secondary_y=True, showgrid=True, tick0=0.0, dtick=0.1, range=[0, 1])
+    fig.update_layout(template='plotly_dark', title={'text': annotation_text, 'y': 0.9, 'x': 0.5})
+
+
+    st.plotly_chart(fig, use_container_width=True)
 
 # Affichage des graphiques en fonction de la sélection de l'utilisateur
-dashboard = 'Risk Visualization'  # Exemple, à changer selon la sélection de l'utilisateur
-instrument = "Bitcoin (BTC)"  # Exemple, à changer selon l'instrument
-
 if dashboard == 'Rainbow chart':
     plot_rainbow_chart(df, instrument)
 elif dashboard == 'Risk Visualization':
