@@ -6,15 +6,23 @@ from plotly.subplots import make_subplots
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
+def calculate_predicted_price(df):
+    df['day_number'] = np.arange(len(df))
+    X = df[['day_number']]
+    y = df['close']
+    model = LinearRegression().fit(X, y)
+    df['predicted_next_day_price'] = model.predict(X)
+    df['predicted_price'] = model.predict(X)
+
 def plot_rainbow_chart(df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
     pct_change = st.sidebar.slider('Select increase/decrease in % for prediction:', min_value=-99, max_value=500, value=0)
-    colors = ['blue', 'green', 'yellow', 'orange', 'red']
+    colors = ['blue','green','yellow', 'orange', 'red' ]
 
     if instrument == "Kaspa (KAS)":
         genesis_date = datetime(2021, 11, 7)
         start_date = '2022-01-04'
-        future_days = np.arange(1, 365 * 2)
+        future_days = np.arange(1, 365*2)
 
     df['date'] = pd.to_datetime(df['date'])
     max_date_with_close = df.dropna(subset=['close'])['date'].max()
@@ -50,7 +58,7 @@ def plot_rainbow_chart(df, instrument):
     y_fit = df_filtered_for_fit['log_close']
     model = LinearRegression().fit(X_fit, y_fit)
 
-    df_after_start = df[df['date'] >= start_date].copy()
+    df_after_start = df[df['date'] >= start_date]
     df['predicted_log_close'] = model.predict(df[['log_days_from_genesis']])
     df_after_start['residuals'] = df_after_start['log_close'] - df_after_start['predicted_log_close']
 
@@ -170,7 +178,6 @@ def plot_risk_visualization(df, instrument):
     fig.update_yaxes(title='Risk', type='linear', secondary_y=True, showgrid=True, tick0=0.0, dtick=0.1, range=[0, 1])
     fig.update_layout(template='plotly_dark', title={'text': annotation_text, 'y': 0.9, 'x': 0.5})
 
-
     st.plotly_chart(fig, use_container_width=True)
 
 def plot_past_power_law(df, instrument):
@@ -190,15 +197,15 @@ def plot_past_power_law(df, instrument):
     fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
     fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], mode='lines', name='Predicted Next Day Price', line=dict(color='white')), row=1, col=1)
     fig.add_annotation(
-        text="KASPING.STREAMLIT.APP",  # The watermark text
+        text="KASPING.STREAMLIT.APP",
         align='left',
-        opacity=0.4,  # Adjust opacity to make the watermark lighter
-        font=dict(color="red", size=35),  # Adjust font color and size
-        xref='paper',  # Position the watermark relative to the entire figure
+        opacity=0.4,
+        font=dict(color="red", size=35),
+        xref='paper',
         yref='paper',
-        x=0.5,  # Centered horizontally
-        y=0.5,  # Centered vertically
-        showarrow=False  # Do not show an arrow pointing to the text
+        x=0.5,
+        y=0.5,
+        showarrow=False
     )
     differences = 100 * (df['close'] - df['predicted_next_day_price']) / df['predicted_next_day_price']
     fig.add_trace(go.Scatter(x=df['date'], y=differences, mode='lines', name='Difference (%)'), row=2, col=1)
@@ -225,14 +232,13 @@ def plot_past_power_law(df, instrument):
     ''')
 
 def plot_future_power_law(df, instrument):
-    days_difference = (df['date'].max() - df['date'].min()).days
-
-    days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
-                                        min_value=1, 
-                                        max_value=days_difference, 
-                                        value=30)
-
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Power Law Predictions</h2>", unsafe_allow_html=True)
+
+    days_difference = (df['date'].max() - df['date'].min()).days
+    days_from_today = st.sidebar.slider('Select number of days from today for prediction:',
+                                        min_value=1,
+                                        max_value=days_difference,
+                                        value=30)
 
     chart_type = st.sidebar.select_slider(
         'Select scale type',
@@ -242,7 +248,6 @@ def plot_future_power_law(df, instrument):
 
     today = datetime.today()
     future_date = today + timedelta(days=(days_from_today - 1))
-
     closest_future_date = df[df['date'] >= future_date].iloc[0]['date']
 
     predicted_price_on_future_date = df[df['date'] == closest_future_date]['predicted_price'].values[0]
@@ -274,7 +279,7 @@ def plot_future_power_law(df, instrument):
         yref='paper',
         x=0.5,
         y=0.5,
-        showarrow=False,
+        showarrow=False
     )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -290,11 +295,13 @@ def plot_future_power_law(df, instrument):
 def main():
     st.set_page_config(layout="wide")
 
-    csv_file = 'kas_d.csv'
+    csv_file = 'kas_d.csv'  # Replace with your CSV file path
     df = pd.read_csv(csv_file)
     df['date'] = pd.to_datetime(df['date'])
 
-    instrument = "Kaspa (KAS)"
+    instrument = "Kaspa (KAS)"  # Replace with your instrument if necessary
+
+    calculate_predicted_price(df)
 
     dashboard = st.sidebar.selectbox(
         label='Select dashboard',
