@@ -16,6 +16,7 @@ def exponential_smoothing(series, alpha):
 historical_fair_price_df = pd.read_csv('historical_fair_price.csv')
 predicted_prices_df = pd.read_csv('future_prices.csv')
 
+
 def plot_rainbow_chart(df, rainbow_df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
     
@@ -232,13 +233,21 @@ predicted_prices_df = pd.read_csv('future_prices.csv')
 
 def main():
     st.set_page_config(layout="wide")
-
-    # Charger le fichier CSV du prix actuel
-    csv_file = 'kas_d.csv'
-    df = pd.read_csv(csv_file)
-    df['date'] = pd.to_datetime(df['date'])
-
+    
     instrument = "Kaspa (KAS)"
+
+    # Charger les fichiers CSV
+    kas_d_csv = 'kas_d.csv'
+    rainbow_chart_csv = 'rainbow_chart_data.csv'
+    historical_fair_price_csv = 'historical_fair_price.csv'
+    predicted_prices_csv = 'future_prices.csv'
+
+    df = pd.read_csv(kas_d_csv)
+    rainbow_df = pd.read_csv(rainbow_chart_csv)
+    historical_fair_price_df = pd.read_csv(historical_fair_price_csv)
+    predicted_prices_df = pd.read_csv(predicted_prices_csv)
+    
+    df['date'] = pd.to_datetime(df['date'])
     df['days_from_genesis'] = (df['date'] - df['date'].min()).dt.days
 
     dashboard = st.sidebar.selectbox(
@@ -247,13 +256,13 @@ def main():
     )
 
     if dashboard == 'Rainbow chart':
-        plot_rainbow_chart(df, instrument)
+        plot_rainbow_chart(df, rainbow_df, instrument)
     elif dashboard == 'Risk Visualization':
         plot_risk_visualization(df, instrument)
     elif dashboard == 'Past Power Law':
         plot_past_power_law(df, instrument)
     elif dashboard == 'Future Power Law':
-        plot_future_power_law(df, historical_fair_price_df, predicted_prices_df)
+        plot_future_power_law(df, instrument, historical_fair_price_df, predicted_prices_df)
 
 if __name__ == "__main__":
     main()
