@@ -8,8 +8,8 @@ df = pd.read_csv('kas_d.csv')
 df['date'] = pd.to_datetime(df['date'])
 
 # Définir les dates de référence
-genesis_date = datetime(2022, 6, 15)
-start_date = df['date'].min()
+genesis_date = datetime(2021, 11, 7)
+start_date = datetime(2022, 6, 15)  # Premier jour de kas_d.csv
 future_days = np.arange(1, 365 * 2)
 
 # Calculer les jours depuis la genèse
@@ -36,12 +36,6 @@ slope = model.estimator_.coef_[0]
 intercept_high = df.loc[highest_residual_index, 'log_close'] - (slope * df.loc[highest_residual_index, 'log_days_from_genesis'])
 intercept_low = df.loc[lowest_residual_index, 'log_close'] - (slope * df.loc[lowest_residual_index, 'log_days_from_genesis'])
 
-# Générer des données futures
-last_day_from_genesis = np.log(df['days_from_genesis'].max() + 1)
-future_log_days_from_genesis = np.log(df['days_from_genesis'].max() + 1 + future_days)
-future_days_from_genesis = np.exp(future_log_days_from_genesis)
-future_dates = [genesis_date + timedelta(days=int(day)) for day in future_days_from_genesis]
-
 # Créer les bandes de couleurs
 colors = ['blue', 'green', 'yellow', 'orange', 'red']
 num_bands = 3
@@ -53,17 +47,19 @@ for i in range(num_bands + 2):
 
 # Créer un DataFrame pour les données du Rainbow Chart
 rainbow_data = []
-for i, intercept in enumerate(intercepts_original):
-    y_values = slope * future_log_days_from_genesis + intercept
-    color = colors[i % len(colors)]
-    for date, price in zip(future_dates, np.exp(y_values)):
-        rainbow_data.append({'date': date, 'price': price, 'color': color})
 
 # Ajouter les données historiques
 for i, intercept in enumerate(intercepts_original):
     y_values = slope * df['log_days_from_genesis'] + intercept
     color = colors[i % len(colors)]
     for date, price in zip(df['date'], np.exp(y_values)):
+        rainbow_data.append({'date': date, 'price': price, 'color': color})
+
+# Ajouter les données futures
+for i, intercept in enumerate(intercepts_original):
+    y_values = slope * future_log_days_from_genesis + intercept
+    color = colors[i % len(colors)]
+    for date, price in zip(future_dates, np.exp(y_values)):
         rainbow_data.append({'date': date, 'price': price, 'color': color})
 
 rainbow_df = pd.DataFrame(rainbow_data)

@@ -120,7 +120,7 @@ def plot_past_power_law(df, instrument):
     except Exception as e:
         st.error(f"An error occurred: {e}")
 
-def plot_future_power_law(df, historical_fair_price_df, predicted_prices_df):
+def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_prices_df):
     try:
         days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                                             min_value=1, 
