@@ -179,17 +179,24 @@ def plot_past_power_law(df, instrument):
     This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
     ''')
 
+
+# Charger les données depuis les CSV générés
+df = pd.read_csv('kas_d.csv')
+df['date'] = pd.to_datetime(df['date'])
+historical_fair_price_df = pd.read_csv('historical_fair_price.csv')
+predicted_prices_df = pd.read_csv('future_prices.csv')
+
 def plot_future_power_law(df, historical_fair_price_df, predicted_prices_df):
     days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                                         min_value=1, 
-                                        max_value=3650,  # Changer à 10 ans
+                                        max_value=3650,  # 10 ans
                                         value=30)
     st.markdown(f"<h2 style='text-align: center;'>Kaspa (KAS) Power Law Predictions</h2>", unsafe_allow_html=True)
 
     chart_type = st.sidebar.select_slider(
         'Select scale type',
         options=['Linear', 'Logarithmic'],
-        value="Linear"
+        value="Logarithmic"
     )
 
     # Assurez-vous que les dates sont dans le bon format
@@ -219,6 +226,7 @@ def plot_future_power_law(df, historical_fair_price_df, predicted_prices_df):
 
     fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['close'], mode='lines', name='Actual Price'))
     fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['historical_fair_price'], mode='lines', name='Historical Fair Price', line=dict(color='orange')))
+    fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['historical_fair_price_smooth'], mode='lines', name='Smoothed Historical Fair Price', line=dict(color='green')))
     fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['predicted_price'], mode='lines', name='Predicted Future Price', line=dict(color='red', dash='dash')))
 
     fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
@@ -238,14 +246,6 @@ def plot_future_power_law(df, historical_fair_price_df, predicted_prices_df):
 
     This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
     ''')
-
-# Charger les données
-df = pd.read_csv('kas_d.csv')
-historical_fair_price_df = pd.read_csv('historical_fair_price.csv')
-predicted_prices_df = pd.read_csv('future_prices.csv')
-
-# Appeler la fonction pour tracer les graphiques
-plot_future_power_law(df, historical_fair_price_df, predicted_prices_df)
 
 def main():
     st.set_page_config(layout="wide")
