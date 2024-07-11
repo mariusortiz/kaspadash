@@ -10,6 +10,7 @@ df['date'] = pd.to_datetime(df['date'])
 # Définir les dates de référence
 genesis_date = datetime(2021, 11, 7)
 start_date = datetime(2022, 6, 15)  # Premier jour de kas_d.csv
+end_date = df['date'].max()
 future_days = np.arange(1, 365 * 2)
 
 # Calculer les jours depuis la genèse
@@ -35,6 +36,12 @@ lowest_residual_index = df['residuals'].idxmin()
 slope = model.estimator_.coef_[0]
 intercept_high = df.loc[highest_residual_index, 'log_close'] - (slope * df.loc[highest_residual_index, 'log_days_from_genesis'])
 intercept_low = df.loc[lowest_residual_index, 'log_close'] - (slope * df.loc[lowest_residual_index, 'log_days_from_genesis'])
+
+# Générer des données futures
+last_day_from_genesis = np.log(df['days_from_genesis'].max() + 1)
+future_log_days_from_genesis = np.log(df['days_from_genesis'].max() + 1 + future_days)
+future_days_from_genesis = np.exp(future_log_days_from_genesis)
+future_dates = [genesis_date + timedelta(days=int(day)) for day in future_days_from_genesis]
 
 # Créer les bandes de couleurs
 colors = ['blue', 'green', 'yellow', 'orange', 'red']
@@ -65,4 +72,4 @@ for i, intercept in enumerate(intercepts_original):
 rainbow_df = pd.DataFrame(rainbow_data)
 
 # Enregistrer dans un fichier CSV
-rainbow_df.to_csv('rainbow_chart_data.csv', index=False)
+rainbow_df.to_csv('rainbow_chart_data2.csv', index=False)
