@@ -174,12 +174,12 @@ def plot_past_power_law(df, instrument):
     This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
     ''')
 
-def plot_future_power_law(df, instrument):
+def plot_future_power_law(df, historical_fair_price_df, predicted_prices_df):
     days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                                         min_value=1, 
                                         max_value=365, 
                                         value=30)
-    st.markdown(f"<h2 style='text-align: center;'>{instrument} Power Law Predictions</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='text-align: center;'>Kaspa (KAS) Power Law Predictions</h2>", unsafe_allow_html=True)
 
     chart_type = st.sidebar.select_slider(
         'Select scale type',
@@ -187,32 +187,37 @@ def plot_future_power_law(df, instrument):
         value="Linear"
     )
 
-    # Charger les prédictions futures depuis le CSV
-    future_df = pd.read_csv('predicted_prices.csv')
-    future_df['date'] = pd.to_datetime(future_df['date'])
+    # Assurez-vous que les dates sont dans le bon format
+    historical_fair_price_df['date'] = pd.to_datetime(historical_fair_price_df['date'])
+    predicted_prices_df['date'] = pd.to_datetime(predicted_prices_df['date'])
 
-    future_date = df['date'].max() + timedelta(days=days_from_today)
+    # Merge des données pour inclure le prix historique et les prédictions futures
+    df = df.merge(historical_fair_price_df, on='date', how='left', suffixes=('', '_fair_price'))
+    df = df.merge(predicted_prices_df, on='date', how='left', suffixes=('', '_predicted'))
 
-    # S'assurer que nous avons des données pour la date future sélectionnée
-    future_data = future_df[future_df['date'] >= future_date]
-    if future_data.empty:
+    # Calculer les dates futures
+    last_date = df['date'].max()
+    future_date = last_date + timedelta(days=days_from_today)
+
+    future_price_row = predicted_prices_df[predicted_prices_df['date'] == future_date]
+    if future_price_row.empty:
         st.error(f"No data available for the selected future date: {future_date.strftime('%Y-%m-%d')}")
         return
 
-    closest_future_date = future_data.iloc[0]['date']
-    predicted_price_on_future_date = future_data[future_data['date'] == closest_future_date]['predicted_price'].values[0]
+    predicted_price_on_future_date = future_price_row['predicted_price'].values[0]
     today_price = df.dropna(subset=['close'])['close'].values[-1]
 
-    st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from the last available date ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference</h4>", unsafe_allow_html=True)
+    st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from the last available date ({last_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference</h4>", unsafe_allow_html=True)
 
     fig = go.Figure()
-    df_to_plot = pd.concat([df, future_df])
+    df_to_plot = df[df['date'] <= future_date]
 
     fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['close'], mode='lines', name='Price'))
     fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['predicted_price'], mode='lines', name='Predicted Fair Price', line=dict(color='red')))
+    fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['historical_fair_price'], mode='lines', name='Historical Fair Price', line=dict(color='orange')))
 
     fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
-    fig.add_trace(go.Scatter(x=[closest_future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Fair Price'))
+    fig.add_trace(go.Scatter(x=[future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Fair Price'))
 
     if chart_type == "Linear":
         fig.update_layout(xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
@@ -232,22 +237,10 @@ def plot_future_power_law(df, instrument):
 def main():
     st.set_page_config(layout="wide")
 
-    # Charger le fichier CSV
-    csv_file = 'kas_d.csv'
+    # Charger le fichier CSV du prix actuel
+    csv_file = '/mnt/data/kas_d.csv'
     df = pd.read_csv(csv_file)
     df['date'] = pd.to_datetime(df['date'])
-
-    # Charger les données de prix historiques et prédits
-    historical_fair_price_df = pd.read_csv('historical_fair_price.csv')
-    predicted_prices_df = pd.read_csv('predicted_prices.csv')
-    
-    # Convertir les colonnes 'date' au type datetime
-    historical_fair_price_df['date'] = pd.to_datetime(historical_fair_price_df['date'])
-    predicted_prices_df['date'] = pd.to_datetime(predicted_prices_df['date'])
-    
-    # Ajouter les colonnes des prix historiques et prédits au dataframe principal
-    df = pd.merge(df, historical_fair_price_df[['date', 'historical_fair_price']], on='date', how='left')
-    df = pd.merge(df, predicted_prices_df[['date', 'predicted_price']], on='date', how='left')
 
     instrument = "Kaspa (KAS)"
     df['days_from_genesis'] = (df['date'] - df['date'].min()).dt.days
@@ -257,14 +250,8 @@ def main():
         options=['Rainbow chart', 'Risk Visualization', 'Past Power Law', 'Future Power Law']
     )
 
-    if dashboard == 'Rainbow chart':
-        plot_rainbow_chart(df, instrument)
-    elif dashboard == 'Risk Visualization':
-        plot_risk_visualization(df, instrument)
-    elif dashboard == 'Past Power Law':
-        plot_past_power_law(df, instrument)
-    elif dashboard == 'Future Power Law':
-        plot_future_power_law(df, instrument)
+    if dashboard == 'Future Power Law':
+        plot_future_power_law(df, historical_fair_price_df, predicted_prices_df)
 
 if __name__ == "__main__":
     main()
