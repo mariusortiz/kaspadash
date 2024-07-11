@@ -16,117 +16,60 @@ def exponential_smoothing(series, alpha):
 historical_fair_price_df = pd.read_csv('historical_fair_price.csv')
 predicted_prices_df = pd.read_csv('future_prices.csv')
 
-def plot_rainbow_chart(df, instrument):
-    try:
-        st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
-        pct_change = st.sidebar.slider('Select increase/decrease in % for prediction:', min_value=-99, max_value=500, value=0)
-        colors = ['blue','green','yellow', 'orange', 'red' ]
+def plot_rainbow_chart(df, instrument, rainbow_df):
+    st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
+    pct_change = st.sidebar.slider('Select increase/decrease in % for prediction:', min_value=-99, max_value=500, value=0)
+    colors = ['blue', 'green', 'yellow', 'orange', 'red']
 
-        if instrument == "Kaspa (KAS)":
-            genesis_date = datetime(2021, 11, 7)
-            start_date = '2022-01-04'
-            future_days = np.arange(1, 365*2)
+    df['date'] = pd.to_datetime(df['date'])
+    max_date_with_close = df.dropna(subset=['close'])['date'].max()
+    df = df[df["date"] <= max_date_with_close]
 
-        df['date'] = pd.to_datetime(df['date'])
-        max_date_with_close = df.dropna(subset=['close'])['date'].max()
-        df = df[df["date"] <= max_date_with_close]
+    # Filtrer les données du rainbow chart
+    rainbow_df['date'] = pd.to_datetime(rainbow_df['date'])
+    yellow_band_df = rainbow_df[rainbow_df['color'] == 'yellow']
 
-        start_date_for_slider = df['date'].iloc[99].date()
-        end_date_for_slider = df['date'].iloc[-1].date()
+    future_dates = pd.date_range(start=df['date'].max() + pd.Timedelta(days=1), periods=365)
+    future_dates_df = pd.DataFrame({'date': future_dates})
 
-        cut_off_date = st.sidebar.slider(
-            "Select the cut-off date:",
-            value=end_date_for_slider,
-            min_value=start_date_for_slider,
-            max_value=end_date_for_slider,
-        )
+    slope = np.polyfit(np.log(yellow_band_df['date'].astype(np.int64)), np.log(yellow_band_df['price']), 1)[0]
+    intercept_high = yellow_band_df['price'].max()
+    intercept_low = yellow_band_df['price'].min()
 
-        df['days_from_genesis'] = (df['date'] - genesis_date).dt.days
-        df = df[df['days_from_genesis'] >= 0]
+    slope_increase_percentage = pct_change
+    adjusted_slope = slope * (1 + slope_increase_percentage / 100)
 
-        df['log_close'] = np.log(df['close'])
-        df['log_days_from_genesis'] = np.log(df['days_from_genesis'])
+    future_log_days_from_genesis = np.log(np.arange(len(df), len(df) + len(future_dates)))
+    future_days_from_genesis = np.exp(future_log_days_from_genesis)
 
-        X = df[['log_days_from_genesis']]
-        y = df['log_close']
-        model = RANSACRegressor().fit(X, y)
-        df['predicted_log_close'] = model.predict(X)
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price', marker=dict(color='lightgray')))
+    num_bands = 3
 
-        cut_off_date = pd.to_datetime(cut_off_date)
-        start_date = pd.to_datetime(start_date)
+    intercepts_original = []
 
-        df_filtered_for_fit = df[df['date'] <= cut_off_date]
+    for i in range(num_bands + 2):
+        intercept_band = intercept_low + i * (intercept_high - intercept_low) / (num_bands + 1)
+        y_values = adjusted_slope * future_log_days_from_genesis + intercept_band
+        color = colors[i % len(colors)]
+        fig.add_trace(go.Scatter(x=future_dates, y=y_values, mode='lines', name='Adjusted Bands' if i == 0 else "", line=dict(color=color, dash='dot')))
 
-        X_fit = df_filtered_for_fit[['log_days_from_genesis']]
-        y_fit = df_filtered_for_fit['log_close']
-        model = RANSACRegressor().fit(X_fit, y_fit)
+    fig.update_layout(
+        height=800,
+        width=1200,
+        yaxis_type="log",
+        xaxis=dict(showgrid=True, gridwidth=1, title='Date', tickangle=-45),
+        yaxis_title='Close Price',
+        showlegend=False
+    )
 
-        df_after_start = df[df['date'] >= start_date]
-        df['predicted_log_close'] = model.predict(df[['log_days_from_genesis']])
-        df_after_start['residuals'] = df_after_start['log_close'] - df_after_start['predicted_log_close']
-
-        highest_residual_index = df_after_start['residuals'].idxmax()
-        lowest_residual_index = df_after_start['residuals'].idxmin()
-
-        slope = model.estimator_.coef_[0]
-        intercept_high = df.loc[highest_residual_index, 'log_close'] - (slope * df.loc[highest_residual_index, 'log_days_from_genesis'])
-        intercept_low = df.loc[lowest_residual_index, 'log_close'] - (slope * df.loc[lowest_residual_index, 'log_days_from_genesis'])
-
-        slope_increase_percentage = pct_change
-        adjusted_slope = slope * (1 + slope_increase_percentage / 100)
-
-        last_day_from_genesis = np.log(df_filtered_for_fit['days_from_genesis'].max() + 1)
-        intercept_high_adjusted = df.loc[highest_residual_index, 'log_close'] - (adjusted_slope * last_day_from_genesis)
-        intercept_low_adjusted = df.loc[lowest_residual_index, 'log_close'] - (adjusted_slope * last_day_from_genesis)
-
-        future_log_days_from_genesis = np.log(df_filtered_for_fit['days_from_genesis'].max() + 1 + future_days)
-        future_days_from_genesis = np.exp(future_log_days_from_genesis)
-
-        future_dates = [genesis_date + timedelta(days=int(day)) for day in future_days_from_genesis]
-
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(x=df['date'], y=np.exp(df['log_close']), mode='lines', name='Log of Close Prices', marker=dict(color='lightgray')))
-        num_bands = 3
-
-        intercepts_original = []
-
-        for i in range(num_bands + 2):
-            intercept_band = intercept_low + i * (intercept_high - intercept_low) / (num_bands + 1)
-            y_values = slope * df_filtered_for_fit['log_days_from_genesis'] + intercept_band
-            color = colors[i % len(colors)]
-
-            fig.add_trace(go.Scatter(x=df_filtered_for_fit['date'], y=np.exp(y_values), mode='lines', line=dict(color=color, dash='solid')))
-        for i in range(num_bands + 2):
-            intercept_band = intercept_low + i * (intercept_high - intercept_low) / (num_bands + 1)
-            last_y_value = slope * last_day_from_genesis + intercept_band
-
-            intercepts_original.append(last_y_value - adjusted_slope * last_day_from_genesis)
-
-        for i, intercept_adjusted in enumerate(intercepts_original):
-            y_values = adjusted_slope * future_log_days_from_genesis + intercept_adjusted
-            color = colors[i % len(colors)]
-
-            fig.add_trace(go.Scatter(x=future_dates, y=np.exp(y_values), mode='lines', name='Adjusted Bands' if i == 0 else "", line=dict(color=color, dash='dot')))
-
-        fig.update_layout(
-            height=800,
-            width=1200,
-            yaxis_type="log",
-            xaxis=dict(showgrid=True, gridwidth=1, title='Date', tickangle=-45),
-            yaxis_title='Close Price',
-            showlegend=False
-        )
-
-        st.plotly_chart(fig, use_container_width=True)
-        expander = st.expander('About the model')
-        expander.write('''
-        This model calculates the linear regression on the log-log scaled data and then creates an envelope around the price action - for the date specified. It is a gross simplification, as the middle band **is not** the fair price as dictated by power law, but just middle between the lowest 
-        and highest regression lines. Also both "support" and "resistance" lines have the same slope, a proper model should find a separate fit for the bottoms and tops. To view such a model check [this](https://hcburger.com/blog/poweroscillator/index.html) and to watch a more complex rainbow chart go  [here](https://www.blockchaincenter.net/en/bitcoin-rainbow-chart/).
-
-        The aim of this graphic is to demonstrate how do such predictions change with more data.
-        ''')
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
+    st.plotly_chart(fig, use_container_width=True)
+    expander = st.expander('About the model')
+    expander.write('''
+    This model calculates the linear regression on the log-log scaled data and then creates an envelope around the price action - for the date specified. It is a gross simplification, as the middle band **is not** the fair price as dictated by power law, but just middle between the lowest 
+    and highest regression lines. Also both "support" and "resistance" lines have the same slope, a proper model should find a separate fit for the bottoms and tops. To view such a model check [this](https://hcburger.com/blog/poweroscillator/index.html) and to watch a more complex rainbow chart go  [here](https://www.blockchaincenter.net/en/bitcoin-rainbow-chart/).
+    The aim of this graphic is to demonstrate how do such predictions change with more data.
+    ''')
 
 def plot_past_power_law(df, instrument):
     try:
