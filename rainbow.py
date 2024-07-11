@@ -8,8 +8,8 @@ df = pd.read_csv('kas_d.csv')
 df['date'] = pd.to_datetime(df['date'])
 
 # Définir les dates de référence
-genesis_date = datetime(2021, 11, 7)
-start_date = '2022-01-04'
+genesis_date = datetime(2022, 6, 15)
+start_date = df['date'].min()
 future_days = np.arange(1, 365 * 2)
 
 # Calculer les jours depuis la genèse
