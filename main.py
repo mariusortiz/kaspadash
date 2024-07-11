@@ -182,7 +182,7 @@ def plot_past_power_law(df, instrument):
 def plot_future_power_law(df, historical_fair_price_df, predicted_prices_df):
     days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                                         min_value=1, 
-                                        max_value=365,  # Changer à 10 ans
+                                        max_value=3650,  # Changer à 10 ans
                                         value=30)
     st.markdown(f"<h2 style='text-align: center;'>Kaspa (KAS) Power Law Predictions</h2>", unsafe_allow_html=True)
 
@@ -217,12 +217,12 @@ def plot_future_power_law(df, historical_fair_price_df, predicted_prices_df):
     fig = go.Figure()
     df_to_plot = df[df['date'] <= future_date]
 
-    fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['close'], mode='lines', name='Price'))
-    fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['predicted_price'], mode='lines', name='Predicted Fair Price', line=dict(color='red')))
+    fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['close'], mode='lines', name='Actual Price'))
     fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['historical_fair_price'], mode='lines', name='Historical Fair Price', line=dict(color='orange')))
+    fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['predicted_price'], mode='lines', name='Predicted Future Price', line=dict(color='red', dash='dash')))
 
     fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
-    fig.add_trace(go.Scatter(x=[future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Fair Price'))
+    fig.add_trace(go.Scatter(x=[future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Price'))
 
     if chart_type == "Linear":
         fig.update_layout(xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
@@ -246,7 +246,6 @@ predicted_prices_df = pd.read_csv('future_prices.csv')
 
 # Appeler la fonction pour tracer les graphiques
 plot_future_power_law(df, historical_fair_price_df, predicted_prices_df)
-
 
 def main():
     st.set_page_config(layout="wide")
