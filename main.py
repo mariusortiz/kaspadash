@@ -238,7 +238,7 @@ def main():
     st.set_page_config(layout="wide")
 
     # Charger le fichier CSV du prix actuel
-    csv_file = '/mnt/data/kas_d.csv'
+    csv_file = 'kas_d.csv'
     df = pd.read_csv(csv_file)
     df['date'] = pd.to_datetime(df['date'])
 
