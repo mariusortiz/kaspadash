@@ -159,7 +159,7 @@ def plot_past_power_law(df, instrument):
         )
         
         differences = 100 * (df['close'] - df['historical_fair_price_smooth']) / df['historical_fair_price_smooth']
-                fig.add_trace(go.Scatter(x=df['date'], y=differences, mode='lines', name='Difference (%)'), row=2, col=1)
+        fig.add_trace(go.Scatter(x=df['date'], y=differences, mode='lines', name='Difference (%)'), row=2, col=1)
         fig.add_hline(y=0, line=dict(dash='dash', color='red'), row=2, col=1)
 
         fig.update_layout(height=800, width=1000, showlegend=True)
