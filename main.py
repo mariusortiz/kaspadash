@@ -77,6 +77,14 @@ def plot_past_power_law(df, instrument):
         max_date_with_close = df.dropna(subset=['close'])['date'].max()
         df = df[df["date"] <= max_date_with_close]
         
+        # Vérifiez si 'historical_fair_price_smooth' est présent dans le DataFrame, sinon calculez-le
+        if 'historical_fair_price_smooth' not in df.columns:
+            if 'historical_fair_price' in df.columns:
+                df['historical_fair_price_smooth'] = exponential_smoothing(df['historical_fair_price'], alpha=0.1)
+            else:
+                st.error("Missing 'historical_fair_price' column in the data")
+                return
+        
         fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
                             subplot_titles=(f'Actual vs Predicted Prices - {instrument}', 'Percentage Difference between Actual and Historical Predicted Prices'))
         fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
