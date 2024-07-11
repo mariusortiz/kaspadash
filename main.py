@@ -241,9 +241,13 @@ def main():
     historical_fair_price_df = pd.read_csv('historical_fair_price.csv')
     predicted_prices_df = pd.read_csv('predicted_prices.csv')
     
+    # Convertir les colonnes 'date' au type datetime
+    historical_fair_price_df['date'] = pd.to_datetime(historical_fair_price_df['date'])
+    predicted_prices_df['date'] = pd.to_datetime(predicted_prices_df['date'])
+    
     # Ajouter les colonnes des prix historiques et prédits au dataframe principal
-    df = df.merge(historical_fair_price_df[['date', 'historical_fair_price']], on='date', how='left')
-    df = df.merge(predicted_prices_df[['date', 'predicted_price']], on='date', how='left')
+    df = pd.merge(df, historical_fair_price_df[['date', 'historical_fair_price']], on='date', how='left')
+    df = pd.merge(df, predicted_prices_df[['date', 'predicted_price']], on='date', how='left')
 
     instrument = "Kaspa (KAS)"
     df['days_from_genesis'] = (df['date'] - df['date'].min()).dt.days
