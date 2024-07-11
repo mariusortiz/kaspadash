@@ -298,10 +298,10 @@ def main():
         options=['Rainbow chart', 'Risk Visualization', 'Past Power Law', 'Future Power Law']
     )
 
-   if dashboard == 'Rainbow chart':
+    if dashboard == 'Rainbow chart':
         plot_rainbow_chart(df, instrument)
     elif dashboard == 'Risk Visualization':
-        plot_risk_visualization(df, instrument)
+        plot_risk_visualization(df)
     elif dashboard == 'Past Power Law':
         plot_past_power_law(df, instrument)
     elif dashboard == 'Future Power Law':
