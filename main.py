@@ -14,8 +14,7 @@ def exponential_smoothing(series, alpha):
 
 # Charger les données depuis les CSV générés
 historical_fair_price_df = pd.read_csv('historical_fair_price.csv')
-predicted_prices_df = pd.read_csv('predicted_prices.csv')
-
+predicted_prices_df = pd.read_csv('future_prices.csv')
 
 def plot_rainbow_chart(df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
@@ -141,7 +140,7 @@ def plot_past_power_law(df, instrument):
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
                         subplot_titles=(f'Actual vs Predicted Prices - {instrument}', 'Percentage Difference between Actual and Historical Predicted Prices'))
     fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
-    fig.add_trace(go.Scatter(x=df['date'], y=df['historical_fair_price'], mode='lines', name='Predicted Next Day Price', line=dict(color='cyan')), row=1, col=1)
+    fig.add_trace(go.Scatter(x=df['date'], y=df['historical_fair_price_smooth'], mode='lines', name='Smoothed Historical Fair Price', line=dict(color='orange')), row=1, col=1)
     
     fig.add_annotation(
         text="KASPING.STREAMLIT.APP",
@@ -155,12 +154,13 @@ def plot_past_power_law(df, instrument):
         showarrow=False
     )
     
-    differences = 100 * (df['close'] - df['historical_fair_price']) / df['historical_fair_price']
+    differences = 100 * (df['close'] - df['historical_fair_price_smooth']) / df['historical_fair_price_smooth']
     fig.add_trace(go.Scatter(x=df['date'], y=differences, mode='lines', name='Difference (%)'), row=2, col=1)
     fig.add_hline(y=0, line=dict(dash='dash', color='red'), row=2, col=1)
 
     fig.update_layout(height=800, width=1000, showlegend=True)
     fig.update_yaxes(title_text="Price ($)", row=1, col=1)
+    fig.update_yaxes(title_text="Difference (%)", row
     fig.update_yaxes(title_text="Difference (%)", row=2, col=1)
     fig.update_xaxes(title_text="Date", row=2, col=1)
 
@@ -179,24 +179,17 @@ def plot_past_power_law(df, instrument):
     This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
     ''')
 
-
-# Charger les données depuis les CSV générés
-df = pd.read_csv('kas_d.csv')
-df['date'] = pd.to_datetime(df['date'])
-historical_fair_price_df = pd.read_csv('historical_fair_price.csv')
-predicted_prices_df = pd.read_csv('future_prices.csv')
-
 def plot_future_power_law(df, historical_fair_price_df, predicted_prices_df):
     days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                                         min_value=1, 
-                                        max_value=365,  # 10 ans
+                                        max_value=365,  # Changer à 10 ans
                                         value=30)
     st.markdown(f"<h2 style='text-align: center;'>Kaspa (KAS) Power Law Predictions</h2>", unsafe_allow_html=True)
 
     chart_type = st.sidebar.select_slider(
         'Select scale type',
         options=['Linear', 'Logarithmic'],
-        value="Logarithmic"
+        value="Linear"
     )
 
     # Assurez-vous que les dates sont dans le bon format
@@ -225,9 +218,8 @@ def plot_future_power_law(df, historical_fair_price_df, predicted_prices_df):
     df_to_plot = df[df['date'] <= future_date]
 
     fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['close'], mode='lines', name='Actual Price'))
-    fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['historical_fair_price'], mode='lines', name='Historical Fair Price', line=dict(color='orange')))
-    fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['historical_fair_price_smooth'], mode='lines', name='Smoothed Historical Fair Price', line=dict(color='green')))
-    fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['predicted_price'], mode='lines', name='Predicted Future Price', line=dict(color='red', dash='dash')))
+    fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['predicted_price'], mode='lines', name='Predicted Future Price', line=dict(color='red', dash='dot')))
+    fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['historical_fair_price_smooth'], mode='lines', name='Smoothed Historical Fair Price', line=dict(color='orange')))
 
     fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
     fig.add_trace(go.Scatter(x=[future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Price'))
@@ -247,6 +239,41 @@ def plot_future_power_law(df, historical_fair_price_df, predicted_prices_df):
     This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
     ''')
 
+def plot_risk_visualization(df):
+    st.markdown("<h2 style='text-align: center;'>Risk Visualization</h2>", unsafe_allow_html=True)
+
+    df['return'] = df['close'].pct_change()
+    df.dropna(subset=['return'], inplace=True)
+
+    df['log_return'] = np.log1p(df['return'])
+    df.dropna(subset=['log_return'], inplace=True)
+
+    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
+                        subplot_titles=('Daily Returns', 'Log Returns'))
+    
+    fig.add_trace(go.Histogram(x=df['return'], nbinsx=50, name='Daily Returns'), row=1, col=1)
+    fig.add_trace(go.Histogram(x=df['log_return'], nbinsx=50, name='Log Returns'), row=2, col=1)
+    
+    fig.update_layout(height=800, width=1000, showlegend=False)
+    fig.update_yaxes(title_text="Frequency", row=1, col=1)
+    fig.update_yaxes(title_text="Frequency", row=2, col=1)
+    fig.update_xaxes(title_text="Daily Returns", row=1, col=1)
+    fig.update_xaxes(title_text="Log Returns", row=2, col=1)
+    
+    st.plotly_chart(fig, use_container_width=True)
+    expander = st.expander('About the chart')
+    expander.write('''
+    The histogram shows the distribution of daily returns and log returns. It provides an insight into the risk associated with the instrument.
+    ''')
+
+# Charger les données
+df = pd.read_csv('kas_d.csv')
+historical_fair_price_df = pd.read_csv('historical_fair_price.csv')
+predicted_prices_df = pd.read_csv('future_prices.csv')
+
+# Appeler la fonction pour tracer les graphiques
+plot_future_power_law(df, historical_fair_price_df, predicted_prices_df)
+
 def main():
     st.set_page_config(layout="wide")
 
@@ -263,7 +290,13 @@ def main():
         options=['Rainbow chart', 'Risk Visualization', 'Past Power Law', 'Future Power Law']
     )
 
-    if dashboard == 'Future Power Law':
+    if dashboard == 'Rainbow chart':
+        plot_rainbow_chart(df, instrument)
+    elif dashboard == 'Risk Visualization':
+        plot_risk_visualization(df)
+    elif dashboard == 'Past Power Law':
+        plot_past_power_law(df, instrument)
+    elif dashboard == 'Future Power Law':
         plot_future_power_law(df, historical_fair_price_df, predicted_prices_df)
 
 if __name__ == "__main__":
