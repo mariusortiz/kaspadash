@@ -17,48 +17,46 @@ historical_fair_price_df = pd.read_csv('historical_fair_price.csv')
 predicted_prices_df = pd.read_csv('future_prices.csv')
 
 
-def plot_rainbow_chart(df, rainbow_df, instrument):
-    st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
-
+def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_prices_df):
+    st.markdown(f"<h2 style='text-align: center;'>{instrument} Power Law Predictions</h2>", unsafe_allow_html=True)
+    
+    days_from_today = st.sidebar.slider('Select number of days from today for prediction:', min_value=1, max_value=365, value=30)
+    
     df['date'] = pd.to_datetime(df['date'])
-    rainbow_df['date'] = pd.to_datetime(rainbow_df['date'])
+    historical_fair_price_df['date'] = pd.to_datetime(historical_fair_price_df['date'])
+    predicted_prices_df['date'] = pd.to_datetime(predicted_prices_df['date'])
 
-    # Vérifier les colonnes disponibles dans rainbow_df
-    available_bands = rainbow_df.columns.drop('date').tolist()
-
-    # Supprimer les doublons dans rainbow_df
-    rainbow_df = rainbow_df.drop_duplicates(subset='date')
-
-    # Interpoler les valeurs pour couvrir toute la plage de dates
-    full_date_range = pd.date_range(start=df['date'].min(), end=rainbow_df['date'].max(), freq='D')
-    rainbow_df = rainbow_df.set_index('date').reindex(full_date_range).interpolate(method='linear').reset_index()
-    rainbow_df = rainbow_df.rename(columns={'index': 'date'})
-
+    max_date = df['date'].max()
+    future_date = max_date + timedelta(days=days_from_today)
+    
+    predicted_price = predicted_prices_df[predicted_prices_df['date'] == future_date]['predicted_price'].values[0]
+    current_price = df[df['date'] == max_date]['close'].values[0]
+    
+    st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from the last available date ({max_date.strftime('%Y-%m-%d')}) is: ${predicted_price:.5f}, {((predicted_price - current_price) / current_price) * 100:.2f}% difference</h4>", unsafe_allow_html=True)
+    
     fig = go.Figure()
 
-    colors = ['blue', 'green', 'yellow', 'orange', 'red']
-
-    for color, band in zip(colors, available_bands):
-        fig.add_trace(go.Scatter(x=rainbow_df['date'], y=rainbow_df[band], mode='lines', name=f'{color} band', line=dict(color=color)))
-
-    fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price', line=dict(color='black')))
+    fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'))
+    fig.add_trace(go.Scatter(x=historical_fair_price_df['date'], y=historical_fair_price_df['historical_fair_price'], mode='lines', name='Historical Fair Price', line=dict(color='orange')))
+    fig.add_trace(go.Scatter(x=predicted_prices_df['date'], y=predicted_prices_df['predicted_price'], mode='lines', name='Predicted Price', line=dict(color='red', dash='dot')))
+    
+    fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: ${predicted_price:.5f}")
+    fig.add_trace(go.Scatter(x=[future_date], y=[predicted_price], mode='markers', marker=dict(color='red', size=10), name='Predicted Price'))
 
     fig.update_layout(
         height=800,
         width=1200,
-        yaxis_type="log",
-        xaxis=dict(showgrid=True, gridwidth=1, title='Date', tickangle=-45),
-        yaxis_title='Close Price',
+        yaxis_title='Price',
+        xaxis_title='Date',
         showlegend=True
     )
 
     st.plotly_chart(fig, use_container_width=True)
-    expander = st.expander('About the model')
+    expander = st.expander('About the chart')
     expander.write('''
-    This model calculates the linear regression on the log-log scaled data and then creates an envelope around the price action - for the date specified. It is a gross simplification, as the middle band **is not** the fair price as dictated by power law, but just middle between the lowest 
-    and highest regression lines. Also both "support" and "resistance" lines have the same slope, a proper model should find a separate fit for the bottoms and tops. To view such a model check [this](https://hcburger.com/blog/poweroscillator/index.html) and to watch a more complex rainbow chart go  [here](https://www.blockchaincenter.net/en/bitcoin-rainbow-chart/).
-    The aim of this graphic is to demonstrate how do such predictions change with more data.
+    This chart shows the predicted price of Kaspa (KAS) using historical data and future price predictions. The purple dashed line represents the predicted future price based on the selected number of days from today.
     ''')
+    
 
 def plot_past_power_law(df, instrument):
     try:
