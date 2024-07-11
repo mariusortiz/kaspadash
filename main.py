@@ -6,52 +6,16 @@ from plotly.subplots import make_subplots
 import numpy as np
 from sklearn.linear_model import LinearRegression, RANSACRegressor
 
-# Fonction de lissage exponentiel
 def exponential_smoothing(series, alpha):
     result = [series[0]]  # première valeur est identique à la série
     for n in range(1, len(series)):
         result.append(alpha * series[n] + (1 - alpha) * result[n - 1])
     return result
 
-def calculate_predicted_price(df):
-    df = df.dropna(subset=['close'])  # Ensure there are no NaNs in 'close'
-    df = df[df['days_from_genesis'] > 0]  # Ensure days_from_genesis is positive
-    df['log_days_from_genesis'] = np.log(df['days_from_genesis'])
-
-    # Filter out any infinite or extremely large values
-    df = df.replace([np.inf, -np.inf], np.nan).dropna(subset=['log_days_from_genesis', 'close'])
-
-    X = df['log_days_from_genesis'].values.reshape(-1, 1)
-    y = np.log(df['close'].values)
-
-    model = LinearRegression()
-    model.fit(X, y)
-
-    df['predicted_next_day_price'] = np.exp(model.predict(X))
-    df['predicted_price'] = df['predicted_next_day_price']
-    return df, model
-
-def generate_future_dates(df, days_from_today, model):
-    max_date_in_df = df['date'].max()
-    future_date = max_date_in_df + timedelta(days=days_from_today)
-
-    # Generate future dates if necessary
-    if future_date > max_date_in_df:
-        future_dates = pd.date_range(start=max_date_in_df + timedelta(days=1), end=future_date)
-        future_df = pd.DataFrame({'date': future_dates})
-        future_df['days_from_genesis'] = (future_df['date'] - df['date'].min()).dt.days
-        future_df['log_days_from_genesis'] = np.log(future_df['days_from_genesis'])
-
-        future_df['predicted_price'] = np.exp(model.predict(future_df[['log_days_from_genesis']]))
-
-        df = pd.concat([df, future_df], ignore_index=True)
-
-    return df
-
 def plot_rainbow_chart(df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
     pct_change = st.sidebar.slider('Select increase/decrease in % for prediction:', min_value=-99, max_value=500, value=0)
-    colors = ['blue', 'green', 'yellow', 'orange', 'red']
+    colors = ['blue','green','yellow', 'orange', 'red' ]
 
     if instrument == "Kaspa (KAS)":
         genesis_date = datetime(2021, 11, 7)
@@ -157,59 +121,6 @@ def plot_rainbow_chart(df, instrument):
     The aim of this graphic is to demonstrate how do such predictions change with more data.
     ''')
 
-def plot_risk_visualization(df, instrument):
-    st.markdown(f"<h2 style='text-align: center;'>{instrument} Risk Visualization</h2>", unsafe_allow_html=True)
-    
-    chart_type = st.sidebar.select_slider(
-        'Select scale type',
-        options=['Linear', 'Logarithmic'],
-        value="Logarithmic"
-    )
-
-    df['Value'] = df['close']
-    df = df[df['Value'] > 0]
-
-    diminishing_factor = 0.395
-    moving_average_days = 365
-
-    df['MA'] = df['Value'].rolling(moving_average_days, min_periods=1).mean().dropna()
-    df['Preavg'] = (np.log(df.Value) - np.log(df['MA'])) * df.index**diminishing_factor
-
-    df['avg'] = (df['Preavg'] - df['Preavg'].cummin()) / (df['Preavg'].cummax() - df['Preavg'].cummin())
-
-    annotation_text = f"Updated: {df['date'].iloc[-1].strftime('%Y-%m-%d')} | Price: {round(df['Value'].iloc[-1], 5)} | Risk: {round(df['avg'].iloc[-1], 2)}"
-
-    if chart_type == "Linear":
-        fig = go.Figure(data=go.Scatter(x=df['date'], y=df['Value'], mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', showscale=True)))
-        fig.update_yaxes(title='Price ($USD)', showgrid=True)
-        fig.update_layout(height=600, width=800, margin=dict(l=50, r=50, t=50, b=50))
-    else:
-        fig = go.Figure(data=go.Scatter(x=df['date'], y=df['Value'], mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', showscale=True)))
-        fig.update_yaxes(title='Price ($USD)', showgrid=True, type='log')
-        fig.update_layout(height=600, width=800, margin=dict(l=50, r=50, t=50, b=50))
-
-    fig.update_layout(title=annotation_text)
-    st.plotly_chart(fig, use_container_width=True)
-
-    fig = make_subplots(specs=[[{'secondary_y': True}]])
-    fig.add_trace(go.Scatter(x=df['date'], y=df['Value'], name='Price', line=dict(color='cyan', width=3)))
-    fig.add_trace(go.Scatter(x=df['date'], y=df['avg'], name='Risk', line=dict(color='purple', width=2)), secondary_y=True)
-
-    opacity = 0.2
-    for i in range(5, 0, -1):
-        opacity += 0.05
-        fig.add_hrect(y0=i*0.1, y1=((i-1)*0.1), line_width=0, fillcolor='green', opacity=opacity, secondary_y=True)
-    for i in range(6, 10):
-        opacity += 0.1
-        fig.add_hrect(y0=i*0.1, y1=((i+1)*0.1), line_width=0, fillcolor='red', opacity=opacity, secondary_y=True)
-
-    fig.update_xaxes(title='Date')
-    fig.update_yaxes(title='Price ($USD)', type='log', showgrid=False)
-    fig.update_yaxes(title='Risk', type='linear', secondary_y=True, showgrid=True, tick0=0.0, dtick=0.1, range=[0, 1])
-    fig.update_layout(template='plotly_dark', title={'text': annotation_text, 'y': 0.9, 'x': 0.5})
-
-    st.plotly_chart(fig, use_container_width=True)
-
 def plot_past_power_law(df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Historical Power Law Predictions</h2>", unsafe_allow_html=True)
     
@@ -225,7 +136,7 @@ def plot_past_power_law(df, instrument):
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
                         subplot_titles=(f'Actual vs Predicted Prices - {instrument}', 'Percentage Difference between Actual and Historical Predicted Prices'))
     fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
-    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines', name='Predicted Next Day Price', line=dict(color='cyan')), row=1, col=1)
+    fig.add_trace(go.Scatter(x=df['date'], y=df['historical_fair_price'], mode='lines', name='Predicted Next Day Price', line=dict(color='cyan')), row=1, col=1)
     
     fig.add_annotation(
         text="KASPING.STREAMLIT.APP",
@@ -239,7 +150,7 @@ def plot_past_power_law(df, instrument):
         showarrow=False
     )
     
-    differences = 100 * (df['close'] - df['predicted_price']) / df['predicted_price']
+    differences = 100 * (df['close'] - df['historical_fair_price']) / df['historical_fair_price']
     fig.add_trace(go.Scatter(x=df['date'], y=differences, mode='lines', name='Difference (%)'), row=2, col=1)
     fig.add_hline(y=0, line=dict(dash='dash', color='red'), row=2, col=1)
 
@@ -263,7 +174,7 @@ def plot_past_power_law(df, instrument):
     This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
     ''')
 
-def plot_future_power_law(df, instrument, model):
+def plot_future_power_law(df, instrument):
     days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                                         min_value=1, 
                                         max_value=365, 
@@ -276,13 +187,14 @@ def plot_future_power_law(df, instrument, model):
         value="Linear"
     )
 
-    # Ensure future data is generated
-    df = generate_future_dates(df, days_from_today, model)
+    # Charger les prédictions futures depuis le CSV
+    future_df = pd.read_csv('predicted_prices.csv')
+    future_df['date'] = pd.to_datetime(future_df['date'])
 
     future_date = df['date'].max() + timedelta(days=days_from_today)
 
-    # Ensure we have data for the selected future date
-    future_data = df[df['date'] >= future_date]
+    # S'assurer que nous avons des données pour la date future sélectionnée
+    future_data = future_df[future_df['date'] >= future_date]
     if future_data.empty:
         st.error(f"No data available for the selected future date: {future_date.strftime('%Y-%m-%d')}")
         return
@@ -294,7 +206,7 @@ def plot_future_power_law(df, instrument, model):
     st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from the last available date ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference</h4>", unsafe_allow_html=True)
 
     fig = go.Figure()
-    df_to_plot = df[df['date'] <= future_date]
+    df_to_plot = pd.concat([df, future_df])
 
     fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['close'], mode='lines', name='Price'))
     fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['predicted_price'], mode='lines', name='Predicted Fair Price', line=dict(color='red')))
@@ -325,9 +237,16 @@ def main():
     df = pd.read_csv(csv_file)
     df['date'] = pd.to_datetime(df['date'])
 
+    # Charger les données de prix historiques et prédits
+    historical_fair_price_df = pd.read_csv('historical_fair_price.csv')
+    predicted_prices_df = pd.read_csv('predicted_prices.csv')
+    
+    # Ajouter les colonnes des prix historiques et prédits au dataframe principal
+    df = df.merge(historical_fair_price_df[['date', 'historical_fair_price']], on='date', how='left')
+    df = df.merge(predicted_prices_df[['date', 'predicted_price']], on='date', how='left')
+
     instrument = "Kaspa (KAS)"
     df['days_from_genesis'] = (df['date'] - df['date'].min()).dt.days
-    df, model = calculate_predicted_price(df)
 
     dashboard = st.sidebar.selectbox(
         label='Select dashboard',
@@ -341,7 +260,7 @@ def main():
     elif dashboard == 'Past Power Law':
         plot_past_power_law(df, instrument)
     elif dashboard == 'Future Power Law':
-        plot_future_power_law(df, instrument, model)
+        plot_future_power_law(df, instrument)
 
 if __name__ == "__main__":
     main()
