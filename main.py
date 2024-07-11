@@ -23,6 +23,9 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
     df['date'] = pd.to_datetime(df['date'])
     rainbow_df['date'] = pd.to_datetime(rainbow_df['date'])
 
+    # Vérifier les colonnes disponibles dans rainbow_df
+    available_bands = rainbow_df.columns.drop('date').tolist()
+
     # Supprimer les doublons dans rainbow_df
     rainbow_df = rainbow_df.drop_duplicates(subset='date')
 
@@ -34,9 +37,8 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
     fig = go.Figure()
 
     colors = ['blue', 'green', 'yellow', 'orange', 'red']
-    bands = ['blue_band', 'green_band', 'yellow_band', 'orange_band', 'red_band']
     
-    for color, band in zip(colors, bands):
+    for color, band in zip(colors, available_bands):
         fig.add_trace(go.Scatter(x=rainbow_df['date'], y=rainbow_df[band], mode='lines', name=f'{color} band', line=dict(color=color)))
 
     fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price', line=dict(color='black')))
