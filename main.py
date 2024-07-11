@@ -6,6 +6,18 @@ from plotly.subplots import make_subplots
 import numpy as np
 from sklearn.linear_model import LinearRegression, RANSACRegressor
 
+# Charger les fichiers CSV générés
+historical_df = pd.read_csv('historical_fair_price.csv')
+future_df = pd.read_csv('future_prices.csv')
+rainbow_df = pd.read_csv('rainbow_chart_data.csv')
+kas_df = pd.read_csv('kas_d.csv')
+
+# Convertir les colonnes de date en datetime
+historical_df['date'] = pd.to_datetime(historical_df['date'])
+future_df['date'] = pd.to_datetime(future_df['date'])
+rainbow_df['date'] = pd.to_datetime(rainbow_df['date'])
+kas_df['date'] = pd.to_datetime(kas_df['date'])
+
 # Fonction de lissage exponentiel
 def exponential_smoothing(series, alpha):
     result = [series[0]]  # première valeur est identique à la série
@@ -13,134 +25,17 @@ def exponential_smoothing(series, alpha):
         result.append(alpha * series[n] + (1 - alpha) * result[n - 1])
     return result
 
-def calculate_predicted_price(df):
-    df = df.dropna(subset=['close'])  # Ensure there are no NaNs in 'close'
-    df = df[df['days_from_genesis'] > 0]  # Ensure days_from_genesis is positive
-    df['log_days_from_genesis'] = np.log(df['days_from_genesis'])
-
-    # Filter out any infinite or extremely large values
-    df = df.replace([np.inf, -np.inf], np.nan).dropna(subset=['log_days_from_genesis', 'close'])
-
-    X = df['log_days_from_genesis'].values.reshape(-1, 1)
-    y = np.log(df['close'].values)
-
-    model = LinearRegression()
-    model.fit(X, y)
-
-    df['predicted_next_day_price'] = np.exp(model.predict(X))
-    df['predicted_price'] = df['predicted_next_day_price']
-    return df, model
-
-def generate_future_dates(df, days_from_today, model):
-    max_date_in_df = df['date'].max()
-    future_date = max_date_in_df + timedelta(days=days_from_today)
-
-    # Generate future dates if necessary
-    if future_date > max_date_in_df:
-        future_dates = pd.date_range(start=max_date_in_df + timedelta(days=1), end=future_date)
-        future_df = pd.DataFrame({'date': future_dates})
-        future_df['days_from_genesis'] = (future_df['date'] - df['date'].min()).dt.days
-        future_df['log_days_from_genesis'] = np.log(future_df['days_from_genesis'])
-
-        future_df['predicted_price'] = np.exp(model.predict(future_df[['log_days_from_genesis']]))
-
-        df = pd.concat([df, future_df], ignore_index=True)
-
-    return df
-
-
-
-
 def plot_rainbow_chart(df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
     pct_change = st.sidebar.slider('Select increase/decrease in % for prediction:', min_value=-99, max_value=500, value=0)
     colors = ['blue','green','yellow', 'orange', 'red' ]
 
-    if instrument == "Kaspa (KAS)":
-        genesis_date = datetime(2021, 11, 7)
-        start_date = '2022-01-04'
-        future_days = np.arange(1, 365*2)
-
-    df['date'] = pd.to_datetime(df['date'])
-    max_date_with_close = df.dropna(subset=['close'])['date'].max()
-    df = df[df["date"] <= max_date_with_close]
-
-    start_date_for_slider = df['date'].iloc[99].date()
-    end_date_for_slider = df['date'].iloc[-1].date()
-
-    cut_off_date = st.sidebar.slider(
-        "Select the cut-off date:",
-        value=end_date_for_slider,
-        min_value=start_date_for_slider,
-        max_value=end_date_for_slider,
-    )
-
-    df['days_from_genesis'] = (df['date'] - genesis_date).dt.days
-    df = df[df['days_from_genesis'] >= 0]
-
-    df['log_close'] = np.log(df['close'])
-    df['log_days_from_genesis'] = np.log(df['days_from_genesis'])
-
-    X = df[['log_days_from_genesis']]
-    y = df['log_close']
-    model = RANSACRegressor().fit(X, y)
-    df['predicted_log_close'] = model.predict(X)
-
-    cut_off_date = pd.to_datetime(cut_off_date)
-    start_date = pd.to_datetime(start_date)
-
-    df_filtered_for_fit = df[df['date'] <= cut_off_date]
-
-    X_fit = df_filtered_for_fit[['log_days_from_genesis']]
-    y_fit = df_filtered_for_fit['log_close']
-    model = RANSACRegressor().fit(X_fit, y_fit)
-
-    df_after_start = df[df['date'] >= start_date]
-    df['predicted_log_close'] = model.predict(df[['log_days_from_genesis']])
-    df_after_start['residuals'] = df_after_start['log_close'] - df_after_start['predicted_log_close']
-
-    highest_residual_index = df_after_start['residuals'].idxmax()
-    lowest_residual_index = df_after_start['residuals'].idxmin()
-
-    slope = model.estimator_.coef_[0]
-    intercept_high = df.loc[highest_residual_index, 'log_close'] - (slope * df.loc[highest_residual_index, 'log_days_from_genesis'])
-    intercept_low = df.loc[lowest_residual_index, 'log_close'] - (slope * df.loc[lowest_residual_index, 'log_days_from_genesis'])
-
-    slope_increase_percentage = pct_change
-    adjusted_slope = slope * (1 + slope_increase_percentage / 100)
-
-    last_day_from_genesis = np.log(df_filtered_for_fit['days_from_genesis'].max() + 1)
-    intercept_high_adjusted = df.loc[highest_residual_index, 'log_close'] - (adjusted_slope * last_day_from_genesis)
-    intercept_low_adjusted = df.loc[lowest_residual_index, 'log_close'] - (adjusted_slope * last_day_from_genesis)
-
-    future_log_days_from_genesis = np.log(df_filtered_for_fit['days_from_genesis'].max() + 1 + future_days)
-    future_days_from_genesis = np.exp(future_log_days_from_genesis)
-
-    future_dates = [genesis_date + timedelta(days=int(day)) for day in future_days_from_genesis]
-
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=df['date'], y=np.exp(df['log_close']), mode='lines', name='Log of Close Prices', marker=dict(color='lightgray')))
-    num_bands = 3
+    fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Log of Close Prices', marker=dict(color='lightgray')))
 
-    intercepts_original = []
-
-    for i in range(num_bands + 2):
-        intercept_band = intercept_low + i * (intercept_high - intercept_low) / (num_bands + 1)
-        y_values = slope * df_filtered_for_fit['log_days_from_genesis'] + intercept_band
-        color = colors[i % len(colors)]
-
-        fig.add_trace(go.Scatter(x=df_filtered_for_fit['date'], y=np.exp(y_values), mode='lines', line=dict(color=color, dash='solid')))
-    for i in range(num_bands + 2):
-        intercept_band = intercept_low + i * (intercept_high - intercept_low) / (num_bands + 1)
-        last_y_value = slope * last_day_from_genesis + intercept_band
-
-        intercepts_original.append(last_y_value - adjusted_slope * last_day_from_genesis)
-
-    for i, intercept_adjusted in enumerate(intercepts_original):
-        y_values = adjusted_slope * future_log_days_from_genesis + intercept_adjusted
-        color = colors[i % len(colors)]
-
-        fig.add_trace(go.Scatter(x=future_dates, y=np.exp(y_values), mode='lines', name='Adjusted Bands' if i == 0 else "", line=dict(color=color, dash='dot')))
+    for color in colors:
+        color_df = rainbow_df[rainbow_df['color'] == color]
+        fig.add_trace(go.Scatter(x=color_df['date'], y=color_df['price'], mode='lines', line=dict(color=color, dash='solid')))
 
     fig.update_layout(
         height=800,
@@ -324,14 +219,7 @@ def plot_future_power_law(df, instrument, model):
 def main():
     st.set_page_config(layout="wide")
 
-    # Charger le fichier CSV
-    csv_file = 'kas_d.csv'
-    df = pd.read_csv(csv_file)
-    df['date'] = pd.to_datetime(df['date'])
-
     instrument = "Kaspa (KAS)"
-    df['days_from_genesis'] = (df['date'] - df['date'].min()).dt.days
-    df, model = calculate_predicted_price(df)
 
     dashboard = st.sidebar.selectbox(
         label='Select dashboard',
@@ -339,13 +227,13 @@ def main():
     )
 
     if dashboard == 'Rainbow chart':
-        plot_rainbow_chart(df, instrument)
+        plot_rainbow_chart(kas_df, instrument)
     elif dashboard == 'Risk Visualization':
-        plot_risk_visualization(df, instrument)
+        plot_risk_visualization(historical_df, instrument)
     elif dashboard == 'Past Power Law':
-        plot_past_power_law(df, instrument)
+        plot_past_power_law(historical_df, instrument)
     elif dashboard == 'Future Power Law':
-        plot_future_power_law(df, instrument, model)
+        plot_future_power_law(future_df, instrument, model)
 
 if __name__ == "__main__":
     main()
