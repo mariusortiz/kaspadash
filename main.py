@@ -23,6 +23,9 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
     df['date'] = pd.to_datetime(df['date'])
     rainbow_df['date'] = pd.to_datetime(rainbow_df['date'])
 
+    # Supprimer les doublons dans rainbow_df
+    rainbow_df = rainbow_df.drop_duplicates(subset='date')
+
     # Interpoler les valeurs pour couvrir toute la plage de dates
     full_date_range = pd.date_range(start=df['date'].min(), end=rainbow_df['date'].max(), freq='D')
     rainbow_df = rainbow_df.set_index('date').reindex(full_date_range).interpolate(method='linear').reset_index()
