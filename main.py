@@ -51,7 +51,7 @@ def generate_future_dates(df, days_from_today, model):
 def plot_rainbow_chart(df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
     pct_change = st.sidebar.slider('Select increase/decrease in % for prediction:', min_value=-99, max_value=500, value=0)
-    colors = ['blue','green','yellow', 'orange', 'red' ]
+    colors = ['blue', 'green', 'yellow', 'orange', 'red']
 
     if instrument == "Kaspa (KAS)":
         genesis_date = datetime(2021, 11, 7)
@@ -225,7 +225,7 @@ def plot_past_power_law(df, instrument):
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
                         subplot_titles=(f'Actual vs Predicted Prices - {instrument}', 'Percentage Difference between Actual and Historical Predicted Prices'))
     fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
-    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_next_day_price'], mode='lines', name='Predicted Next Day Price', line=dict(color='cyan')), row=1, col=1)
+    fig.add_trace(go.Scatter(x=df['date'], y=df['predicted_price'], mode='lines', name='Predicted Next Day Price', line=dict(color='cyan')), row=1, col=1)
     
     fig.add_annotation(
         text="KASPING.STREAMLIT.APP",
@@ -239,7 +239,7 @@ def plot_past_power_law(df, instrument):
         showarrow=False
     )
     
-    differences = 100 * (df['close'] - df['predicted_next_day_price']) / df['predicted_next_day_price']
+    differences = 100 * (df['close'] - df['predicted_price']) / df['predicted_price']
     fig.add_trace(go.Scatter(x=df['date'], y=differences, mode='lines', name='Difference (%)'), row=2, col=1)
     fig.add_hline(y=0, line=dict(dash='dash', color='red'), row=2, col=1)
 
@@ -279,8 +279,7 @@ def plot_future_power_law(df, instrument, model):
     # Ensure future data is generated
     df = generate_future_dates(df, days_from_today, model)
 
-    today = datetime.today()
-    future_date = today + timedelta(days=days_from_today)
+    future_date = df['date'].max() + timedelta(days=days_from_today)
 
     # Ensure we have data for the selected future date
     future_data = df[df['date'] >= future_date]
@@ -292,7 +291,7 @@ def plot_future_power_law(df, instrument, model):
     predicted_price_on_future_date = future_data[future_data['date'] == closest_future_date]['predicted_price'].values[0]
     today_price = df.dropna(subset=['close'])['close'].values[-1]
 
-    st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from today ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference</h4>", unsafe_allow_html=True)
+    st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from the last available date ({future_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference</h4>", unsafe_allow_html=True)
 
     fig = go.Figure()
     df_to_plot = df[df['date'] <= future_date]
@@ -322,7 +321,8 @@ def main():
     st.set_page_config(layout="wide")
 
     # Charger le fichier CSV
-    df = pd.read_csv('kas_d.csv')
+    csv_file = 'kas_d.csv'
+    df = pd.read_csv(csv_file)
     df['date'] = pd.to_datetime(df['date'])
 
     instrument = "Kaspa (KAS)"
