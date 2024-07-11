@@ -22,7 +22,7 @@ def plot_rainbow_chart(df, instrument, rainbow_df):
     colors = ['blue', 'green', 'yellow', 'orange', 'red']
 
     df['date'] = pd.to_datetime(df['date'])
-    max_date_with_close = df.dropna(subset=['close'])['date'].max()
+    max_date_with_close = df.dropna(subset(['close']))['date'].max()
     df = df[df["date"] <= max_date_with_close]
 
     # Filtrer les données du rainbow chart
