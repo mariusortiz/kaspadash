@@ -12,6 +12,11 @@ def exponential_smoothing(series, alpha):
         result.append(alpha * series[n] + (1 - alpha) * result[n - 1])
     return result
 
+# Charger les données depuis les CSV générés
+historical_fair_price_df = pd.read_csv('historical_fair_price.csv')
+predicted_prices_df = pd.read_csv('predicted_prices.csv')
+
+
 def plot_rainbow_chart(df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
     pct_change = st.sidebar.slider('Select increase/decrease in % for prediction:', min_value=-99, max_value=500, value=0)
