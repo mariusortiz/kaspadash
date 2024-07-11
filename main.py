@@ -32,7 +32,7 @@ def plot_rainbow_chart(df, instrument, rainbow_df):
     future_dates = pd.date_range(start=df['date'].max() + pd.Timedelta(days=1), periods=365)
     future_dates_df = pd.DataFrame({'date': future_dates})
 
-    slope = np.polyfit(np.log(yellow_band_df['date'].astype(np.int64)), np.log(yellow_band_df['price']), 1)[0]
+    slope = np.polyfit(np.log(yellow_band_df['date'].astype(np.int64) // 10**9), np.log(yellow_band_df['price']), 1)[0]
     intercept_high = yellow_band_df['price'].max()
     intercept_low = yellow_band_df['price'].min()
 
