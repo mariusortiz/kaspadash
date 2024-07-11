@@ -322,7 +322,7 @@ def main():
     st.set_page_config(layout="wide")
 
     # Charger le fichier CSV
-    df = pd.read_csv('/mnt/data/kas_d.csv')
+    df = pd.read_csv('kas_d.csv')
     df['date'] = pd.to_datetime(df['date'])
 
     instrument = "Kaspa (KAS)"
