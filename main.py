@@ -182,7 +182,7 @@ def plot_past_power_law(df, instrument):
 def plot_future_power_law(df, historical_fair_price_df, predicted_prices_df):
     days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                                         min_value=1, 
-                                        max_value=365, 
+                                        max_value=365,  # Changer à 10 ans
                                         value=30)
     st.markdown(f"<h2 style='text-align: center;'>Kaspa (KAS) Power Law Predictions</h2>", unsafe_allow_html=True)
 
@@ -238,6 +238,15 @@ def plot_future_power_law(df, historical_fair_price_df, predicted_prices_df):
 
     This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
     ''')
+
+# Charger les données
+df = pd.read_csv('kas_d.csv')
+historical_fair_price_df = pd.read_csv('historical_fair_price.csv')
+predicted_prices_df = pd.read_csv('future_prices.csv')
+
+# Appeler la fonction pour tracer les graphiques
+plot_future_power_law(df, historical_fair_price_df, predicted_prices_df)
+
 
 def main():
     st.set_page_config(layout="wide")

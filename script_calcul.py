@@ -6,7 +6,7 @@ from sklearn.linear_model import RANSACRegressor
 from scipy.signal import savgol_filter
 
 # Charger les données
-df = pd.read_csv('kas_d.csv')  # Assurez-vous d'utiliser le chemin correct
+df = pd.read_csv('kas_d.csv')
 df['date'] = pd.to_datetime(df['date'])
 df = df.sort_values('date')
 
@@ -45,22 +45,30 @@ historical_fair_price_smooth = savgol_filter(historical_fair_price, window_lengt
 df['historical_fair_price'] = historical_fair_price
 df['historical_fair_price_smooth'] = historical_fair_price_smooth
 
+# Charger les données du Rainbow Chart
+rainbow_df = pd.read_csv('rainbow_chart_data.csv')
+rainbow_df['date'] = pd.to_datetime(rainbow_df['date'])
+yellow_band_df = rainbow_df[rainbow_df['color'] == 'yellow']
+
 # Générer des dates futures
-future_dates = pd.date_range(start=df['date'].max() + pd.Timedelta(days=1), periods=30)
-future_prices = []
+future_dates = pd.date_range(start=df['date'].max() + pd.Timedelta(days=1), periods=365)
+future_timestamps = future_dates.astype(np.int64) // 10**9
+timestamps_rainbow = yellow_band_df['date'].astype(np.int64) // 10**9
 
-# Utiliser la dernière fenêtre de données pour la prédiction
-window_data = data[-window_size:]
-ransac = RANSACRegressor(residual_threshold=5.0)
-log_days = np.log(np.arange(1, len(window_data) + 1)).reshape(-1, 1)
-ransac.fit(log_days, np.log(window_data))
+# Interpolation pour obtenir la tendance future
+interpolated_trend = np.interp(future_timestamps, timestamps_rainbow, yellow_band_df['price'])
 
-for i in range(1, 31):
-    future_price = np.exp(ransac.predict(np.log([len(window_data) + i]).reshape(-1, 1)))[0]
-    future_prices.append(future_price)
+# Ajouter un lissage exponentiel
+def exponential_smoothing(series, alpha):
+    result = [series[0]]
+    for n in range(1, len(series)):
+        result.append(alpha * series[n] + (1 - alpha) * result[n-1])
+    return result
+
+future_prices_smooth = exponential_smoothing(interpolated_trend, alpha=0.1)
 
 # Créer un dataframe pour les prévisions futures
-future_df = pd.DataFrame({'date': future_dates, 'predicted_price': future_prices})
+future_df = pd.DataFrame({'date': future_dates, 'predicted_price': interpolated_trend, 'predicted_price_smooth': future_prices_smooth})
 
 # Enregistrer les données
 df.to_csv('historical_fair_price.csv', index=False)
@@ -82,7 +90,7 @@ plt.figure(figsize=(14, 7))
 plt.plot(combined_df['date'], combined_df['close'], label='Actual Price')
 plt.plot(combined_df['date'], combined_df['historical_fair_price'], label='Historical Fair Price')
 plt.plot(combined_df['date'], combined_df['historical_fair_price_smooth'], label='Smoothed Historical Fair Price')
-plt.plot(future_df['date'], future_df['predicted_price'], label='Predicted Future Price', linestyle='--')
+plt.plot(future_df['date'], future_df['predicted_price'], label='Predicted Future Price', linestyle='--', color='red')
 plt.yscale('log')
 plt.xlabel('Date')
 plt.ylabel('Price')
