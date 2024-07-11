@@ -19,48 +19,40 @@ predicted_prices_df = pd.read_csv('future_prices.csv')
 
 def plot_rainbow_chart(df, rainbow_df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
-    
+
     df['date'] = pd.to_datetime(df['date'])
     rainbow_df['date'] = pd.to_datetime(rainbow_df['date'])
 
-    colors = rainbow_df['color'].unique()
-    color_map = {'blue': 'blue', 'green': 'green', 'yellow': 'yellow', 'orange': 'orange', 'red': 'red'}
+    # Interpoler les valeurs pour couvrir toute la plage de dates
+    full_date_range = pd.date_range(start=df['date'].min(), end=rainbow_df['date'].max(), freq='D')
+    rainbow_df = rainbow_df.set_index('date').reindex(full_date_range).interpolate(method='linear').reset_index()
+    rainbow_df = rainbow_df.rename(columns={'index': 'date'})
 
     fig = go.Figure()
 
-    # Tracer les bandes du Rainbow Chart
-    for color in colors:
-        color_data = rainbow_df[rainbow_df['color'] == color]
-        fig.add_trace(go.Scatter(
-            x=color_data['date'],
-            y=color_data['price'],
-            mode='lines',
-            name=f'{color} band',
-            line=dict(color=color_map[color])
-        ))
+    colors = ['blue', 'green', 'yellow', 'orange', 'red']
+    bands = ['blue_band', 'green_band', 'yellow_band', 'orange_band', 'red_band']
+    
+    for color, band in zip(colors, bands):
+        fig.add_trace(go.Scatter(x=rainbow_df['date'], y=rainbow_df[band], mode='lines', name=f'{color} band', line=dict(color=color)))
 
-    # Tracer le prix actuel
-    fig.add_trace(go.Scatter(
-        x=df['date'],
-        y=df['close'],
-        mode='lines',
-        name='Actual Price',
-        line=dict(color='black')
-    ))
+    fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price', line=dict(color='black')))
 
     fig.update_layout(
         height=800,
         width=1200,
         yaxis_type="log",
         xaxis=dict(showgrid=True, gridwidth=1, title='Date', tickangle=-45),
-        yaxis_title='Price',
+        yaxis_title='Close Price',
         showlegend=True
     )
 
     st.plotly_chart(fig, use_container_width=True)
     expander = st.expander('About the model')
     expander.write('''
-    This Rainbow Chart visualizes different price bands for Kaspa (KAS) along with the actual price. Each colored band represents a different range of prices, providing a visual way to understand the price dynamics over time.
+    This model calculates the linear regression on the log-log scaled data and then creates an envelope around the price action - for the date specified. It is a gross simplification, as the middle band **is not** the fair price as dictated by power law, but just middle between the lowest 
+    and highest regression lines. Also both "support" and "resistance" lines have the same slope, a proper model should find a separate fit for the bottoms and tops. To view such a model check [this](https://hcburger.com/blog/poweroscillator/index.html) and to watch a more complex rainbow chart go  [here](https://www.blockchaincenter.net/en/bitcoin-rainbow-chart/).
+    The aim of this graphic is to demonstrate how do such predictions change with more data.
     ''')
 
 def plot_past_power_law(df, instrument):
@@ -266,6 +258,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 
