@@ -2,16 +2,15 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import RANSACRegressor
 from datetime import datetime, timedelta
-import matplotlib.pyplot as plt
 
 # Charger les données de prix
-df = pd.read_csv('kas_d.csv')  # Remplacez par le chemin de vos données
+df = pd.read_csv('kas_d.csv')
 df['date'] = pd.to_datetime(df['date'])
 
 # Définir les dates de référence
 genesis_date = datetime(2021, 11, 7)
 start_date = '2022-01-04'
-future_days = np.arange(1, 365*2)
+future_days = np.arange(1, 365 * 2)
 
 # Calculer les jours depuis la genèse
 df['days_from_genesis'] = (df['date'] - genesis_date).dt.days
@@ -58,6 +57,13 @@ for i, intercept in enumerate(intercepts_original):
     y_values = slope * future_log_days_from_genesis + intercept
     color = colors[i % len(colors)]
     for date, price in zip(future_dates, np.exp(y_values)):
+        rainbow_data.append({'date': date, 'price': price, 'color': color})
+
+# Ajouter les données historiques
+for i, intercept in enumerate(intercepts_original):
+    y_values = slope * df['log_days_from_genesis'] + intercept
+    color = colors[i % len(colors)]
+    for date, price in zip(df['date'], np.exp(y_values)):
         rainbow_data.append({'date': date, 'price': price, 'color': color})
 
 rainbow_df = pd.DataFrame(rainbow_data)
