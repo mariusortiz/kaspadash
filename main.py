@@ -315,7 +315,7 @@ def main():
     if dashboard == 'Rainbow chart':
         plot_rainbow_chart(df, instrument)
     elif dashboard == 'Risk Visualization':
-        plot_risk_visualization(df)
+        plot_risk_visualization(df, instrument)
     elif dashboard == 'Past Power Law':
         plot_past_power_law(df, instrument)
     elif dashboard == 'Future Power Law':
