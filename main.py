@@ -37,7 +37,7 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
     fig = go.Figure()
 
     colors = ['blue', 'green', 'yellow', 'orange', 'red']
-    
+
     for color, band in zip(colors, available_bands):
         fig.add_trace(go.Scatter(x=rainbow_df['date'], y=rainbow_df[band], mode='lines', name=f'{color} band', line=dict(color=color)))
 
@@ -263,5 +263,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
