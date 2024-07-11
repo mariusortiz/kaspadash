@@ -247,35 +247,49 @@ def plot_future_power_law(df, historical_fair_price_df, predicted_prices_df):
     except Exception as e:
         st.error(f"An error occurred: {e}")
 
-def plot_risk_visualization(df):
-    try:
-        st.markdown("<h2 style='text-align: center;'>Risk Visualization</h2>", unsafe_allow_html=True)
+def plot_risk_visualization(df, instrument):
+    st.markdown(f"<h2 style='text-align: center;'>{instrument} Risk Visualization</h2>", unsafe_allow_html=True)
+    
+    chart_type = st.sidebar.select_slider(
+        'Select scale type',
+        options=['Linear', 'Logarithmic'],
+        value="Logarithmic"
+    )
+    df['Value'] = df['close']
+    df = df[df['Value'] > 0]
+    diminishing_factor = 0.395
+    moving_average_days = 365
+    df['MA'] = df['Value'].rolling(moving_average_days, min_periods=1).mean().dropna()
+    df['Preavg'] = (np.log(df.Value) - np.log(df['MA'])) * df.index**diminishing_factor
+    df['avg'] = (df['Preavg'] - df['Preavg'].cummin()) / (df['Preavg'].cummax() - df['Preavg'].cummin())
+    annotation_text = f"Updated: {df['date'].iloc[-1].strftime('%Y-%m-%d')} | Price: {round(df['Value'].iloc[-1], 5)} | Risk: {round(df['avg'].iloc[-1], 2)}"
+    if chart_type == "Linear":
+        fig = go.Figure(data=go.Scatter(x=df['date'], y=df['Value'], mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', showscale=True)))
+        fig.update_yaxes(title='Price ($USD)', showgrid=True)
+        fig.update_layout(height=600, width=800, margin=dict(l=50, r=50, t=50, b=50))
+    else:
+        fig = go.Figure(data=go.Scatter(x=df['date'], y=df['Value'], mode='markers', marker=dict(size=8, color=df['avg'], colorscale='Jet', showscale=True)))
+        fig.update_yaxes(title='Price ($USD)', showgrid=True, type='log')
+        fig.update_layout(height=600, width=800, margin=dict(l=50, r=50, t=50, b=50))
+    fig.update_layout(title=annotation_text)
+    st.plotly_chart(fig, use_container_width=True)
+    # Deuxième graphique avec des zones de risque colorées
+    fig = make_subplots(specs=[[{'secondary_y': True}]])
+    fig.add_trace(go.Scatter(x=df['date'], y=df['Value'], name='Price', line=dict(color='cyan', width=3)))
+    fig.add_trace(go.Scatter(x=df['date'], y=df['avg'], name='Risk', line=dict(color='purple', width=2)), secondary_y=True)
+    opacity = 0.2
+    for i in range(5, 0, -1):
+        opacity += 0.05
+        fig.add_hrect(y0=i*0.1, y1=((i-1)*0.1), line_width=0, fillcolor='green', opacity=opacity, secondary_y=True)
+    for i in range(6, 10):
+        opacity += 0.1
+        fig.add_hrect(y0=i*0.1, y1=((i+1)*0.1), line_width=0, fillcolor='red', opacity=opacity, secondary_y=True)
+    fig.update_xaxes(title='Date')
+    fig.update_yaxes(title='Price ($USD)', type='log', showgrid=False)
+    fig.update_yaxes(title='Risk', type='linear', secondary_y=True, showgrid=True, tick0=0.0, dtick=0.1, range=[0, 1])
+    fig.update_layout(template='plotly_dark', title={'text': annotation_text, 'y': 0.9, 'x': 0.5})
 
-        df['return'] = df['close'].pct_change()
-        df.dropna(subset=['return'], inplace=True)
-
-        df['log_return'] = np.log1p(df['return'])
-        df.dropna(subset=['log_return'], inplace=True)
-
-        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
-                            subplot_titles=('Daily Returns', 'Log Returns'))
-        
-        fig.add_trace(go.Histogram(x=df['return'], nbinsx=50, name='Daily Returns'), row=1, col=1)
-        fig.add_trace(go.Histogram(x=df['log_return'], nbinsx=50, name='Log Returns'), row=2, col=1)
-        
-        fig.update_layout(height=800, width=1000, showlegend=False)
-        fig.update_yaxes(title_text="Frequency", row=1, col=1)
-        fig.update_yaxes(title_text="Frequency", row=2, col=1)
-        fig.update_xaxes(title_text="Daily Returns", row=1, col=1)
-        fig.update_xaxes(title_text="Log Returns", row=2, col=1)
-        
-        st.plotly_chart(fig, use_container_width=True)
-        expander = st.expander('About the chart')
-        expander.write('''
-        The histogram shows the distribution of daily returns and log returns. It provides an insight into the risk associated with the instrument.
-        ''')
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
+    st.plotly_chart(fig, use_container_width=True)
 
 # Charger les données
 df = pd.read_csv('kas_d.csv')
