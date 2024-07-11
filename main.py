@@ -189,7 +189,7 @@ predicted_prices_df = pd.read_csv('future_prices.csv')
 def plot_future_power_law(df, historical_fair_price_df, predicted_prices_df):
     days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                                         min_value=1, 
-                                        max_value=3650,  # 10 ans
+                                        max_value=365,  # 10 ans
                                         value=30)
     st.markdown(f"<h2 style='text-align: center;'>Kaspa (KAS) Power Law Predictions</h2>", unsafe_allow_html=True)
 
