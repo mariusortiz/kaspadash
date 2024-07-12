@@ -62,71 +62,7 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
     expander.write('''
     This Rainbow Chart visualizes different price bands for Kaspa (KAS) along with the actual price. Each colored band represents a different range of prices, providing a visual way to understand the price dynamics over time.
     ''')
-    
 
-def plot_past_power_law(df, instrument):
-    try:
-        st.markdown(f"<h2 style='text-align: center;'>{instrument} Historical Power Law Predictions</h2>", unsafe_allow_html=True)
-        
-        chart_type = st.sidebar.select_slider(
-            'Select scale type',
-            options=['Linear', 'Logarithmic'],
-            value="Linear"
-        )
-        
-        max_date_with_close = df.dropna(subset=['close'])['date'].max()
-        df = df[df["date"] <= max_date_with_close]
-        
-        # Vérifiez si 'historical_fair_price' et 'historical_fair_price_smooth' sont présents dans le DataFrame
-        if 'historical_fair_price' not in df.columns:
-            st.error("Missing 'historical_fair_price' column in the data")
-            return
-
-        if 'historical_fair_price_smooth' not in df.columns:
-            df['historical_fair_price_smooth'] = savgol_filter(df['historical_fair_price'], window_length=51, polyorder=3)
-        
-        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1,
-                            subplot_titles=(f'Actual vs Predicted Prices - {instrument}', 'Percentage Difference between Actual and Historical Predicted Prices'))
-        fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'), row=1, col=1)
-        fig.add_trace(go.Scatter(x=df['date'], y=df['historical_fair_price_smooth'], mode='lines', name='Smoothed Historical Fair Price', line=dict(color='orange')), row=1, col=1)
-        
-        fig.add_annotation(
-            text="KASPING.STREAMLIT.APP",
-            align='left',
-            opacity=0.4,
-            font=dict(color="red", size=35),
-            xref='paper',
-            yref='paper',
-            x=0.5,
-            y=0.5,
-            showarrow=False
-        )
-        
-        differences = 100 * (df['close'] - df['historical_fair_price_smooth']) / df['historical_fair_price_smooth']
-        fig.add_trace(go.Scatter(x=df['date'], y=differences, mode='lines', name='Difference (%)'), row=2, col=1)
-        fig.add_hline(y=0, line=dict(dash='dash', color='red'), row=2, col=1)
-
-        fig.update_layout(height=800, width=1000, showlegend=True)
-        fig.update_yaxes(title_text="Price ($)", row=1, col=1)
-        fig.update_yaxes(title_text="Difference (%)", row=2, col=1)
-        fig.update_xaxes(title_text="Date", row=2, col=1)
-
-        if chart_type == "Linear":
-            fig.update_layout(yaxis_title='Price', xaxis_rangeslider_visible=False)
-        elif chart_type == "Logarithmic":
-            fig.update_layout(yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
-
-        st.plotly_chart(fig, use_container_width=True)
-        expander = st.expander('About the chart')
-        expander.write('''
-        You might find it surprising to see the predicted value fluctuate. Typically, power law charts depict the fair price as a constant, straight line (on log-log charts) because they are curve-fitted on the past data for the best fit.
-
-        However, this doesn't reveal past predictions, which is crucial for assessing the reliability of these forecasts.
-
-        This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
-        ''')
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
 
 def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_prices_df):
     try:
@@ -261,15 +197,13 @@ def main():
 
     dashboard = st.sidebar.selectbox(
         label='Select dashboard',
-        options=['Rainbow chart', 'Risk Visualization', 'Past Power Law', 'Future Power Law']
+        options=['Rainbow chart', 'Risk Visualization', 'Future Power Law']
     )
 
     if dashboard == 'Rainbow chart':
         plot_rainbow_chart(df, rainbow_df, instrument)
     elif dashboard == 'Risk Visualization':
         plot_risk_visualization(df, instrument)
-    elif dashboard == 'Past Power Law':
-        plot_past_power_law(df, instrument)
     elif dashboard == 'Future Power Law':
         plot_future_power_law(df, instrument, historical_fair_price_df, predicted_prices_df)
 
