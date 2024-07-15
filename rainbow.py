@@ -72,4 +72,4 @@ for i, intercept in enumerate(intercepts_original):
 rainbow_df = pd.DataFrame(rainbow_data)
 
 # Enregistrer dans un fichier CSV
-rainbow_df.to_csv('rainbow_chart_data2.csv', index=False)
+rainbow_df.to_csv('rainbow_chart_data.csv', index=False)
