@@ -14,7 +14,7 @@ def exponential_smoothing(series, alpha):
 
 
 def plot_rainbow_chart(df, rainbow_df, instrument):
-    st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='text-align: center;'>{currency} Rainbow Chart</h2>", unsafe_allow_html=True)
     
     df['date'] = pd.to_datetime(df['date'])
     rainbow_df['date'] = pd.to_datetime(rainbow_df['date'])
@@ -77,7 +77,7 @@ def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_pr
                                             min_value=1, 
                                             max_value=365,  # Changer à 10 ans
                                             value=30)
-        st.markdown(f"<h2 style='text-align: center;'>Kaspa (KAS) Power Law Predictions</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align: center;'>{currency} Power Law Predictions</h2>", unsafe_allow_html=True)
 
         chart_type = st.sidebar.select_slider(
             'Select scale type',
@@ -143,7 +143,7 @@ def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_pr
         st.error(f"An error occurred: {e}")
 
 def plot_risk_visualization(df, instrument):
-    st.markdown(f"<h2 style='text-align: center;'>{instrument} Risk Visualization</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='text-align: center;'>{currency} Risk Visualization</h2>", unsafe_allow_html=True)
     
     chart_type = st.sidebar.select_slider(
         'Select scale type',
