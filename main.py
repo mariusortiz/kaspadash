@@ -196,7 +196,7 @@ def main():
         options=['Kaspa (KAS)', 'Bitcoin (BTC)']
     )
 
-    currency = 'kaspa' if instrument == 'Kaspa (KAS)' else 'btc'
+    currency = 'kas' if instrument == 'Kaspa (KAS)' else 'btc'
 
     df, rainbow_df, historical_fair_price_df, predicted_prices_df = load_data(currency)
 
