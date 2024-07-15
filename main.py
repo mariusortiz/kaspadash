@@ -172,28 +172,33 @@ def plot_risk_visualization(df, instrument):
     st.plotly_chart(fig, use_container_width=True)
 
 # Charger les données
-df = pd.read_csv('kas_d.csv')
-historical_fair_price_df = pd.read_csv('historical_fair_price.csv')
-predicted_prices_df = pd.read_csv('future_prices.csv')
-
-def main():
-    st.set_page_config(layout="wide")
-    
-    instrument = "Kaspa (KAS)"
-
-    # Charger les fichiers CSV
-    kas_d_csv = 'kas_d.csv'
-    rainbow_chart_csv = 'rainbow_chart_data.csv'
-    historical_fair_price_csv = 'historical_fair_price.csv'
-    predicted_prices_csv = 'future_prices.csv'
+def load_data(currency):
+    kas_d_csv = f'{currency}_d.csv'
+    rainbow_chart_csv = f'rainbow_chart_data_{currency}.csv'
+    historical_fair_price_csv = f'historical_fair_price_{currency}.csv'
+    predicted_prices_csv = f'future_prices_{currency}.csv'
 
     df = pd.read_csv(kas_d_csv)
     rainbow_df = pd.read_csv(rainbow_chart_csv)
     historical_fair_price_df = pd.read_csv(historical_fair_price_csv)
     predicted_prices_df = pd.read_csv(predicted_prices_csv)
-    
+
     df['date'] = pd.to_datetime(df['date'])
     df['days_from_genesis'] = (df['date'] - df['date'].min()).dt.days
+    
+    return df, rainbow_df, historical_fair_price_df, predicted_prices_df
+
+def main():
+    st.set_page_config(layout="wide")
+
+    instrument = st.sidebar.selectbox(
+        label='Select currency',
+        options=['Kaspa (KAS)', 'Bitcoin (BTC)']
+    )
+
+    currency = 'kaspa' if instrument == 'Kaspa (KAS)' else 'btc'
+
+    df, rainbow_df, historical_fair_price_df, predicted_prices_df = load_data(currency)
 
     dashboard = st.sidebar.selectbox(
         label='Select dashboard',
