@@ -54,9 +54,20 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
     )
 
     st.plotly_chart(fig, use_container_width=True)
-    expander = st.expander('About the model')
+    expander = st.expander('Explications')
     expander.write('''
-    This Rainbow Chart visualizes different price bands for Kaspa (KAS) along with the actual price. Each colored band represents a different range of prices, providing a visual way to understand the price dynamics over time.
+    **Rainbow Chart**
+
+    Le graphique Rainbow Chart visualise différentes bandes de prix pour Kaspa (KAS) ou Bitcoin (BTC) en plus du prix réel. Chaque bande de couleur représente une plage de prix distincte, offrant un moyen visuel de comprendre la dynamique des prix au fil du temps.
+
+    #### Calculs effectués :
+    1. **Logarithme naturel du prix de clôture** : Nous appliquons une transformation logarithmique aux prix de clôture pour stabiliser la variance et rendre les données plus conformes aux hypothèses de la régression linéaire.
+    2. **Régression linéaire avec RANSAC** : Nous utilisons l'algorithme de régression RANSAC (Random Sample Consensus) pour ajuster un modèle linéaire robuste aux données logarithmiques. Cela nous permet de traiter les anomalies et les valeurs aberrantes efficacement.
+    3. **Interception et pente des bandes de couleurs** : Nous calculons les bandes de couleurs en utilisant la pente du modèle linéaire et en ajustant les interceptions pour créer plusieurs lignes parallèles représentant les bandes de prix.
+    4. **Interpolation des données** : Nous interpolons les valeurs pour couvrir toute la plage de dates, permettant une visualisation continue des bandes de couleurs.
+
+    #### Utilité et pertinence :
+    Le Rainbow Chart est pertinent car il permet aux investisseurs de visualiser facilement les zones de support et de résistance du prix d'une cryptomonnaie. Les différentes bandes colorées aident à identifier les niveaux de prix potentiels où le marché peut trouver un soutien ou une résistance. Cette visualisation est particulièrement utile pour les traders et les analystes techniques qui cherchent à identifier les tendances de prix et à prendre des décisions éclairées basées sur des niveaux de prix critiques.
     ''')
 
 
@@ -112,14 +123,22 @@ def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_pr
             fig.update_layout(xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
 
         st.plotly_chart(fig, use_container_width=True)
-        expander = st.expander('About the chart')
+        expander = st.expander('Explications')
         expander.write('''
-        You might find it surprising to see the predicted value fluctuate. Typically, power law charts depict the fair price as a constant, straight line (on log-log charts) because they are curve-fitted on the past data for the best fit.
+        **Future Power Law**
 
-        However, this doesn't reveal past predictions, which is crucial for assessing the reliability of these forecasts.
+        Le graphique Future Power Law utilise une loi de puissance pour prédire le prix futur de Kaspa (KAS) ou Bitcoin (BTC), en se basant sur des données historiques et des modèles de régression.
 
-        This chart is designed differently. It shows predictions as they would have been made using all available data at each point in the past. The goal is to demonstrate the degree to which power law predictions can vary, giving you insight into their consistency.
-        ''')
+        #### Calculs effectués :
+        1. **Séries temporelles historiques** : Nous utilisons les données de prix historiques pour ajuster un modèle de loi de puissance. La loi de puissance est une relation mathématique où une quantité varie comme une puissance d'une autre quantité.
+        2. **Régression RANSAC** : Nous appliquons l'algorithme de régression RANSAC pour ajuster un modèle logarithmique aux données historiques, en identifiant une "fair price" historique.
+        3. **Lissage exponentiel** : Nous appliquons un lissage exponentiel aux prix historiques pour obtenir une courbe plus régulière et prévisible.
+        4. **Interpolation et extrapolation** : En utilisant les modèles ajustés, nous interpolons les tendances historiques et les extrapolons pour prédire les prix futurs. Cette prédiction est ensuite lissée pour réduire la volatilité et améliorer la précision.
+
+        #### Utilité et pertinence :
+        La visualisation du risque est essentielle pour évaluer le potentiel de perte ou de gain associé à une cryptomonnaie. En montrant comment le prix actuel se compare à sa tendance historique, cette visualisation aide les investisseurs à identifier les périodes de surachat ou de survente. Les zones de risque colorées fournissent une représentation visuelle claire des niveaux de risque, aidant ainsi à la prise de décision stratégique en matière d'investissement et de gestion des risques.
+    ''')
+
     except Exception as e:
         st.error(f"An error occurred: {e}")
 
@@ -166,6 +185,21 @@ def plot_risk_visualization(df, instrument):
     fig.update_layout(template='plotly_dark', title={'text': annotation_text, 'y': 0.9, 'x': 0.5})
 
     st.plotly_chart(fig, use_container_width=True)
+    expander = st.expander('Explications')
+    expander.write('''
+        **Risk Visualization - Explication scientifique**
+
+        La visualisation des risques utilise des méthodes statistiques pour mesurer et afficher le risque associé aux fluctuations des prix de Kaspa (KAS) ou Bitcoin (BTC).
+
+        #### Calculs effectués :
+        1. **Moyenne mobile** : Nous calculons la moyenne mobile des prix de clôture sur une période de 365 jours pour lisser les fluctuations à court terme et mettre en évidence les tendances à long terme.
+        2. **Pré-moyenne logarithmique** : Nous transformons les prix en utilisant une échelle logarithmique et ajustons les valeurs en fonction de l'indice des données pour tenir compte de la variabilité temporelle.
+        3. **Indice de risque** : Nous calculons l'indice de risque en mesurant la différence entre la pré-moyenne logarithmique et ses valeurs minimales et maximales cumulatives. Cela donne une mesure normalisée du risque qui varie entre 0 et 1.
+        4. **Visualisation colorée** : Nous utilisons une échelle de couleurs pour représenter l'indice de risque, avec des couleurs allant du vert (faible risque) au rouge (risque élevé), et ajoutons des zones de risque colorées pour une visualisation plus intuitive.
+
+        #### Utilité et pertinence :
+        La visualisation des risques est essentielle pour les investisseurs qui cherchent à comprendre la volatilité et le risque associés à une cryptomonnaie. En offrant une mesure visuelle et normalisée du risque, ce graphique permet aux utilisateurs d'identifier les périodes de haute et basse volatilité, de prendre des décisions d'investissement éclairées et de gérer leurs portefeuilles de manière plus efficace. La visualisation colorée facilite également la compréhension rapide des niveaux de risque actuels et historiques.
+    ''')
 
 # Charger les données
 def load_data(currency):
@@ -188,7 +222,7 @@ def main():
     st.set_page_config(layout="wide")
 
     instrument = st.sidebar.selectbox(
-        label='Select currency',
+        label='Choix de la monnaie',
         options=['Kaspa (KAS)', 'Bitcoin (BTC)']
     )
 
@@ -197,7 +231,7 @@ def main():
     df, rainbow_df, historical_fair_price_df, predicted_prices_df = load_data(currency)
 
     dashboard = st.sidebar.selectbox(
-        label='Select dashboard',
+        label='Choix du dashboard',
         options=['Rainbow chart', 'Risk Visualization', 'Future Power Law']
     )
 
