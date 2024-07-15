@@ -45,7 +45,7 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
         y=df['close'],
         mode='lines',
         name='Actual Price',
-        line=dict(color='black')
+        line=dict(color='cyan')
     ))
 
     fig.update_layout(
