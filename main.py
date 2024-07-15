@@ -56,7 +56,7 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
     st.plotly_chart(fig, use_container_width=True)
     expander = st.expander('Explications')
     expander.write('''
-    **Rainbow Chart**
+    #### Rainbow Chart
 
     Le graphique Rainbow Chart visualise différentes bandes de prix pour Kaspa (KAS) ou Bitcoin (BTC) en plus du prix réel. Chaque bande de couleur représente une plage de prix distincte, offrant un moyen visuel de comprendre la dynamique des prix au fil du temps.
 
@@ -125,7 +125,7 @@ def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_pr
         st.plotly_chart(fig, use_container_width=True)
         expander = st.expander('Explications')
         expander.write('''
-        **Future Power Law**
+        #### Future Power Law
 
         Le graphique Future Power Law utilise une loi de puissance pour prédire le prix futur de Kaspa (KAS) ou Bitcoin (BTC), en se basant sur des données historiques et des modèles de régression.
 
@@ -187,7 +187,7 @@ def plot_risk_visualization(df, instrument):
     st.plotly_chart(fig, use_container_width=True)
     expander = st.expander('Explications')
     expander.write('''
-        **Risk Visualization - Explication scientifique**
+        #### Risk Visualization
 
         La visualisation des risques utilise des méthodes statistiques pour mesurer et afficher le risque associé aux fluctuations des prix de Kaspa (KAS) ou Bitcoin (BTC).
 
