@@ -71,12 +71,12 @@ future_prices_smooth = exponential_smoothing(interpolated_trend, alpha=0.1)
 future_df = pd.DataFrame({'date': future_dates, 'predicted_price': interpolated_trend, 'predicted_price_smooth': future_prices_smooth})
 
 # Enregistrer les données
-df.to_csv('historical_fair_price_kas.csv', index=False)
-future_df.to_csv('future_prices_kas.csv', index=False)
+df.to_csv('historical_fair_price.csv', index=False)
+future_df.to_csv('future_prices.csv', index=False)
 
 # Charger les données historiques et futures
-historical_df = pd.read_csv('historical_fair_price_kas.csv')
-future_df = pd.read_csv('future_prices_kas.csv')
+historical_df = pd.read_csv('historical_fair_price.csv')
+future_df = pd.read_csv('future_prices.csv')
 
 # Convertir les colonnes de date en datetime
 historical_df['date'] = pd.to_datetime(historical_df['date'])
