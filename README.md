@@ -1,5 +1,5 @@
 ## Kaspa Dashboard
-This dashboard is an enhanced version of the work shared by [Danny Groves Ph.D.](https://twitter.com/DrDanobi), whose original code can be found in this GitHub repository [github repository](https://github.com/GrovesD2/market_monitor_trend_dash/tree/main#readme). The concept for the Trend Predictor was also inspired by the work and ideas of "Dr. Danobi."
+This dashboard is an enhanced version of the work shared by [Danny Groves Ph.D.](https://twitter.com/DrDanobi), whose original code can be found in this [github repository](https://github.com/GrovesD2/market_monitor_trend_dash/tree/main#readme). The concept for the Trend Predictor was also inspired by the work and ideas of "Dr. Danobi."
 
 ## Key Features
 
