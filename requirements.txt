@@ -3,3 +3,9 @@ pandas
 plotly
 cryptography
 scikit-learn
+pycoingecko
+boto3
+powerlaw
+matplotlib
+scipy
+numpy
