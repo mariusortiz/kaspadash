@@ -13,6 +13,72 @@ def exponential_smoothing(series, alpha):
     return result
 
 
+def plot_sma_chart(df, instrument):
+    st.markdown(f"<h2 style='text-align: center;'>{instrument} SMA Crossover Chart</h2>", unsafe_allow_html=True)
+
+    # Calculer les moyennes mobiles simples (SMA)
+    df['SMA_66'] = df['close'].rolling(window=66).mean()
+    df['SMA_85'] = df['close'].rolling(window=85).mean()
+
+    fig = go.Figure()
+
+    # Tracer le prix actuel
+    fig.add_trace(go.Scatter(
+        x=df['date'],
+        y=df['close'],
+        mode='lines',
+        name='Price Data',
+        line=dict(color='white')
+    ))
+
+    # Tracer la SMA 66
+    fig.add_trace(go.Scatter(
+        x=df['date'],
+        y=df['SMA_66'],
+        mode='lines',
+        name='66DMA',
+        line=dict(color='green')
+    ))
+
+    # Tracer la SMA 85
+    fig.add_trace(go.Scatter(
+        x=df['date'],
+        y=df['SMA_85'],
+        mode='lines',
+        name='85DMA',
+        line=dict(color='orange')
+    ))
+
+    fig.update_layout(
+        height=800,
+        width=1200,
+        yaxis_type="log",
+        xaxis=dict(showgrid=True, gridwidth=1, title='Date', tickangle=-45),
+        yaxis_title='Price',
+        showlegend=True,
+        plot_bgcolor='black',  # Couleur de fond noire pour ressembler à l'exemple
+        paper_bgcolor='black',  # Couleur du papier noire pour ressembler à l'exemple
+        font=dict(color='white'),  # Texte en blanc
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+    expander = st.expander('Explications')
+    expander.write('''
+    #### SMA Chart
+
+    Le graphique Rainbow Chart visualise différentes bandes de prix pour Kaspa (KAS) ou Bitcoin (BTC) en plus du prix réel. Chaque bande de couleur représente une plage de prix distincte, offrant un moyen visuel de comprendre la dynamique des prix au fil du temps.
+
+    #### Calculs effectués :
+    1. **Logarithme naturel du prix de clôture** : Nous appliquons une transformation logarithmique aux prix de clôture pour stabiliser la variance et rendre les données plus conformes aux hypothèses de la régression linéaire.
+    2. **Régression linéaire avec RANSAC** : Nous utilisons l'algorithme de régression RANSAC (Random Sample Consensus) pour ajuster un modèle linéaire robuste aux données logarithmiques. Cela nous permet de traiter les anomalies et les valeurs aberrantes efficacement.
+    3. **Interception et pente des bandes de couleurs** : Nous calculons les bandes de couleurs en utilisant la pente du modèle linéaire et en ajustant les interceptions pour créer plusieurs lignes parallèles représentant les bandes de prix.
+    4. **Interpolation des données** : Nous interpolons les valeurs pour couvrir toute la plage de dates, permettant une visualisation continue des bandes de couleurs.
+
+    #### Utilité et pertinence :
+    Le Rainbow Chart est pertinent car il permet aux investisseurs de visualiser facilement les zones de support et de résistance du prix d'une cryptomonnaie. Les différentes bandes colorées aident à identifier les niveaux de prix potentiels où le marché peut trouver un soutien ou une résistance. Cette visualisation est particulièrement utile pour les traders et les analystes techniques qui cherchent à identifier les tendances de prix et à prendre des décisions éclairées basées sur des niveaux de prix critiques.
+    ''')
+
+
 def plot_rainbow_chart(df, rainbow_df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
     
@@ -240,7 +306,7 @@ def main():
 
     dashboard = st.sidebar.selectbox(
         label='Choix du dashboard',
-        options=['Rainbow chart', 'Risk Visualization', 'Future Power Law']
+        options=['Rainbow chart', 'Risk Visualization', 'Future Power Law', 'SMA Chart']  # Ajout de l'option "SMA Chart"
     )
 
     if dashboard == 'Rainbow chart':
@@ -249,6 +315,8 @@ def main():
         plot_risk_visualization(df, instrument)
     elif dashboard == 'Future Power Law':
         plot_future_power_law(df, instrument, historical_fair_price_df, predicted_prices_df)
+    elif dashboard == 'SMA Chart':  
+        plot_sma_chart(df, instrument)
 
 if __name__ == "__main__":
     main()
