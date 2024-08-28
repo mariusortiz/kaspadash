@@ -60,7 +60,7 @@ def plot_sma_chart(df, instrument):
     # Ajuster les ordonnées
     fig.update_yaxes(
         tickvals=[0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30],
-        range=[0, 0.25],  # Fixer la plage d'ordonnée de 0 à 0.30
+        range=[0, 0.30],  # Fixer la plage d'ordonnée de 0 à 0.30
         showgrid=True,
         gridwidth=1,
         title='Price'
