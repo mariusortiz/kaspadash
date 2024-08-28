@@ -20,11 +20,11 @@ resistance_coefficient = 10**-13.10611888
 fair_coefficient = 10**-13.25978043
 
 # Ajuster les multiplicateurs pour écarter les bandes de manière uniforme
-blue_multiplier = 0.5  # Pour écarter la bande bleue
-green_multiplier = 0.7  # Pour écarter la bande verte
+blue_multiplier = 0.33  # Pour écarter la bande bleue
+green_multiplier = 0.66  # Pour écarter la bande verte
 yellow_multiplier = 1.0  # La bande jaune reste inchangée
-orange_multiplier = 1.3  # Pour écarter la bande orange
-red_multiplier = 1.6  # Pour écarter la bande rouge
+orange_multiplier = 1.33  # Pour écarter la bande orange
+red_multiplier = 1.66  # Pour écarter la bande rouge
 
 # Calculer les prix pour chaque bande
 df['fair_price'] = fair_coefficient * (df['days_from_genesis']**exp)
