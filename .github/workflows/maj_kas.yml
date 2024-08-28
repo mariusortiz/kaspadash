@@ -29,3 +29,5 @@ jobs:
           git add kas_d.csv
           git commit -m "Update Kaspa data"
           git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
