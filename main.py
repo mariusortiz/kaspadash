@@ -20,6 +20,10 @@ def plot_sma_chart(df, instrument):
     df['SMA_66'] = df['close'].rolling(window=66).mean()
     df['SMA_85'] = df['close'].rolling(window=85).mean()
 
+    # Identifier les points de croisement
+    df['crossover'] = np.where((df['SMA_66'] > df['SMA_85']) & (df['SMA_66'].shift(1) <= df['SMA_85'].shift(1)), 1, 0)
+    crossover_dates = df[df['crossover'] == 1]['date']
+
     fig = go.Figure()
 
     # Tracer le prix actuel
@@ -48,6 +52,10 @@ def plot_sma_chart(df, instrument):
         name='85DMA',
         line=dict(color='orange')
     ))
+
+    # Ajouter les lignes verticales pour les croisements
+    for date in crossover_dates:
+        fig.add_vline(x=date, line=dict(color="red", dash="dot"), annotation_text="SMA Crossover", annotation_position="top")
 
     fig.update_layout(
         height=800,
