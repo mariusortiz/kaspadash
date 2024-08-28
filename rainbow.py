@@ -15,18 +15,16 @@ df['days_from_genesis'] = (df['date'] - genesis_date).dt.days
 
 # Paramètres de la Power Law
 exp = 4.218461
-fair_coefficient = 10**-13.25978043  # Coefficient pour la bande jaune (juste valeur)
+support_coefficient = 10**-13.41344198
+resistance_coefficient = 10**-13.10611888
+fair_coefficient = 10**-13.25978043
 
-# Multiplier pour écarter les bandes (logique x1,5)
-multipliers = {
-    'purple': 0.15,   
-    'dark_blue': 0.225, 
-    'light_blue': 0.3375, 
-    'green': 0.9,   
-    'yellow': 1.35,
-    'orange': 2.025, 
-    'red': 3.0375   
-}
+# Ajuster les multiplicateurs pour écarter les bandes de manière uniforme
+blue_multiplier = 0.6 
+green_multiplier = 0.9 
+yellow_multiplier = 1.35  
+orange_multiplier = 2.025  
+red_multiplier = 3.0375  
 
 # Calculer les prix pour chaque bande
 df['fair_price'] = fair_coefficient * (df['days_from_genesis']**exp)
@@ -34,9 +32,10 @@ df['fair_price'] = fair_coefficient * (df['days_from_genesis']**exp)
 # Créer un DataFrame pour le Rainbow Chart
 rainbow_data = []
 
-colors = list(multipliers.keys())
+colors = ['blue', 'green', 'yellow', 'orange', 'red']
+multipliers = [blue_multiplier, green_multiplier, yellow_multiplier, orange_multiplier, red_multiplier]
 
-for color, multiplier in multipliers.items():
+for color, multiplier in zip(colors, multipliers):
     price_series = df['fair_price'] * multiplier
     for date, price in zip(df['date'], price_series):
         rainbow_data.append({'date': date, 'price': price, 'color': color})
@@ -47,7 +46,7 @@ last_day_from_genesis = df['days_from_genesis'].max()
 future_days_from_genesis = last_day_from_genesis + future_days
 future_dates = [df['date'].max() + timedelta(days=int(day)) for day in future_days]
 
-for color, multiplier in multipliers.items():
+for color, multiplier in zip(colors, multipliers):
     future_prices = df['fair_price'].iloc[-1] * multiplier * (future_days_from_genesis / last_day_from_genesis)**exp
     for date, price in zip(future_dates, future_prices):
         rainbow_data.append({'date': date, 'price': price, 'color': color})
@@ -57,3 +56,4 @@ rainbow_df = pd.DataFrame(rainbow_data)
 
 # Enregistrer dans un fichier CSV (immuable)
 rainbow_df.to_csv('rainbow_chart_data_kas.csv', index=False)
+
