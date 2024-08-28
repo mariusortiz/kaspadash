@@ -1,0 +1,38 @@
+name: Run Calculations and Push Results
+
+on:
+  schedule:
+    # Runs at 2:00 AM UTC daily
+    - cron: "0 2 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run script_calcul.py
+      run: |
+        python script_calcul.py
+
+    - name: Commit and push changes
+      run: |
+        git config --local user.email "your-email@example.com"
+        git config --local user.name "GitHub Action"
+        git add historical_fair_price_kas.csv future_prices_kas.csv
+        git commit -m "Automated update of historical and future price predictions"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
