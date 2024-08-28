@@ -57,12 +57,19 @@ def plot_sma_chart(df, instrument):
     for date in crossover_dates:
         fig.add_vline(x=date.timestamp() * 1000, line=dict(color="red", dash="dot"))
 
+    # Ajuster les ordonnées
+    fig.update_yaxes(
+        tickvals=[0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30],
+        range=[0, 0.25],  # Fixer la plage d'ordonnée de 0 à 0.30
+        showgrid=True,
+        gridwidth=1,
+        title='Price'
+    )
+
     fig.update_layout(
         height=800,
         width=1200,
-        yaxis_type="log",
         xaxis=dict(showgrid=True, gridwidth=1, title='Date', tickangle=-45),
-        yaxis_title='Price',
         showlegend=True,
         plot_bgcolor='black',  # Couleur de fond noire pour ressembler à l'exemple
         paper_bgcolor='black',  # Couleur du papier noire pour ressembler à l'exemple
