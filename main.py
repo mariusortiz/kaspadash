@@ -19,20 +19,26 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
     df['date'] = pd.to_datetime(df['date'])
     rainbow_df['date'] = pd.to_datetime(rainbow_df['date'])
 
-    colors = rainbow_df['color'].unique()
-    color_map = {'blue': 'blue', 'green': 'green', 'yellow': 'yellow', 'orange': 'orange', 'red': 'red'}
+    # Nouveau mapping des couleurs aux descriptions
+    color_map = {
+        'blue': ('blue', 'Buy'),
+        'green': ('green', 'Cheap'),
+        'yellow': ('yellow', 'Fair Price'),
+        'orange': ('orange', 'Expensive'),
+        'red': ('red', 'Sell')
+    }
 
     fig = go.Figure()
 
-    # Tracer les bandes du Rainbow Chart
-    for color in colors:
+    # Tracer les bandes du Rainbow Chart avec les nouvelles légendes
+    for color, (color_hex, label) in color_map.items():
         color_data = rainbow_df[rainbow_df['color'] == color]
         fig.add_trace(go.Scatter(
             x=color_data['date'],
             y=color_data['price'],
             mode='lines',
-            name=f'{color} band',
-            line=dict(color=color_map[color])
+            name=label,
+            line=dict(color=color_hex)
         ))
 
     # Tracer le prix actuel
