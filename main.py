@@ -87,13 +87,13 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
 
     # Mapping des couleurs aux descriptions
     color_map = {
-        'purple': ('#800080', 'Kaspa is Dead'),
-        'dark_blue': ('#00008B', 'Buy!'),
-        'light_blue': ('#ADD8E6', 'Still Cheap'),
-        'green': ('#008000', 'Fair Price'),
-        'yellow': ('#FFFF00', 'Getting Warmer'),
+        'red': ('#FF0000', 'Sell Now!'),
         'orange': ('#FFA500', 'Expensive'),
-        'red': ('#FF0000', 'Sell Now!')
+        'yellow': ('#FFFF00', 'Getting Warmer'),
+        'green': ('#008000', 'Fair Price'),
+        'light_blue': ('#ADD8E6', 'Still Cheap'),
+        'dark_blue': ('#00008B', 'Buy!'),
+        'purple': ('#800080', 'Kaspa is Dead')
     }
 
     fig = go.Figure()
