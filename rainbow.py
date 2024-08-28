@@ -19,31 +19,24 @@ support_coefficient = 10**-13.41344198
 resistance_coefficient = 10**-13.10611888
 fair_coefficient = 10**-13.25978043
 
-# Augmenter les multiplicateurs pour écarter les bandes
-support_multiplier = 0.5  # Pour élargir la bande bleue
-resistance_multiplier = 2.0  # Pour élargir la bande rouge
-green_multiplier = 0.8  # Pour élargir la bande verte
-orange_multiplier = 1.5  # Pour élargir la bande orange
+# Ajuster les multiplicateurs pour écarter les bandes de manière uniforme
+blue_multiplier = 0.5  # Pour écarter la bande bleue
+green_multiplier = 0.7  # Pour écarter la bande verte
+yellow_multiplier = 1.0  # La bande jaune reste inchangée
+orange_multiplier = 1.3  # Pour écarter la bande orange
+red_multiplier = 1.6  # Pour écarter la bande rouge
 
 # Calculer les prix pour chaque bande
-df['support_price'] = support_coefficient * (df['days_from_genesis']**exp)
-df['resistance_price'] = resistance_coefficient * (df['days_from_genesis']**exp)
 df['fair_price'] = fair_coefficient * (df['days_from_genesis']**exp)
 
 # Créer un DataFrame pour le Rainbow Chart
 rainbow_data = []
 
 colors = ['blue', 'green', 'yellow', 'orange', 'red']
-bands = {
-    'blue': df['support_price'] * support_multiplier,
-    'green': df['support_price'] * green_multiplier,  # Multiplicateur ajusté pour la bande verte
-    'yellow': df['fair_price'],
-    'orange': df['resistance_price'] * orange_multiplier,  # Multiplicateur ajusté pour la bande orange
-    'red': df['resistance_price'] * resistance_multiplier
-}
+multipliers = [blue_multiplier, green_multiplier, yellow_multiplier, orange_multiplier, red_multiplier]
 
-# Ajouter les bandes historiques
-for color, price_series in bands.items():
+for color, multiplier in zip(colors, multipliers):
+    price_series = df['fair_price'] * multiplier
     for date, price in zip(df['date'], price_series):
         rainbow_data.append({'date': date, 'price': price, 'color': color})
 
@@ -53,8 +46,8 @@ last_day_from_genesis = df['days_from_genesis'].max()
 future_days_from_genesis = last_day_from_genesis + future_days
 future_dates = [df['date'].max() + timedelta(days=int(day)) for day in future_days]
 
-for color, intercept in bands.items():
-    future_prices = intercept.iloc[-1] * (future_days_from_genesis / last_day_from_genesis)**exp
+for color, multiplier in zip(colors, multipliers):
+    future_prices = df['fair_price'].iloc[-1] * multiplier * (future_days_from_genesis / last_day_from_genesis)**exp
     for date, price in zip(future_dates, future_prices):
         rainbow_data.append({'date': date, 'price': price, 'color': color})
 
@@ -63,4 +56,4 @@ rainbow_df = pd.DataFrame(rainbow_data)
 
 # Enregistrer dans un fichier CSV (immuable)
 rainbow_df.to_csv('rainbow_chart_data_kas.csv', index=False)
-print("Le fichier 'rainbow_chart_data_kas.csv' a été mis à jour avec les bandes élargies et les prévisions sur 24 mois.")
+
