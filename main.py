@@ -144,7 +144,7 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
 
     st.plotly_chart(fig, use_container_width=True)
     expander = st.expander('Explications')
-   expander.write('''
+    expander.write('''
     #### Rainbow Chart
 
     Le graphique Rainbow Chart visualise différentes bandes de prix pour Kaspa (KAS) ou Bitcoin (BTC) en plus du prix réel. Chaque bande de couleur représente une plage de prix distincte, basée sur une loi de puissance appliquée au temps écoulé depuis le bloc de genèse de Kaspa. Cela offre un moyen visuel de comprendre la dynamique des prix au fil du temps.
