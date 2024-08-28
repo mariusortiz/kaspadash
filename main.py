@@ -19,13 +19,15 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
     df['date'] = pd.to_datetime(df['date'])
     rainbow_df['date'] = pd.to_datetime(rainbow_df['date'])
 
-    # Nouveau mapping des couleurs aux descriptions
+    # Mapping des couleurs aux descriptions
     color_map = {
-        'blue': ('blue', 'Buy'),
-        'green': ('green', 'Cheap'),
-        'yellow': ('yellow', 'Fair Price'),
-        'orange': ('orange', 'Expensive'),
-        'red': ('red', 'Sell')
+        'purple': ('#800080', 'Kaspa is Dead'),
+        'dark_blue': ('#00008B', 'Buy!'),
+        'light_blue': ('#ADD8E6', 'Still Cheap'),
+        'green': ('#008000', 'Fair Price'),
+        'yellow': ('#FFFF00', 'Getting Warmer'),
+        'orange': ('#FFA500', 'Expensive'),
+        'red': ('#FF0000', 'Sell Now!')
     }
 
     fig = go.Figure()
