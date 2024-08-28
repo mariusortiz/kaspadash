@@ -21,7 +21,7 @@ def plot_sma_chart(df, instrument):
     df['SMA_85'] = df['close'].rolling(window=85).mean()
 
     # Identifier les points de croisement
-    df['crossover'] = np.where((df['SMA_66'] > df['SMA_85']) & (df['SMA_66'].shift(1) <= df['SMA_85'].shift(1)), 1, 0)
+    df['crossover'] = np.where((df['SMA_85'] > df['SMA_66']) & (df['SMA_85'].shift(1) <= df['SMA_66'].shift(1)), 1, 0)
     crossover_dates = df[df['crossover'] == 1]['date']
 
     fig = go.Figure()
@@ -79,19 +79,19 @@ def plot_sma_chart(df, instrument):
     st.plotly_chart(fig, use_container_width=True)
     expander = st.expander('Explications')
     expander.write('''
-    #### SMA Chart
+    #### SMA Crossover Chart
 
-    Le graphique Rainbow Chart visualise différentes bandes de prix pour Kaspa (KAS) ou Bitcoin (BTC) en plus du prix réel. Chaque bande de couleur représente une plage de prix distincte, offrant un moyen visuel de comprendre la dynamique des prix au fil du temps.
+    Le graphique **SMA Crossover Chart** est basé sur l'observation que lorsque la moyenne mobile simple (SMA) sur 85 jours croise la moyenne mobile simple sur 66 jours, le prix de Kaspa (KAS) tend à connaître une forte hausse peu de temps après. Ce type d'indicateur est inspiré par des analyses similaires effectuées sur Bitcoin, notamment l'indicateur "Pi Cycle Top".
 
     #### Calculs effectués :
-    1. **Logarithme naturel du prix de clôture** : Nous appliquons une transformation logarithmique aux prix de clôture pour stabiliser la variance et rendre les données plus conformes aux hypothèses de la régression linéaire.
-    2. **Régression linéaire avec RANSAC** : Nous utilisons l'algorithme de régression RANSAC (Random Sample Consensus) pour ajuster un modèle linéaire robuste aux données logarithmiques. Cela nous permet de traiter les anomalies et les valeurs aberrantes efficacement.
-    3. **Interception et pente des bandes de couleurs** : Nous calculons les bandes de couleurs en utilisant la pente du modèle linéaire et en ajustant les interceptions pour créer plusieurs lignes parallèles représentant les bandes de prix.
-    4. **Interpolation des données** : Nous interpolons les valeurs pour couvrir toute la plage de dates, permettant une visualisation continue des bandes de couleurs.
+    1. **Moyenne Mobile Simple (SMA)** : Nous calculons deux moyennes mobiles simples, l'une sur 66 jours et l'autre sur 85 jours, à partir des données de prix historiques. La SMA sur 66 jours réagit plus rapidement aux changements de prix, tandis que la SMA sur 85 jours est plus lissée et réactive aux tendances à plus long terme.
+    2. **Crossover (Croisement)** : Nous identifions les points où la SMA sur 66 jours croise la SMA sur 85 jours. Ces croisements sont particulièrement intéressants car ils peuvent signaler des changements significatifs dans la direction du prix. En particulier, un croisement où la SMA sur 66 jours passe au-dessus de la SMA sur 85 jours est souvent vu comme un signal haussier.
+    3. **Visualisation des croisements** : Les dates où ces croisements se produisent sont mises en évidence sur le graphique par des lignes verticales rouges. Cela permet de visualiser facilement les moments où ces signaux se sont produits et d'observer leur impact potentiel sur le prix par la suite.
+    4. **Affichage des prix historiques** : En plus des SMA, nous affichons le prix historique réel de Kaspa pour fournir un contexte visuel clair aux croisements des moyennes mobiles.
 
     #### Utilité et pertinence :
-    Le Rainbow Chart est pertinent car il permet aux investisseurs de visualiser facilement les zones de support et de résistance du prix d'une cryptomonnaie. Les différentes bandes colorées aident à identifier les niveaux de prix potentiels où le marché peut trouver un soutien ou une résistance. Cette visualisation est particulièrement utile pour les traders et les analystes techniques qui cherchent à identifier les tendances de prix et à prendre des décisions éclairées basées sur des niveaux de prix critiques.
-    ''')
+    Le SMA Crossover Chart est particulièrement utile pour les traders et les investisseurs qui cherchent à identifier des points d'entrée ou de sortie basés sur les signaux de croisement des moyennes mobiles. Les croisements des SMA sur 66 et 85 jours offrent un indicateur intermédiaire qui est sensible aux changements de tendance à moyen terme. En utilisant ce graphique, les utilisateurs peuvent repérer les signaux haussiers ou baissiers potentiels et ajuster leurs stratégies d'investissement en conséquence.
+''')
 
 
 def plot_rainbow_chart(df, rainbow_df, instrument):
@@ -144,20 +144,20 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
 
     st.plotly_chart(fig, use_container_width=True)
     expander = st.expander('Explications')
-    expander.write('''
+   expander.write('''
     #### Rainbow Chart
 
-    Le graphique Rainbow Chart visualise différentes bandes de prix pour Kaspa (KAS) ou Bitcoin (BTC) en plus du prix réel. Chaque bande de couleur représente une plage de prix distincte, offrant un moyen visuel de comprendre la dynamique des prix au fil du temps.
+    Le graphique Rainbow Chart visualise différentes bandes de prix pour Kaspa (KAS) ou Bitcoin (BTC) en plus du prix réel. Chaque bande de couleur représente une plage de prix distincte, basée sur une loi de puissance appliquée au temps écoulé depuis le bloc de genèse de Kaspa. Cela offre un moyen visuel de comprendre la dynamique des prix au fil du temps.
 
     #### Calculs effectués :
-    1. **Logarithme naturel du prix de clôture** : Nous appliquons une transformation logarithmique aux prix de clôture pour stabiliser la variance et rendre les données plus conformes aux hypothèses de la régression linéaire.
-    2. **Régression linéaire avec RANSAC** : Nous utilisons l'algorithme de régression RANSAC (Random Sample Consensus) pour ajuster un modèle linéaire robuste aux données logarithmiques. Cela nous permet de traiter les anomalies et les valeurs aberrantes efficacement.
-    3. **Interception et pente des bandes de couleurs** : Nous calculons les bandes de couleurs en utilisant la pente du modèle linéaire et en ajustant les interceptions pour créer plusieurs lignes parallèles représentant les bandes de prix.
-    4. **Interpolation des données** : Nous interpolons les valeurs pour couvrir toute la plage de dates, permettant une visualisation continue des bandes de couleurs.
+    1. **Loi de Puissance (Power Law)** : Nous utilisons une loi de puissance pour modéliser le prix en fonction du temps écoulé depuis le bloc de genèse. La formule est basée sur l'équation : `Prix = Coefficient * (Jours depuis le bloc de genèse)^Exposant`, où le coefficient et l'exposant sont dérivés de l'analyse des données historiques.
+    2. **Multiplicateurs pour les bandes de couleurs** : Chaque bande de couleur est générée en appliquant un multiplicateur spécifique au prix "juste" calculé par la loi de puissance. Par exemple, la bande verte représente le prix "juste", tandis que les autres bandes (bleu, jaune, orange, rouge, etc.) représentent des niveaux de prix différents basés sur des multiples de cette valeur "juste".
+    3. **Prévision des prix futurs** : Le modèle est utilisé non seulement pour tracer les prix historiques, mais aussi pour extrapoler les prix futurs sur plusieurs mois en fonction du même modèle de loi de puissance.
+    4. **Visualisation continue** : Les valeurs sont interpolées pour couvrir toute la plage de dates, ce qui permet une visualisation continue et lisse des bandes de couleurs sur le graphique.
 
     #### Utilité et pertinence :
-    Le Rainbow Chart est pertinent car il permet aux investisseurs de visualiser facilement les zones de support et de résistance du prix d'une cryptomonnaie. Les différentes bandes colorées aident à identifier les niveaux de prix potentiels où le marché peut trouver un soutien ou une résistance. Cette visualisation est particulièrement utile pour les traders et les analystes techniques qui cherchent à identifier les tendances de prix et à prendre des décisions éclairées basées sur des niveaux de prix critiques.
-    ''')
+    Le Rainbow Chart est particulièrement pertinent car il permet aux investisseurs de visualiser facilement les zones de support et de résistance basées sur un modèle de loi de puissance. Les différentes bandes colorées aident à identifier les niveaux de prix potentiels où le marché peut trouver un soutien ou une résistance. Cette visualisation est très utile pour les traders et les analystes techniques qui cherchent à identifier les tendances de prix et à prendre des décisions éclairées basées sur ces niveaux critiques.
+''')
 
 
 def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_prices_df):
