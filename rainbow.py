@@ -20,8 +20,10 @@ resistance_coefficient = 10**-13.10611888
 fair_coefficient = 10**-13.25978043
 
 # Augmenter les multiplicateurs pour écarter les bandes
-support_multiplier = 0.5  # Moins que 1 pour écarter davantage la bande bleue
-resistance_multiplier = 2.0  # Plus que 1 pour écarter davantage la bande rouge
+support_multiplier = 0.5  # Pour élargir la bande bleue
+resistance_multiplier = 2.0  # Pour élargir la bande rouge
+green_multiplier = 0.8  # Pour élargir la bande verte
+orange_multiplier = 1.5  # Pour élargir la bande orange
 
 # Calculer les prix pour chaque bande
 df['support_price'] = support_coefficient * (df['days_from_genesis']**exp)
@@ -34,9 +36,9 @@ rainbow_data = []
 colors = ['blue', 'green', 'yellow', 'orange', 'red']
 bands = {
     'blue': df['support_price'] * support_multiplier,
-    'green': df['support_price'] * (resistance_coefficient/support_coefficient)**(1/4),
+    'green': df['support_price'] * green_multiplier,  # Multiplicateur ajusté pour la bande verte
     'yellow': df['fair_price'],
-    'orange': df['resistance_price'] * (support_coefficient/resistance_coefficient)**(1/4),
+    'orange': df['resistance_price'] * orange_multiplier,  # Multiplicateur ajusté pour la bande orange
     'red': df['resistance_price'] * resistance_multiplier
 }
 
