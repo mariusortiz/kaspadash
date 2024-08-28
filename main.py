@@ -55,7 +55,7 @@ def plot_sma_chart(df, instrument):
 
     # Ajouter les lignes verticales pour les croisements
     for date in crossover_dates:
-        fig.add_vline(x=date, line=dict(color="red", dash="dot"), annotation_text="SMA Crossover", annotation_position="top")
+        fig.add_vline(x=date.timestamp() * 1000, line=dict(color="red", dash="dot"))
 
     fig.update_layout(
         height=800,
