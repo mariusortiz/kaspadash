@@ -17,27 +17,34 @@ df['days_from_genesis'] = (df['date'] - genesis_date).dt.days
 exp = 5.82
 fair_coefficient = 1.0117e-17  # Coefficient pour la bande verte (fair price)
 bottom_multiplier = 0.42  # Coefficient pour la bande violette (bottom price)
+top_multiplier = 1 / bottom_multiplier  # Symétrique de la bande rouge par rapport à la bande verte
 
 # Calculer les prix pour chaque bande
 df['fair_price'] = fair_coefficient * (df['days_from_genesis']**exp)
 df['bottom_price'] = df['fair_price'] * bottom_multiplier
+df['top_price'] = df['fair_price'] * top_multiplier
 
 # Répartir les autres bandes uniformément
-num_bands = 4  # Nombre de bandes entre la bande "bottom" et "fair", et entre "fair" et "sell"
-multipliers_below_fair = np.geomspace(bottom_multiplier, 1, num_bands)
-multipliers_above_fair = np.geomspace(1, 3, num_bands)
+num_bands = 3  # Nombre de bandes entre la bande "bottom" et "fair", et entre "fair" et "top"
+multipliers_below_fair = np.geomspace(bottom_multiplier, 1, num_bands+1)[1:]  # Exclure le premier (déjà utilisé pour bottom)
+multipliers_above_fair = np.geomspace(1, top_multiplier, num_bands+1)[1:]  # Exclure le premier (déjà utilisé pour top)
 
-colors = ['purple', 'blue', 'light_blue', 'green', 'yellow', 'orange', 'red']
-price_columns = ['bottom_price', None, None, 'fair_price', None, None, None]
+colors = ['purple', 'light_blue', 'green', 'yellow', 'orange', 'red']
+price_columns = {
+    'purple': 'bottom_price',
+    'green': 'fair_price',
+    'red': 'top_price',
+    'light_blue': None,  # Sera calculé avec un multiplicateur
+    'yellow': None,      # Sera calculé avec un multiplicateur
+    'orange': None       # Sera calculé avec un multiplicateur
+}
 
 # Ajouter les bandes calculées au DataFrame
 for i, color in enumerate(colors):
-    if color == 'purple':
-        df['purple_price'] = df['bottom_price']
-    elif color == 'green':
-        df['green_price'] = df['fair_price']
+    if price_columns[color]:
+        df[f'{color}_price'] = df[price_columns[color]]
     elif i < len(multipliers_below_fair) + 1:  # Pour les bandes en dessous de "fair_price"
-        multiplier = multipliers_below_fair[i - 1] if i > 0 else bottom_multiplier
+        multiplier = multipliers_below_fair[i - 1]
         df[f'{color}_price'] = df['fair_price'] * multiplier
     else:  # Pour les bandes au-dessus de "fair_price"
         multiplier = multipliers_above_fair[i - len(multipliers_below_fair) - 1]
