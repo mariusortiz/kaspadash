@@ -160,15 +160,13 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
 
 
 def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_prices_df):
-   
-    st.markdown(f"<h2 style='text-align: center;'>{instrument.upper()} Future Power Law</h2>", unsafe_allow_html=True)
 
     try:
         days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                                             min_value=1, 
                                             max_value=365,  # Changer à 10 ans
                                             value=30)
-        st.markdown(f"<h2 style='text-align: center;'>{instrument} Power Law Predictions</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align: center;'>{instrument.upper()} Power Law Prediction</h2>", unsafe_allow_html=True)
 
         chart_type = st.sidebar.select_slider(
             'Select scale type',
