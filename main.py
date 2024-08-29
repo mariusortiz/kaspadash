@@ -332,6 +332,8 @@ def main():
             selected_currency = "btc"
         st.image(bitcoin_logo, width=30)
 
+    st.title()
+
     st.sidebar.markdown("### Choix du dashboard")
 
     # Liste de boutons pour les dashboards
