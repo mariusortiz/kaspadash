@@ -15,7 +15,7 @@ df['days_from_genesis'] = (df['date'] - genesis_date).dt.days
 
 # Paramètres de la Power Law pour Bitcoin
 fair_coefficient = 1.0117e-17
-exp = 5.82
+exp = 4.175
 
 # Multiplier pour écarter les bandes (logique x1,5 basée sur l'analyse)
 multipliers = {
