@@ -20,12 +20,12 @@ fair_coefficient = 1.0117e-17  # Coefficient pour la bande verte (juste valeur)
 # Multiplier pour écarter les bandes (logique x1,5)
 multipliers = {
     'purple': 0.42,   # "Bad news"
-    'dark_blue': 0.65, # "Buy"
-    'light_blue': 0.85, # "Cheap"
+    'dark_blue': 0.563, # "Buy"
+    'light_blue': 0.755, # "Cheap"
     'green': 1,    # "Fair Price"
-    'yellow': 1.2,  # "Pricey"
-    'orange': 1.4, # "Expensive"
-    'red': 2    # "Sell"
+    'yellow': 1.34,  # "Pricey"
+    'orange': 1.79, # "Expensive"
+    'red': 2.38    # "Sell"
 }
 
 # Calculer les prix pour chaque bande
