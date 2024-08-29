@@ -328,11 +328,9 @@ def main():
         if st.button("Bitcoin (BTC)", use_container_width=True):
             selected_currency = "btc"
 
-    st.sidebar.markdown("### Choix du dashboard")
-
     # Liste de boutons pour les dashboards
     dashboard = st.sidebar.radio(
-        label="",
+        label="Choix du dashboard",
         options=['Rainbow Chart', 'Risk Visualization', 'Future Power Law', 'SMA Chart'],
         index=0
     )
