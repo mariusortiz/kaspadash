@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from plotly.subplots import make_subplots
 import numpy as np
 from sklearn.linear_model import LinearRegression, RANSACRegressor
+from PIL import Image
 
 def exponential_smoothing(series, alpha):
     result = [series[0]]  # première valeur est identique à la série
@@ -41,7 +42,7 @@ def plot_sma_chart(df, instrument):
         y=df['SMA_66'],
         mode='lines',
         name='66DMA',
-        line=dict(color='green')
+        line=dict(color='purple')
     ))
 
     # Tracer la SMA 85
@@ -50,7 +51,7 @@ def plot_sma_chart(df, instrument):
         y=df['SMA_85'],
         mode='lines',
         name='85DMA',
-        line=dict(color='orange')
+        line=dict(color='yellow')
     ))
 
     # Ajouter les lignes verticales pour les croisements
@@ -99,13 +100,13 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
 
     # Mapping des couleurs aux descriptions
     color_map = {
-        'red': ('#FF0000', 'Sell Now!'),
+        'red': ('#FF0000', 'Sell'),
         'orange': ('#FFA500', 'Expensive'),
-        'yellow': ('#FFFF00', 'Getting Warmer'),
+        'yellow': ('#FFFF00', 'Pricey'),
         'green': ('#008000', 'Fair Price'),
-        'light_blue': ('#ADD8E6', 'Still Cheap'),
-        'dark_blue': ('#00008B', 'Buy!'),
-        'purple': ('#800080', 'Kaspa is Dead')
+        'light_blue': ('#ADD8E6', 'Cheap'),
+        'dark_blue': ('#00008B', 'Buy'),
+        'purple': ('#800080', 'Bad news')
     }
 
     fig = go.Figure()
@@ -307,28 +308,51 @@ def load_data(currency):
 def main():
     st.set_page_config(layout="wide")
 
-    instrument = st.sidebar.selectbox(
-        label='Choix de la monnaie',
-        options=['Kaspa (KAS)', 'Bitcoin (BTC)']
+    # Charger les images des logos
+    kaspa_logo = Image.open("kaspa_logo.png")
+    bitcoin_logo = Image.open("bitcoin_logo.png")
+
+    st.sidebar.markdown("### Choix de la monnaie")
+
+    col1, col2 = st.sidebar.columns(2)
+    
+    selected_currency = None
+    
+    with col1:
+        if st.button("Kaspa (KAS)", use_container_width=True):
+            selected_currency = "kas"
+
+    with col2:
+        if st.button("Bitcoin (BTC)", use_container_width=True):
+            selected_currency = "btc"
+
+    if not selected_currency:
+        st.warning("Veuillez sélectionner une monnaie")
+        return
+
+    if selected_currency == "kas":
+        st.image(kaspa_logo, width=50)
+    elif selected_currency == "btc":
+        st.image(bitcoin_logo, width=50)
+
+    st.sidebar.markdown("### Choix du dashboard")
+
+    dashboard = st.radio(
+        label="",
+        options=['Rainbow chart >', 'Risk Visualization >', 'Future Power Law >', 'SMA Chart >'],
+        index=0
     )
 
-    currency = 'kas' if instrument == 'Kaspa (KAS)' else 'btc'
-
-    df, rainbow_df, historical_fair_price_df, predicted_prices_df = load_data(currency)
-
-    dashboard = st.sidebar.selectbox(
-        label='Choix du dashboard',
-        options=['Rainbow chart', 'Risk Visualization', 'Future Power Law', 'SMA Chart']  # Ajout de l'option "SMA Chart"
-    )
+    df, rainbow_df, historical_fair_price_df, predicted_prices_df = load_data(selected_currency)
 
     if dashboard == 'Rainbow chart':
-        plot_rainbow_chart(df, rainbow_df, instrument)
+        plot_rainbow_chart(df, rainbow_df, selected_currency)
     elif dashboard == 'Risk Visualization':
-        plot_risk_visualization(df, instrument)
+        plot_risk_visualization(df, selected_currency)
     elif dashboard == 'Future Power Law':
-        plot_future_power_law(df, instrument, historical_fair_price_df, predicted_prices_df)
+        plot_future_power_law(df, selected_currency, historical_fair_price_df, predicted_prices_df)
     elif dashboard == 'SMA Chart':  
-        plot_sma_chart(df, instrument)
+        plot_sma_chart(df, selected_currency)
 
 if __name__ == "__main__":
     main()
