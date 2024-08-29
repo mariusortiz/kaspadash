@@ -335,7 +335,7 @@ def main():
     st.sidebar.markdown("### Choix du dashboard")
 
     # Liste de boutons pour les dashboards
-    dashboard = st.sidebar.radio(
+    dashboard = st.sidebar.button(
         label="",
         options=['Rainbow Chart', 'Risk Visualization', 'Future Power Law', 'SMA Chart'],
         index=0
