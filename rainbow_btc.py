@@ -22,8 +22,8 @@ multipliers = {
     'purple': 0.42,   # "Bottom Price"
     'dark_blue': 0.63, # "Buy"
     'light_blue': 0.95, # "Cheap"
-    'green': 1.0,    # "Fair Price"
-    'yellow': 1.5,  # "Pricey"
+    'green': 1.5,    # "Fair Price"
+    'yellow': 1.75,  # "Pricey"
     'orange': 2.25, # "Expensive"
     'red': 3.375    # "Sell"
 }
