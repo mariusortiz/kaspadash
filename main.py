@@ -15,12 +15,6 @@ def exponential_smoothing(series, alpha):
 
 
 def plot_sma_chart(df, instrument):
-    # Déterminer quel logo afficher
-    logo = "images/kaspa_logo.png" if instrument == "kas" else "images/bitcoin_logo.png"
-
-    # Afficher le logo au-dessus du titre
-    st.image(logo, width=100) 
-
     st.markdown(f"<h2 style='text-align: center;'>{instrument} SMA Crossover Chart</h2>", unsafe_allow_html=True)
 
     # Calculer les moyennes mobiles simples (SMA)
@@ -99,22 +93,7 @@ def plot_sma_chart(df, instrument):
 
 
 def plot_rainbow_chart(df, rainbow_df, instrument):
-# Déterminer le chemin du logo à afficher
-    logo = "images/kaspa_logo.svg" if instrument == "kas" else "images/bitcoin_logo.svg"
 
-    # Lire le contenu du fichier SVG
-    with open(logo, "r") as svg_file:
-        svg_content = svg_file.read()
-
-    # Utiliser du HTML pour centrer le logo et ajuster sa taille
-    st.markdown(f"""
-        <div style='text-align: center;'>
-            <div style='display: inline-block;'>
-                <img src="data:image/svg+xml;base64,{get_base64_image(logo)}" alt="{instrument.upper()} Logo" style="width: 50px; height: 50px;"/>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-    
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
     
     df['date'] = pd.to_datetime(df['date'])
@@ -181,11 +160,7 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
 
 
 def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_prices_df):
-    # Déterminer quel logo afficher
-    logo = "images/kaspa_logo.png" if instrument == "kas" else "images/bitcoin_logo.png"
-
-    # Afficher le logo au-dessus du titre
-    st.image(logo, width=100) 
+   
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Future Power Law</h2>", unsafe_allow_html=True)
 
     try:
@@ -258,12 +233,7 @@ def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_pr
     except Exception as e:
         st.error(f"An error occurred: {e}")
 
-def plot_risk_visualization(df, instrument):
-    # Déterminer quel logo afficher
-    logo = "images/kaspa_logo.png" if instrument == "kas" else "images/bitcoin_logo.png"
-
-    # Afficher le logo au-dessus du titre
-    st.image(logo, width=100) 
+def plot_risk_visualization(df, instrument): 
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Risk Visualization</h2>", unsafe_allow_html=True)
     
     chart_type = st.sidebar.select_slider(
