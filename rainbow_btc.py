@@ -14,18 +14,18 @@ df['date'] = pd.to_datetime(df['date'])
 df['days_from_genesis'] = (df['date'] - genesis_date).dt.days
 
 # Paramètres de la Power Law pour Bitcoin
-exp = 4.175059341991538  # Exposant de la loi de puissance
-fair_coefficient = 10**-10.80  # Coefficient pour la bande jaune (juste valeur)
+fair_coefficient = 1.0117e-17
+exp = 5.82
 
-# Multiplier pour écarter les bandes (logique x1,5) pour Bitcoin
+# Multiplier pour écarter les bandes (logique x1,5 basée sur l'analyse)
 multipliers = {
-    'purple': 0.38,   # "Bad news"
-    'dark_blue': 0.57, # "Buy"
-    'light_blue': 0.88, # "Cheap"
-    'green': 1.33,    # "Fair Price"
-    'yellow': 1.99,  # "Pricey"
-    'orange': 2.985, # "Expensive"
-    'red': 4.47    # "Sell"
+    'purple': 0.42,   # "Bottom Price"
+    'dark_blue': 0.63, # "Buy"
+    'light_blue': 0.95, # "Cheap"
+    'green': 1.0,    # "Fair Price"
+    'yellow': 1.5,  # "Pricey"
+    'orange': 2.25, # "Expensive"
+    'red': 3.375    # "Sell"
 }
 
 # Calculer les prix pour chaque bande
