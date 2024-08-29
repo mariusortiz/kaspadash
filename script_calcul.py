@@ -48,7 +48,7 @@ df['historical_fair_price_smooth'] = historical_fair_price_smooth
 # Charger les données du Rainbow Chart
 rainbow_df = pd.read_csv('rainbow_chart_data_kas.csv')
 rainbow_df['date'] = pd.to_datetime(rainbow_df['date'])
-yellow_band_df = rainbow_df[rainbow_df['color'] == 'yellow']
+yellow_band_df = rainbow_df[rainbow_df['color'] == 'green']
 
 # Générer des dates futures
 future_dates = pd.date_range(start=df['date'].max() + pd.Timedelta(days=1), periods=365)
