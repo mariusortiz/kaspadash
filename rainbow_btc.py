@@ -1,75 +1,59 @@
 import pandas as pd
 import numpy as np
-from sklearn.linear_model import RANSACRegressor
 from datetime import datetime, timedelta
+
+# Définir la date de genèse de Bitcoin
+genesis_date = datetime(2010, 6, 15)  # Date du premier bloc Bitcoin
+current_date = datetime.now()
 
 # Charger les données de prix
 df = pd.read_csv('btc_d.csv')
 df['date'] = pd.to_datetime(df['date'])
 
-# Définir les dates de référence
-genesis_date = datetime(2010, 6, 15)
-start_date = datetime(2011, 6, 16)  # Premier jour de btc_d.csv
-end_date = df['date'].max()
-future_days = np.arange(1, 365 * 2)
-
-# Calculer les jours depuis la genèse
+# Calculer les jours écoulés depuis la genèse
 df['days_from_genesis'] = (df['date'] - genesis_date).dt.days
-df = df[df['days_from_genesis'] >= 0]
 
-# Appliquer la transformation logarithmique
-df['log_close'] = np.log(df['close'])
-df['log_days_from_genesis'] = np.log(df['days_from_genesis'])
+# Paramètres de la Power Law pour Bitcoin
+exp = 4.218461  # Exposant de la loi de puissance, identique à Kaspa
+fair_coefficient = 10**-13.25978043  # Coefficient pour la bande jaune (juste valeur)
 
-# Ajuster le modèle RANSAC
-X = df[['log_days_from_genesis']]
-y = df['log_close']
-model = RANSACRegressor().fit(X, y)
-df['predicted_log_close'] = model.predict(X)
+# Multiplier pour écarter les bandes (logique x1,5) pour Bitcoin
+multipliers = {
+    'purple': 0.38,   # "Bad news"
+    'dark_blue': 0.57, # "Buy"
+    'light_blue': 0.88, # "Cheap"
+    'green': 1.33,    # "Fair Price"
+    'yellow': 1.99,  # "Pricey"
+    'orange': 2.985, # "Expensive"
+    'red': 4.47    # "Sell"
+}
 
-# Trouver les résidus pour les bandes
-df['residuals'] = df['log_close'] - df['predicted_log_close']
-highest_residual_index = df['residuals'].idxmax()
-lowest_residual_index = df['residuals'].idxmin()
+# Calculer les prix pour chaque bande
+df['fair_price'] = fair_coefficient * (df['days_from_genesis']**exp)
 
-# Calculer les pentes et les interceptions ajustées
-slope = model.estimator_.coef_[0]
-intercept_high = df.loc[highest_residual_index, 'log_close'] - (slope * df.loc[highest_residual_index, 'log_days_from_genesis'])
-intercept_low = df.loc[lowest_residual_index, 'log_close'] - (slope * df.loc[lowest_residual_index, 'log_days_from_genesis'])
-
-# Générer des données futures
-last_day_from_genesis = np.log(df['days_from_genesis'].max() + 1)
-future_log_days_from_genesis = np.log(df['days_from_genesis'].max() + 1 + future_days)
-future_days_from_genesis = np.exp(future_log_days_from_genesis)
-future_dates = [genesis_date + timedelta(days=int(day)) for day in future_days_from_genesis]
-
-# Créer les bandes de couleurs
-colors = ['blue', 'green', 'yellow', 'orange', 'red']
-num_bands = 3
-intercepts_original = []
-
-for i in range(num_bands + 2):
-    intercept_band = intercept_low + i * (intercept_high - intercept_low) / (num_bands + 1)
-    intercepts_original.append(intercept_band)
-
-# Créer un DataFrame pour les données du Rainbow Chart
+# Créer un DataFrame pour le Rainbow Chart
 rainbow_data = []
 
-# Ajouter les données historiques
-for i, intercept in enumerate(intercepts_original):
-    y_values = slope * df['log_days_from_genesis'] + intercept
-    color = colors[i % len(colors)]
-    for date, price in zip(df['date'], np.exp(y_values)):
+colors = list(multipliers.keys())
+
+for color, multiplier in multipliers.items():
+    price_series = df['fair_price'] * multiplier
+    for date, price in zip(df['date'], price_series):
         rainbow_data.append({'date': date, 'price': price, 'color': color})
 
-# Ajouter les données futures
-for i, intercept in enumerate(intercepts_original):
-    y_values = slope * future_log_days_from_genesis + intercept
-    color = colors[i % len(colors)]
-    for date, price in zip(future_dates, np.exp(y_values)):
+# Ajouter les données futures pour les 24 prochains mois
+future_days = np.arange(1, 365 * 2 + 1)  # 24 mois = 365 * 2 jours
+last_day_from_genesis = df['days_from_genesis'].max()
+future_days_from_genesis = last_day_from_genesis + future_days
+future_dates = [df['date'].max() + timedelta(days=int(day)) for day in future_days]
+
+for color, multiplier in multipliers.items():
+    future_prices = df['fair_price'].iloc[-1] * multiplier * (future_days_from_genesis / last_day_from_genesis)**exp
+    for date, price in zip(future_dates, future_prices):
         rainbow_data.append({'date': date, 'price': price, 'color': color})
 
+# Créer un DataFrame final pour le Rainbow Chart
 rainbow_df = pd.DataFrame(rainbow_data)
 
-# Enregistrer dans un fichier CSV
+# Enregistrer dans un fichier CSV (immuable)
 rainbow_df.to_csv('rainbow_chart_data_btc.csv', index=False)

@@ -1,0 +1,33 @@
+name: Update Bitcoin Data
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # Exécute le script tous les jours à 03h00 UTC
+
+jobs:
+  update_csv:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install pycoingecko pandas boto3
+
+      - name: Run script
+        run: python maj_btc.py
+
+      - name: Commit and push the changes
+        run: |
+          git config --local user.email "marius.ortiz@10h11.com"
+          git config --local user.name "mariusortiz"
+          git add btc_d.csv
+          git commit -m "Update Bitcoin data"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
