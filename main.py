@@ -314,8 +314,8 @@ def main():
     st.set_page_config(layout="wide")
 
     # Charger les images des logos
-    kaspa_logo = Image.open("images/kaspa_logo.png")
-    bitcoin_logo = Image.open("images/bitcoin_logo.png")
+    kaspa_logo = Image.open("images/kaspa_logo.svg")
+    bitcoin_logo = Image.open("images/bitcoin_logo.svg")
 
     # Déterminer la monnaie par défaut
     selected_currency = st.session_state.get("selected_currency", "kas")
