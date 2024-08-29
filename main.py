@@ -316,36 +316,36 @@ def main():
 
     col1, col2 = st.sidebar.columns(2)
     
-    selected_currency = None
-    
-    with col1:
-        if st.button("Kaspa (KAS)", use_container_width=True):
-            selected_currency = "kas"
+    # Sélection par défaut de la monnaie (Kaspa)
+    selected_currency = "kas"
 
-    with col2:
-        if st.button("Bitcoin (BTC)", use_container_width=True):
-            selected_currency = "btc"
+    # Boutons pour sélectionner la monnaie
+    if col1.button("Kaspa (KAS)", use_container_width=True):
+        selected_currency = "kas"
 
-    if not selected_currency:
-        st.warning("Veuillez sélectionner une monnaie")
-        return
+    if col2.button("Bitcoin (BTC)", use_container_width=True):
+        selected_currency = "btc"
 
+    # Afficher le logo de la monnaie sélectionnée
     if selected_currency == "kas":
-        st.image(kaspa_logo, width=50)
+        st.sidebar.image(kaspa_logo, width=50)
     elif selected_currency == "btc":
-        st.image(bitcoin_logo, width=50)
+        st.sidebar.image(bitcoin_logo, width=50)
 
     st.sidebar.markdown("### Choix du dashboard")
 
-    dashboard = st.radio(
+    # Liste de dashboards avec radio buttons
+    dashboard = st.sidebar.radio(
         label="",
-        options=['Rainbow chart >', 'Risk Visualization >', 'Future Power Law >', 'SMA Chart >'],
+        options=['Rainbow Chart', 'Risk Visualization', 'Future Power Law', 'SMA Chart'],
         index=0
     )
 
+    # Charger les données en fonction de la monnaie sélectionnée
     df, rainbow_df, historical_fair_price_df, predicted_prices_df = load_data(selected_currency)
 
-    if dashboard == 'Rainbow chart':
+    # Afficher le dashboard sélectionné
+    if dashboard == 'Rainbow Chart':
         plot_rainbow_chart(df, rainbow_df, selected_currency)
     elif dashboard == 'Risk Visualization':
         plot_risk_visualization(df, selected_currency)
