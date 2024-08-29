@@ -25,7 +25,7 @@ df['bottom_price'] = df['fair_price'] * bottom_multiplier
 # Répartir les autres bandes uniformément
 num_bands = 4  # Nombre de bandes entre la bande "bottom" et "fair", et entre "fair" et "sell"
 multipliers_below_fair = np.geomspace(bottom_multiplier, 1, num_bands)
-multipliers_above_fair = np.geomspace(1, 2.4, num_bands)
+multipliers_above_fair = np.geomspace(1, 3, num_bands)
 
 colors = ['purple', 'blue', 'light_blue', 'green', 'yellow', 'orange', 'red']
 price_columns = ['bottom_price', None, None, 'fair_price', None, None, None]
