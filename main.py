@@ -313,20 +313,6 @@ def load_data(currency):
 def main():
     st.set_page_config(layout="wide")
 
-    # Initialisation de l'état de la session pour la sélection de la monnaie
-    if "selected_currency" not in st.session_state:
-        st.session_state.selected_currency = "kas"  # Par défaut, Kaspa est sélectionné
-
-    # Charger les images des logos
-    kaspa_logo = Image.open("images/kaspa_logo.png")
-    bitcoin_logo = Image.open("images/bitcoin_logo.png")
-
-    # Afficher le logo au-dessus du sélecteur de monnaie
-    if st.session_state.selected_currency == "kas":
-        st.sidebar.image(kaspa_logo, width=50)
-    elif st.session_state.selected_currency == "btc":
-        st.sidebar.image(bitcoin_logo, width=50)
-
     st.sidebar.markdown("### Choix de la monnaie")
 
     # Créer deux colonnes pour les boutons
