@@ -99,16 +99,20 @@ def plot_sma_chart(df, instrument):
 
 
 def plot_rainbow_chart(df, rainbow_df, instrument):
-    # Déterminer quel logo afficher
-    logo = "images/kaspa_logo.png" if instrument == "kas" else "images/bitcoin_logo.png"
+# Déterminer le chemin du logo à afficher
+    logo = "images/kaspa_logo.svg" if instrument == "kas" else "images/bitcoin_logo.svg"
+
+    # Lire le contenu du fichier SVG
+    with open(logo, "r") as svg_file:
+        svg_content = svg_file.read()
 
     # Utiliser du HTML pour centrer le logo
     st.markdown(f"""
         <div style='text-align: center;'>
-            <img src="data:image/png;base64,{get_base64_image(logo)}" alt="{instrument.upper()} Logo" width="50"/>
+            {svg_content}
         </div>
     """, unsafe_allow_html=True)
-        
+    
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
     
     df['date'] = pd.to_datetime(df['date'])
