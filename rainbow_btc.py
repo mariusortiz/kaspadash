@@ -21,26 +21,26 @@ df['fair_price'] = fair_coefficient * (df['days_from_genesis']**exp)
 df['bottom_price'] = df['fair_price'] * 0.42
 
 # Définir les multiplicateurs pour les autres bandes
-multipliers_above = np.geomspace(1, 2.38, 3)  # Pour les courbes au-dessus du fair price (Sell, Expensive, Pricey)
-multipliers_below = np.geomspace(0.42, 1, 3)  # Pour les courbes en dessous du fair price (Cheap, Buy, Bad news)
+multipliers_above = np.geomspace(1, 2.38, 4)  # 3 courbes au-dessus du Fair Price (Sell, Expensive, Pricey)
+multipliers_below = np.geomspace(0.42, 1, 3)  # 2 courbes en dessous du Fair Price (Cheap, Buy)
 
 # Appliquer les multiplicateurs pour calculer les autres bandes
 df['sell_price'] = df['fair_price'] * multipliers_above[-1]
-df['expensive_price'] = df['fair_price'] * multipliers_above[1]
-df['pricey_price'] = df['fair_price'] * multipliers_above[0]
+df['expensive_price'] = df['fair_price'] * multipliers_above[2]
+df['pricey_price'] = df['fair_price'] * multipliers_above[1]
 df['cheap_price'] = df['fair_price'] * multipliers_below[1]
 df['buy_price'] = df['fair_price'] * multipliers_below[0]
 
 # Créer un DataFrame pour le Rainbow Chart
 rainbow_data = []
 colors = {
-    'purple': 'bottom_price',
+    'purple': 'bottom_price',  # Bande la plus basse
     'blue': 'buy_price',
     'light_blue': 'cheap_price',
-    'green': 'fair_price',
+    'green': 'fair_price',     # Bande centrale
     'yellow': 'pricey_price',
     'orange': 'expensive_price',
-    'red': 'sell_price'
+    'red': 'sell_price'        # Bande la plus haute
 }
 
 for color, column in colors.items():
