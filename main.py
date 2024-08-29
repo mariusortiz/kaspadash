@@ -102,14 +102,12 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
     # Déterminer quel logo afficher
     logo = "images/kaspa_logo.png" if instrument == "kas" else "images/bitcoin_logo.png"
 
-    # Utiliser une disposition en colonnes pour centrer le logo
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col1:
-        st.write("")  # Colonne vide pour l'espacement à gauche
-    with col2:
-        st.image(logo, width=50)  # Afficher le logo centré
-    with col3:
-        st.write("")  # Colonne vide pour l'espacement à droite
+    # Utiliser du HTML pour centrer le logo
+    st.markdown(f"""
+        <div style='text-align: center;'>
+            <img src="data:image/png;base64,{get_base64_image(logo)}" alt="{instrument.upper()} Logo" width="50"/>
+        </div>
+    """, unsafe_allow_html=True)
         
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
     
