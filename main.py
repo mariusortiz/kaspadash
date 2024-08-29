@@ -159,72 +159,59 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
 ''')
 
 
-# Fonction pour calculer la puissance selon les formules fournies
-def calculate_power_law(delta_gb, exponent, coefficient):
-    return 10**(coefficient) * (delta_gb**exponent)
-
-# Ajustement de la fonction pour calculer les prix prévus
-def plot_future_power_law(df, instrument, historical_fair_price_df):
+def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_prices_df):
 
     try:
         days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                                             min_value=1, 
-                                            max_value=365,  # Vous pouvez changer cela à 10 ans si nécessaire
+                                            max_value=365,  # Changer à 10 ans
                                             value=30)
         st.markdown(f"<h2 style='text-align: center;'>{instrument.upper()} Power Law Prediction</h2>", unsafe_allow_html=True)
 
         chart_type = st.sidebar.select_slider(
             'Select scale type',
             options=['Linear', 'Logarithmic'],
-            value="Logarithmic"
+            value="Linear"
         )
 
-        # Calcul des prix futurs en fonction du Delta Genesis Block
+        # Assurez-vous que les dates sont dans le bon format
+        historical_fair_price_df['date'] = pd.to_datetime(historical_fair_price_df['date'])
+        predicted_prices_df['date'] = pd.to_datetime(predicted_prices_df['date'])
+
+        # Merge des données pour inclure le prix historique et les prédictions futures
+        df = df.merge(historical_fair_price_df, on='date', how='left', suffixes=('', '_fair_price'))
+        df = df.merge(predicted_prices_df, on='date', how='left', suffixes=('', '_predicted'))
+
+        # Calculer les dates futures
         last_date = df['date'].max()
-        df['days_from_genesis'] = (df['date'] - pd.to_datetime('2021-11-07')).dt.days
+        future_date = last_date + timedelta(days=days_from_today)
 
-        # Calcul des prix futurs pour les jours sélectionnés
-        future_dates = pd.date_range(start=last_date + pd.Timedelta(days=1), periods=days_from_today)
-        delta_gb_future = (future_dates - pd.to_datetime('2021-11-07')).days
+        future_price_row = predicted_prices_df[predicted_prices_df['date'] == future_date]
+        if future_price_row.empty:
+            st.error(f"No data available for the selected future date: {future_date.strftime('%Y-%m-%d')}")
+            return
 
-        fair_prices = calculate_power_law(delta_gb_future, 4.218461, -13.25978043)
-        support_prices = calculate_power_law(delta_gb_future, 4.218461, -13.41344198)
-        resistance_prices = calculate_power_law(delta_gb_future, 4.218461, -13.10611888)
+        predicted_price_on_future_date = future_price_row['predicted_price'].values[0]
+        today_price = df.dropna(subset=['close'])['close'].values[-1]
 
-        future_df = pd.DataFrame({
-            'date': future_dates,
-            'fair_price': fair_prices,
-            'support_price': support_prices,
-            'resistance_price': resistance_prices
-        })
+        st.markdown(f"<h4 style='text-align: center;'>Predicted price {days_from_today} days from the last available date ({last_date.strftime('%Y-%m-%d')}) is: ${predicted_price_on_future_date:.5f},  {((predicted_price_on_future_date-today_price)/today_price)*100:.0f}% difference</h4>", unsafe_allow_html=True)
 
-        df['historical_fair_price'] = calculate_power_law(df['days_from_genesis'], 4.218461, -13.25978043)
-
-        st.markdown(f"<h4 style='text-align: center;'>Fair price {days_from_today} days from the last available date ({last_date.strftime('%Y-%m-%d')}) is: ${fair_prices[-1]:.5f}</h4>", unsafe_allow_html=True)
-
-        # Création du graphique avec Plotly
         fig = go.Figure()
+        df_to_plot = df[df['date'] <= future_date]
 
-        # Ajout des prix actuels
-        fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price'))
-        fig.add_trace(go.Scatter(x=df['date'], y=df['historical_fair_price'], mode='lines', name='Historical Fair Price', line=dict(color='orange')))
+        fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['close'], mode='lines', name='Actual Price'))
+        fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['predicted_price'], mode='lines', name='Predicted Future Price', line=dict(color='red', dash='dot')))
+        fig.add_trace(go.Scatter(x=df_to_plot['date'], y=df_to_plot['historical_fair_price_smooth'], mode='lines', name='Smoothed Historical Fair Price', line=dict(color='orange')))
 
-        # Ajout des prévisions futures
-        fig.add_trace(go.Scatter(x=future_df['date'], y=future_df['fair_price'], mode='lines', name='Future Fair Price', line=dict(color='red', dash='dot')))
-        fig.add_trace(go.Scatter(x=future_df['date'], y=future_df['support_price'], mode='lines', name='Future Support Price', line=dict(color='green', dash='dash')))
-        fig.add_trace(go.Scatter(x=future_df['date'], y=future_df['resistance_price'], mode='lines', name='Future Resistance Price', line=dict(color='blue', dash='dash')))
+        fig.add_vline(x=future_date.timestamp() * 1000, line=dict(color="purple", dash="dash"), annotation_text=f"Predicted price: {predicted_price_on_future_date:.5f}")
+        fig.add_trace(go.Scatter(x=[future_date], y=[predicted_price_on_future_date], mode='markers', marker=dict(color='red', size=10), name='Predicted Price'))
 
-        # Configuration du type d'échelle
         if chart_type == "Linear":
             fig.update_layout(xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
         elif chart_type == "Logarithmic":
             fig.update_layout(xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
 
         st.plotly_chart(fig, use_container_width=True)
-
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
-
         expander = st.expander('Explications')
         expander.write('''
         #### Future Power Law
