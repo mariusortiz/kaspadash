@@ -314,26 +314,17 @@ def load_data(currency):
 def main():
     st.set_page_config(layout="wide")
 
-    # Initialiser la sélection de la monnaie si elle n'existe pas encore dans st.session_state
-    if 'selected_currency' not in st.session_state:
-        st.session_state['selected_currency'] = 'kas'  # Par défaut, Kaspa est sélectionné
+    # Utiliser des onglets pour sélectionner la monnaie
+    selected_currency_tab = st.sidebar.selectbox(
+        label="Sélectionnez la monnaie",
+        options=["Kaspa (KAS)", "Bitcoin (BTC)"],
+    )
 
-    st.sidebar.markdown("### Choix de la monnaie")
-
-    # Créer deux colonnes pour les boutons
-    col1, col2 = st.sidebar.columns(2)
-
-    selected_currency = "kas"  # Par défaut, Kaspa est sélectionné
-
-    # Bouton pour Kaspa avec logo intégré
-    with col1:
-        if st.button("Kaspa (KAS)", use_container_width=True):
-            selected_currency = "kas"
-
-    # Bouton pour Bitcoin avec logo intégré
-    with col2:
-        if st.button("Bitcoin (BTC)", use_container_width=True):
-            selected_currency = "btc"
+    # Mapping de la sélection à la variable
+    if selected_currency_tab == "Kaspa (KAS)":
+        st.session_state['selected_currency'] = 'kas'
+    else:
+        st.session_state['selected_currency'] = 'btc'
 
     st.sidebar.markdown("<br>", unsafe_allow_html=True)
 
@@ -345,17 +336,17 @@ def main():
     )
 
     # Charger les données en fonction de la monnaie sélectionnée
-    df, rainbow_df, historical_fair_price_df, predicted_prices_df = load_data(selected_currency)
+    df, rainbow_df, historical_fair_price_df, predicted_prices_df = load_data(st.session_state['selected_currency'])
 
     # Afficher le graphique correspondant au dashboard sélectionné
     if dashboard == 'Rainbow Chart':
-        plot_rainbow_chart(df, rainbow_df, selected_currency)
+        plot_rainbow_chart(df, rainbow_df, st.session_state['selected_currency'])
     elif dashboard == 'Risk Visualization':
-        plot_risk_visualization(df, selected_currency)
+        plot_risk_visualization(df, st.session_state['selected_currency'])
     elif dashboard == 'Future Power Law':
-        plot_future_power_law(df, selected_currency, historical_fair_price_df, predicted_prices_df)
+        plot_future_power_law(df, st.session_state['selected_currency'], historical_fair_price_df, predicted_prices_df)
     elif dashboard == 'SMA Chart':  
-        plot_sma_chart(df, selected_currency)
+        plot_sma_chart(df, st.session_state['selected_currency'])
 
 if __name__ == "__main__":
     main()
