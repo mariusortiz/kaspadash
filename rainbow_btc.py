@@ -14,7 +14,7 @@ df['date'] = pd.to_datetime(df['date'])
 df['days_from_genesis'] = (df['date'] - genesis_date).dt.days
 
 # Paramètres de la Power Law pour Bitcoin
-exp = 3  # Exposant de la loi de puissance
+exp = 6  # Exposant de la loi de puissance
 fair_coefficient = 10**-13.25978043  # Coefficient pour la bande jaune (juste valeur)
 
 # Multiplier pour écarter les bandes (logique x1,5) pour Bitcoin
