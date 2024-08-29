@@ -2,9 +2,8 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
-# Définir la date de genèse
-genesis_date = pd.Timestamp('2009-01-03')  # Date de genèse de Bitcoin
-current_date = datetime.now()
+# Définir la date de genèse pour Bitcoin
+genesis_date = pd.Timestamp('2009-01-03')
 
 # Charger les données de prix
 df = pd.read_csv('btc_d.csv')
@@ -15,44 +14,36 @@ df['days_from_genesis'] = (df['date'] - genesis_date).dt.days
 
 # Paramètres de la Power Law pour Bitcoin
 exp = 5.82
-fair_coefficient = 1.0117e-17  # Coefficient pour la bande verte (fair price)
-bottom_multiplier = 0.42  # Coefficient pour la bande violette (bottom price)
-top_multiplier = 1 / bottom_multiplier  # Symétrique de la bande rouge par rapport à la bande verte
+fair_coefficient = 1.0117e-17  # Coefficient pour la bande verte (Fair Price)
 
-# Calculer les prix pour chaque bande
+# Calculer le Fair Price et le Bottom Price
 df['fair_price'] = fair_coefficient * (df['days_from_genesis']**exp)
-df['bottom_price'] = df['fair_price'] * bottom_multiplier
-df['top_price'] = df['fair_price'] * top_multiplier
+df['bottom_price'] = df['fair_price'] * 0.42
 
-# Créer des multiplicateurs équidistants entre bottom et fair, et entre fair et top
-multipliers_below_fair = np.geomspace(bottom_multiplier, 1, 3)  # 3 bandes en dessous de "fair_price"
-multipliers_above_fair = np.geomspace(1, top_multiplier, 3)  # 3 bandes au-dessus de "fair_price"
+# Définir les multiplicateurs pour les autres bandes
+multipliers_above = np.geomspace(1, 2.38, 3)  # Pour les courbes au-dessus du fair price (Sell, Expensive, Pricey)
+multipliers_below = np.geomspace(0.42, 1, 3)  # Pour les courbes en dessous du fair price (Cheap, Buy, Bad news)
 
-colors = ['purple', 'light_blue', 'green', 'yellow', 'orange', 'red']
-price_columns = {
+# Appliquer les multiplicateurs pour calculer les autres bandes
+df['sell_price'] = df['fair_price'] * multipliers_above[-1]
+df['expensive_price'] = df['fair_price'] * multipliers_above[1]
+df['pricey_price'] = df['fair_price'] * multipliers_above[0]
+df['cheap_price'] = df['fair_price'] * multipliers_below[1]
+df['buy_price'] = df['fair_price'] * multipliers_below[0]
+
+# Créer un DataFrame pour le Rainbow Chart
+rainbow_data = []
+colors = {
     'purple': 'bottom_price',
+    'blue': 'buy_price',
+    'light_blue': 'cheap_price',
     'green': 'fair_price',
-    'red': 'top_price',
-    'light_blue': None,  # Sera calculé avec un multiplicateur
-    'yellow': None,      # Sera calculé avec un multiplicateur
-    'orange': None       # Sera calculé avec un multiplicateur
+    'yellow': 'pricey_price',
+    'orange': 'expensive_price',
+    'red': 'sell_price'
 }
 
-# Ajouter les bandes calculées au DataFrame
-for i, color in enumerate(colors):
-    if price_columns[color]:
-        df[f'{color}_price'] = df[price_columns[color]]
-    elif color in ['light_blue', 'yellow']:  # Bandes entre "bottom" et "fair"
-        multiplier = multipliers_below_fair[['light_blue', 'yellow'].index(color)]
-        df[f'{color}_price'] = df['fair_price'] * multiplier
-    elif color in ['orange']:  # Bande entre "fair" et "top"
-        multiplier = multipliers_above_fair[0]  # Seulement une bande entre "fair" et "top"
-        df[f'{color}_price'] = df['fair_price'] * multiplier
-
-# Générer les données pour chaque bande
-rainbow_data = []
-for color in colors:
-    column = f'{color}_price'
+for color, column in colors.items():
     for date, price in zip(df['date'], df[column]):
         rainbow_data.append({'date': date, 'price': price, 'color': color})
 
@@ -62,9 +53,7 @@ last_day_from_genesis = df['days_from_genesis'].max()
 future_days_from_genesis = last_day_from_genesis + future_days
 future_dates = [df['date'].max() + timedelta(days=int(day)) for day in future_days]
 
-# Calculer les prix futurs pour chaque bande
-for color in colors:
-    column = f'{color}_price'
+for color, column in colors.items():
     future_prices = df[column].iloc[-1] * (future_days_from_genesis / last_day_from_genesis)**exp
     for date, price in zip(future_dates, future_prices):
         rainbow_data.append({'date': date, 'price': price, 'color': color})
