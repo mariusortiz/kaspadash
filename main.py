@@ -15,6 +15,12 @@ def exponential_smoothing(series, alpha):
 
 
 def plot_sma_chart(df, instrument):
+    # Déterminer quel logo afficher
+    logo = "images/kaspa_logo.png" if instrument == "kas" else "images/bitcoin_logo.png"
+
+    # Afficher le logo au-dessus du titre
+    st.image(logo, width=100) 
+
     st.markdown(f"<h2 style='text-align: center;'>{instrument} SMA Crossover Chart</h2>", unsafe_allow_html=True)
 
     # Calculer les moyennes mobiles simples (SMA)
@@ -93,6 +99,11 @@ def plot_sma_chart(df, instrument):
 
 
 def plot_rainbow_chart(df, rainbow_df, instrument):
+    # Déterminer quel logo afficher
+    logo = "images/kaspa_logo.png" if instrument == "kas" else "images/bitcoin_logo.png"
+
+    # Afficher le logo au-dessus du titre
+    st.image(logo, width=100) 
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
     
     df['date'] = pd.to_datetime(df['date'])
@@ -159,6 +170,13 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
 
 
 def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_prices_df):
+    # Déterminer quel logo afficher
+    logo = "images/kaspa_logo.png" if instrument == "kas" else "images/bitcoin_logo.png"
+
+    # Afficher le logo au-dessus du titre
+    st.image(logo, width=100) 
+    st.markdown(f"<h2 style='text-align: center;'>{instrument} Future Power Law</h2>", unsafe_allow_html=True)
+
     try:
         days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                                             min_value=1, 
@@ -230,6 +248,11 @@ def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_pr
         st.error(f"An error occurred: {e}")
 
 def plot_risk_visualization(df, instrument):
+    # Déterminer quel logo afficher
+    logo = "images/kaspa_logo.png" if instrument == "kas" else "images/bitcoin_logo.png"
+
+    # Afficher le logo au-dessus du titre
+    st.image(logo, width=100) 
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Risk Visualization</h2>", unsafe_allow_html=True)
     
     chart_type = st.sidebar.select_slider(
@@ -324,15 +347,11 @@ def main():
     with col1:
         if st.button("Kaspa (KAS)", use_container_width=True):
             selected_currency = "kas"
-        st.image(kaspa_logo, width=30)
 
     # Bouton pour Bitcoin avec logo intégré
     with col2:
         if st.button("Bitcoin (BTC)", use_container_width=True):
             selected_currency = "btc"
-        st.image(bitcoin_logo, width=30)
-
-    st.title("")
 
     st.sidebar.markdown("### Choix du dashboard")
 
