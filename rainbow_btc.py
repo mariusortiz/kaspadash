@@ -20,9 +20,9 @@ fair_coefficient = 1.0117e-17  # Coefficient pour la bande verte (Fair Price)
 df['fair_price'] = fair_coefficient * (df['days_from_genesis']**exp)
 df['bottom_price'] = df['fair_price'] * 0.42
 
-# Définir les multiplicateurs pour les autres bandes de manière symétrique
-multipliers_above = np.array([1.5, 2, 3])  # Pour les courbes au-dessus du Fair Price
-multipliers_below = 1 / np.array([1.5, 2])  # Pour les courbes en dessous du Fair Price
+# Multiplicateurs ajustés pour une répartition logique des bandes
+multipliers_above = np.array([1.15, 1.4, 1.8])  # Pour les courbes au-dessus du Fair Price
+multipliers_below = 1 / np.array([1.2, 1.5])    # Pour les courbes en dessous du Fair Price
 
 # Appliquer les multiplicateurs pour calculer les autres bandes
 df['sell_price'] = df['fair_price'] * multipliers_above[-1]
