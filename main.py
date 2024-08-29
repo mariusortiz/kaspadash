@@ -110,9 +110,7 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
     st.markdown(f"""
         <div style='text-align: center;'>
             <div style='display: inline-block;'>
-                <div style='width: 80px; height: 80px;'>
-                    {svg_content}
-                </div>
+                <img src="data:image/svg+xml;base64,{get_base64_image(logo)}" alt="{instrument.upper()} Logo" style="width: 50px; height: 50px;"/>
             </div>
         </div>
     """, unsafe_allow_html=True)
