@@ -6,6 +6,7 @@ from plotly.subplots import make_subplots
 import numpy as np
 from sklearn.linear_model import LinearRegression, RANSACRegressor
 from PIL import Image
+import streamlit.components.v1 as components
 
 def exponential_smoothing(series, alpha):
     result = [series[0]]  # première valeur est identique à la série
@@ -312,39 +313,83 @@ def main():
     kaspa_logo = Image.open("images/kaspa_logo.png")
     bitcoin_logo = Image.open("images/bitcoin_logo.png")
 
+    # Utiliser HTML/CSS pour créer des boutons personnalisés avec logos
     st.sidebar.markdown("### Choix de la monnaie")
-
-    col1, col2 = st.sidebar.columns(2)
     
-    # Sélection par défaut de la monnaie (Kaspa)
-    selected_currency = "kas"
+    kaspa_html = f"""
+    <style>
+    .button {{
+        background-color: transparent;
+        border: none;
+        text-align: center;
+        padding: 5px;
+        display: inline-block;
+    }}
+    .button img {{
+        width: 30px;
+        height: 30px;
+    }}
+    .button span {{
+        color: white;
+        font-size: 18px;
+        margin-left: 10px;
+        vertical-align: middle;
+    }}
+    </style>
+    <button class="button" onclick="window.location.href='?selected_currency=kas'">
+        <img src="data:image/png;base64,{st.image(kaspa_logo, use_column_width=False).data}"/>
+        <span>Kaspa (KAS)</span>
+    </button>
+    """
 
-    # Boutons pour sélectionner la monnaie
-    if col1.button("Kaspa (KAS)", use_container_width=True):
-        selected_currency = "kas"
+    bitcoin_html = f"""
+    <style>
+    .button {{
+        background-color: transparent;
+        border: none;
+        text-align: center;
+        padding: 5px;
+        display: inline-block;
+    }}
+    .button img {{
+        width: 30px;
+        height: 30px;
+    }}
+    .button span {{
+        color: white;
+        font-size: 18px;
+        margin-left: 10px;
+        vertical-align: middle;
+    }}
+    </style>
+    <button class="button" onclick="window.location.href='?selected_currency=btc'">
+        <img src="data:image/png;base64,{st.image(bitcoin_logo, use_column_width=False).data}"/>
+        <span>Bitcoin (BTC)</span>
+    </button>
+    """
 
-    if col2.button("Bitcoin (BTC)", use_container_width=True):
-        selected_currency = "btc"
+    # Affichage des boutons avec les logos
+    col1, col2 = st.sidebar.columns(2)
+    with col1:
+        components.html(kaspa_html, height=60)
+    with col2:
+        components.html(bitcoin_html, height=60)
 
-    # Afficher le logo de la monnaie sélectionnée
-    if selected_currency == "kas":
-        st.sidebar.image(kaspa_logo, width=50)
-    elif selected_currency == "btc":
-        st.sidebar.image(bitcoin_logo, width=50)
+    # Vérification de la monnaie sélectionnée
+    selected_currency = st.experimental_get_query_params().get('selected_currency', ['kas'])[0]
 
     st.sidebar.markdown("### Choix du dashboard")
 
-    # Liste de dashboards avec radio buttons
-    dashboard = st.sidebar.radio(
+    # Liste de dashboards avec des boutons stylisés
+    dashboard = st.sidebar.selectbox(
         label="",
         options=['Rainbow Chart', 'Risk Visualization', 'Future Power Law', 'SMA Chart'],
-        index=0
+        index=0,
+        format_func=lambda x: f"🎯 {x}"  # Ajout d'une icône à chaque option pour la rendre plus attrayante
     )
 
-    # Charger les données en fonction de la monnaie sélectionnée
     df, rainbow_df, historical_fair_price_df, predicted_prices_df = load_data(selected_currency)
 
-    # Afficher le dashboard sélectionné
     if dashboard == 'Rainbow Chart':
         plot_rainbow_chart(df, rainbow_df, selected_currency)
     elif dashboard == 'Risk Visualization':
