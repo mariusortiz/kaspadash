@@ -17,12 +17,24 @@ def exponential_smoothing(series, alpha):
 def plot_sma_chart(df, instrument):
     st.markdown(f"<h2 style='text-align: center;'>{instrument.upper()} SMA Crossover Chart</h2>", unsafe_allow_html=True)
 
+    # Déterminer les périodes de SMA en fonction de la monnaie sélectionnée
+    if instrument.lower() == 'kas':
+        sma_short_period = 66
+        sma_long_period = 85
+    elif instrument.lower() == 'btc':
+        sma_short_period = 111
+        sma_long_period = 350
+    else:
+        st.error("Instrument non supporté")
+        return
+
     # Calculer les moyennes mobiles simples (SMA)
-    df['SMA_66'] = df['close'].rolling(window=66).mean()
-    df['SMA_85'] = df['close'].rolling(window=85).mean()
+    df[f'SMA_{sma_short_period}'] = df['close'].rolling(window=sma_short_period).mean()
+    df[f'SMA_{sma_long_period}'] = df['close'].rolling(window=sma_long_period).mean()
 
     # Identifier les points de croisement
-    df['crossover'] = np.where((df['SMA_85'] > df['SMA_66']) & (df['SMA_85'].shift(1) <= df['SMA_66'].shift(1)), 1, 0)
+    df['crossover'] = np.where((df[f'SMA_{sma_long_period}'] > df[f'SMA_{sma_short_period}']) & 
+                               (df[f'SMA_{sma_long_period}'].shift(1) <= df[f'SMA_{sma_short_period}'].shift(1)), 1, 0)
     crossover_dates = df[df['crossover'] == 1]['date']
 
     fig = go.Figure()
@@ -36,21 +48,21 @@ def plot_sma_chart(df, instrument):
         line=dict(color='cyan')
     ))
 
-    # Tracer la SMA 66
+    # Tracer la SMA courte
     fig.add_trace(go.Scatter(
         x=df['date'],
-        y=df['SMA_66'],
+        y=df[f'SMA_{sma_short_period}'],
         mode='lines',
-        name='66DMA',
+        name=f'{sma_short_period}DMA',
         line=dict(color='purple')
     ))
 
-    # Tracer la SMA 85
+    # Tracer la SMA longue
     fig.add_trace(go.Scatter(
         x=df['date'],
-        y=df['SMA_85'],
+        y=df[f'SMA_{sma_long_period}'],
         mode='lines',
-        name='85DMA',
+        name=f'{sma_long_period}DMA',
         line=dict(color='orange')
     ))
 
@@ -58,14 +70,23 @@ def plot_sma_chart(df, instrument):
     for date in crossover_dates:
         fig.add_vline(x=date.timestamp() * 1000, line=dict(color="red", dash="dot"))
 
-    # Ajuster les ordonnées
-    fig.update_yaxes(
-        tickvals=[0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30],
-        range=[0, 0.30],  # Fixer la plage d'ordonnée de 0 à 0.30
-        showgrid=True,
-        gridwidth=1,
-        title='Price'
-    )
+    # Ajuster les ordonnées (adapté au KAS et BTC)
+    if instrument.lower() == 'kas':
+        fig.update_yaxes(
+            tickvals=[0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30],
+            range=[0, 0.30],  # Fixer la plage d'ordonnée de 0 à 0.30
+            showgrid=True,
+            gridwidth=1,
+            title='Price'
+        )
+    elif instrument.lower() == 'btc':
+        fig.update_yaxes(
+            tickvals=[0, 15000, 30000, 45000, 60000, 75000, 90000],
+            range=[0, 90000],  # Fixer la plage d'ordonnée de 0 à 90,000
+            showgrid=True,
+            gridwidth=1,
+            title='Price'
+        )
 
     fig.update_layout(
         height=800,
@@ -75,6 +96,7 @@ def plot_sma_chart(df, instrument):
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
     expander = st.expander('Explications')
     expander.write('''
     #### SMA Crossover Chart
