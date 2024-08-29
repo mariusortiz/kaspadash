@@ -102,8 +102,15 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
     # Déterminer quel logo afficher
     logo = "images/kaspa_logo.png" if instrument == "kas" else "images/bitcoin_logo.png"
 
-    # Afficher le logo au-dessus du titre
-    st.image(logo, width=100) 
+    # Utiliser une disposition en colonnes pour centrer le logo
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col1:
+        st.write("")  # Colonne vide pour l'espacement à gauche
+    with col2:
+        st.image(logo, width=50)  # Afficher le logo centré
+    with col3:
+        st.write("")  # Colonne vide pour l'espacement à droite
+        
     st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
     
     df['date'] = pd.to_datetime(df['date'])
@@ -331,10 +338,6 @@ def load_data(currency):
 
 def main():
     st.set_page_config(layout="wide")
-
-    # Charger les images des logos
-    kaspa_logo = Image.open("images/kaspa_logo.png")
-    bitcoin_logo = Image.open("images/bitcoin_logo.png")
 
     st.sidebar.markdown("### Choix de la monnaie")
 
