@@ -309,8 +309,8 @@ def main():
     st.set_page_config(layout="wide")
 
     # Charger les images des logos
-    kaspa_logo = Image.open("kaspa_logo.png")
-    bitcoin_logo = Image.open("bitcoin_logo.png")
+    kaspa_logo = Image.open("images/kaspa_logo.png")
+    bitcoin_logo = Image.open("images/bitcoin_logo.png")
 
     st.sidebar.markdown("### Choix de la monnaie")
 
