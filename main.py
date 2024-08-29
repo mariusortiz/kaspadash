@@ -51,7 +51,7 @@ def plot_sma_chart(df, instrument):
         y=df['SMA_85'],
         mode='lines',
         name='85DMA',
-        line=dict(color='yellow')
+        line=dict(color='orange')
     ))
 
     # Ajouter les lignes verticales pour les croisements
