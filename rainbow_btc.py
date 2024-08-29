@@ -24,10 +24,9 @@ df['fair_price'] = fair_coefficient * (df['days_from_genesis']**exp)
 df['bottom_price'] = df['fair_price'] * bottom_multiplier
 df['top_price'] = df['fair_price'] * top_multiplier
 
-# Répartir les autres bandes uniformément
-num_bands = 3  # Nombre de bandes entre la bande "bottom" et "fair", et entre "fair" et "top"
-multipliers_below_fair = np.geomspace(bottom_multiplier, 1, num_bands+1)[1:]  # Exclure le premier (déjà utilisé pour bottom)
-multipliers_above_fair = np.geomspace(1, top_multiplier, num_bands+1)[1:]  # Exclure le premier (déjà utilisé pour top)
+# Créer des multiplicateurs équidistants entre bottom et fair, et entre fair et top
+multipliers_below_fair = np.geomspace(bottom_multiplier, 1, 3)  # 3 bandes en dessous de "fair_price"
+multipliers_above_fair = np.geomspace(1, top_multiplier, 3)  # 3 bandes au-dessus de "fair_price"
 
 colors = ['purple', 'light_blue', 'green', 'yellow', 'orange', 'red']
 price_columns = {
@@ -43,11 +42,11 @@ price_columns = {
 for i, color in enumerate(colors):
     if price_columns[color]:
         df[f'{color}_price'] = df[price_columns[color]]
-    elif i < len(multipliers_below_fair) + 1:  # Pour les bandes en dessous de "fair_price"
-        multiplier = multipliers_below_fair[i - 1]
+    elif color in ['light_blue', 'yellow']:  # Bandes entre "bottom" et "fair"
+        multiplier = multipliers_below_fair[['light_blue', 'yellow'].index(color)]
         df[f'{color}_price'] = df['fair_price'] * multiplier
-    else:  # Pour les bandes au-dessus de "fair_price"
-        multiplier = multipliers_above_fair[i - len(multipliers_below_fair) - 1]
+    elif color in ['orange']:  # Bande entre "fair" et "top"
+        multiplier = multipliers_above_fair[0]  # Seulement une bande entre "fair" et "top"
         df[f'{color}_price'] = df['fair_price'] * multiplier
 
 # Générer les données pour chaque bande
