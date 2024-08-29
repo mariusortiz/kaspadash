@@ -314,6 +314,10 @@ def load_data(currency):
 def main():
     st.set_page_config(layout="wide")
 
+    # Initialiser la sélection de la monnaie si elle n'existe pas encore dans st.session_state
+    if 'selected_currency' not in st.session_state:
+        st.session_state['selected_currency'] = 'kas'  # Par défaut, Kaspa est sélectionné
+
     st.sidebar.markdown("### Choix de la monnaie")
 
     # Créer deux colonnes pour les boutons
