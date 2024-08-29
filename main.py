@@ -15,7 +15,7 @@ def exponential_smoothing(series, alpha):
 
 
 def plot_sma_chart(df, instrument):
-    st.markdown(f"<h2 style='text-align: center;'>{instrument} SMA Crossover Chart</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='text-align: center;'>{instrument.upper} SMA Crossover Chart</h2>", unsafe_allow_html=True)
 
     # Calculer les moyennes mobiles simples (SMA)
     df['SMA_66'] = df['close'].rolling(window=66).mean()
@@ -94,7 +94,7 @@ def plot_sma_chart(df, instrument):
 
 def plot_rainbow_chart(df, rainbow_df, instrument):
 
-    st.markdown(f"<h2 style='text-align: center;'>{instrument} Rainbow Chart</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='text-align: center;'>{instrument.upper} Rainbow Chart</h2>", unsafe_allow_html=True)
     
     df['date'] = pd.to_datetime(df['date'])
     rainbow_df['date'] = pd.to_datetime(rainbow_df['date'])
@@ -161,7 +161,7 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
 
 def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_prices_df):
    
-    st.markdown(f"<h2 style='text-align: center;'>{instrument} Future Power Law</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='text-align: center;'>{instrument.upper} Future Power Law</h2>", unsafe_allow_html=True)
 
     try:
         days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
@@ -234,7 +234,7 @@ def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_pr
         st.error(f"An error occurred: {e}")
 
 def plot_risk_visualization(df, instrument): 
-    st.markdown(f"<h2 style='text-align: center;'>{instrument} Risk Visualization</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='text-align: center;'>{instrument.upper} Risk Visualization</h2>", unsafe_allow_html=True)
     
     chart_type = st.sidebar.select_slider(
         'Select scale type',
