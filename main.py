@@ -106,10 +106,14 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
     with open(logo, "r") as svg_file:
         svg_content = svg_file.read()
 
-    # Utiliser du HTML pour centrer le logo
+    # Utiliser du HTML pour centrer le logo et ajuster sa taille
     st.markdown(f"""
         <div style='text-align: center;'>
-            {svg_content}
+            <div style='display: inline-block;'>
+                <div style='width: 80px; height: 80px;'>
+                    {svg_content}
+                </div>
+            </div>
         </div>
     """, unsafe_allow_html=True)
     
