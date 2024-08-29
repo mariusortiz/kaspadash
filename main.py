@@ -328,7 +328,7 @@ def main():
         if st.button("Bitcoin (BTC)", use_container_width=True):
             selected_currency = "btc"
 
-    st.text("----------")
+    st.sidebar.markdown("<br>", unsafe_allow_html=True)
 
     # Liste de boutons pour les dashboards
     dashboard = st.sidebar.radio(
