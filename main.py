@@ -32,7 +32,7 @@ def plot_sma_chart(df, instrument):
         y=df['close'],
         mode='lines',
         name='Price Data',
-        line=dict(color='white')
+        line=dict(color='cyan')
     ))
 
     # Tracer la SMA 66
@@ -71,9 +71,6 @@ def plot_sma_chart(df, instrument):
         width=1200,
         xaxis=dict(showgrid=True, gridwidth=1, title='Date', tickangle=-45),
         showlegend=True,
-        plot_bgcolor='black',  # Couleur de fond noire pour ressembler à l'exemple
-        paper_bgcolor='black',  # Couleur du papier noire pour ressembler à l'exemple
-        font=dict(color='white'),  # Texte en blanc
     )
 
     st.plotly_chart(fig, use_container_width=True)
