@@ -3,7 +3,7 @@ name: Run Calculations and Push Results
 on:
   schedule:
     # Runs at 2:00 AM UTC daily
-    - cron: "0 2 * * *"
+    - cron: "0 4 * * *"
 
 jobs:
   build:
