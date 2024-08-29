@@ -2,64 +2,62 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
-# Définir la date de genèse pour Bitcoin
-genesis_date = pd.Timestamp('2009-01-03')
-
-# Charger les données de prix
+# Charger les données historiques
 df = pd.read_csv('btc_d.csv')
 df['date'] = pd.to_datetime(df['date'])
+df = df.sort_values('date')
 
-# Calculer les jours écoulés depuis la genèse
-df['days_from_genesis'] = (df['date'] - genesis_date).dt.days
+# Calculer ΔGB (jours depuis le Genesis Block)
+genesis_date = pd.Timestamp('2009-01-03')
+df['days_since_genesis'] = (df['date'] - genesis_date).dt.days
 
-# Paramètres de la Power Law pour Bitcoin
-exp = 5.82
-fair_coefficient = 1.0117e-17  # Coefficient pour la bande verte (Fair Price)
-
-# Calculer le Fair Price et le Bottom Price
-df['fair_price'] = fair_coefficient * (df['days_from_genesis']**exp)
-df['bottom_price'] = df['fair_price'] * 0.42
-
-# Multiplicateurs ajustés pour une répartition logique des bandes
-multipliers_above = np.array([1.15, 1.4, 1.8])  # Pour les courbes au-dessus du Fair Price
-multipliers_below = 1 / np.array([1.2, 1.5])    # Pour les courbes en dessous du Fair Price
-
-# Appliquer les multiplicateurs pour calculer les autres bandes
-df['sell_price'] = df['fair_price'] * multipliers_above[-1]
-df['expensive_price'] = df['fair_price'] * multipliers_above[1]
-df['pricey_price'] = df['fair_price'] * multipliers_above[0]
-df['cheap_price'] = df['fair_price'] * multipliers_below[-1]
-df['buy_price'] = df['fair_price'] * multipliers_below[0]
+# Calculer les prix de support, de résistance et les prix justes selon la loi de puissance
+df['support_price'] = 10**(-17.00661888) * (df['days_since_genesis']**5.82)
+df['resistance_price'] = df['support_price'] * 2  # La résistance est le double du support
+df['fair_price'] = df['support_price'] * 1  # Prix juste, qui est le prix de support pour le BTC
 
 # Créer un DataFrame pour le Rainbow Chart
-rainbow_data = []
-colors = {
-    'purple': 'bottom_price',  # Bande la plus basse
-    'blue': 'buy_price',
-    'light_blue': 'cheap_price',
-    'green': 'fair_price',     # Bande centrale
-    'yellow': 'pricey_price',
-    'orange': 'expensive_price',
-    'red': 'sell_price'        # Bande la plus haute
+rainbow_df = pd.DataFrame()
+rainbow_df['date'] = df['date']
+
+# Liste des couleurs et leurs multiplicateurs
+multipliers = {
+    'purple': 0.42,  # Bad news
+    'blue': np.exp(-np.log(2) / 2),  # Buy
+    'light_blue': np.exp(-np.log(2) / 4),  # Cheap
+    'green': 1,  # Fair Price
+    'yellow': np.exp(np.log(2) / 4),  # Pricey
+    'orange': np.exp(np.log(2) / 2),  # Expensive
+    'red': 2  # Sell
 }
 
-for color, column in colors.items():
-    for date, price in zip(df['date'], df[column]):
-        rainbow_data.append({'date': date, 'price': price, 'color': color})
-
-# Ajouter les données futures pour les 24 prochains mois
-future_days = np.arange(1, 365 * 2 + 1)  # 24 mois = 365 * 2 jours
-last_day_from_genesis = df['days_from_genesis'].max()
-future_days_from_genesis = last_day_from_genesis + future_days
-future_dates = [df['date'].max() + timedelta(days=int(day)) for day in future_days]
-
-for color, column in colors.items():
-    future_prices = df[column].iloc[-1] * (future_days_from_genesis / last_day_from_genesis)**exp
-    for date, price in zip(future_dates, future_prices):
-        rainbow_data.append({'date': date, 'price': price, 'color': color})
-
-# Créer un DataFrame final pour le Rainbow Chart
-rainbow_df = pd.DataFrame(rainbow_data)
+# Calcule les prix pour chaque bande en utilisant le fair_price comme référence
+for color, multiplier in multipliers.items():
+    if color == 'green':  # La bande verte (fair_price) est déjà calculée
+        rainbow_df[f'{color}_price'] = df['fair_price']
+    else:
+        rainbow_df[f'{color}_price'] = df['fair_price'] * multiplier
 
 # Enregistrer dans un fichier CSV (immuable)
 rainbow_df.to_csv('rainbow_chart_data_btc.csv', index=False)
+
+# Plot the chart
+import plotly.graph_objs as go
+import streamlit as st
+
+def plot_rainbow_chart(df, rainbow_df):
+    fig = go.Figure()
+
+    # Ajouter les bandes colorées
+    colors = ['purple', 'blue', 'light_blue', 'green', 'yellow', 'orange', 'red']
+    for color in colors:
+        fig.add_trace(go.Scatter(x=rainbow_df['date'], y=rainbow_df[f'{color}_price'], mode='lines', name=color.capitalize(), line=dict(color=color)))
+
+    # Ajouter les prix réels
+    fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', name='Actual Price', line=dict(color='cyan')))
+
+    fig.update_layout(title="BTC Rainbow Chart", xaxis_title="Date", yaxis_title="Price", yaxis_type="log")
+    st.plotly_chart(fig, use_container_width=True)
+
+# Appel de la fonction pour générer le graphique
+plot_rainbow_chart(df, rainbow_df)
