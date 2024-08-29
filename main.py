@@ -94,7 +94,7 @@ def plot_sma_chart(df, instrument):
 
 def plot_rainbow_chart(df, rainbow_df, instrument):
 
-    st.markdown(f"<h2 style='text-align: center;'>{instrument.upper} Rainbow Chart</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='text-align: center;'>{instrument.upper()} Rainbow Chart</h2>", unsafe_allow_html=True)
     
     df['date'] = pd.to_datetime(df['date'])
     rainbow_df['date'] = pd.to_datetime(rainbow_df['date'])
