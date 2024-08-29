@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.signal import savgol_filter
 
 # Charger les données historiques
 df = pd.read_csv('kas_d.csv')
@@ -16,6 +17,9 @@ df['support_price'] = 10**(-13.41344198) * (df['days_since_genesis']**4.218461)
 df['resistance_price'] = 10**(-13.10611888) * (df['days_since_genesis']**4.218461)
 df['fair_price'] = 10**(-13.25978043) * (df['days_since_genesis']**4.218461)
 
+# Lissage des prix justes historiques
+df['historical_fair_price_smooth'] = savgol_filter(df['fair_price'], window_length=51, polyorder=3)
+
 # Enregistrer les données historiques dans un CSV
 df.to_csv('historical_fair_price_kas.csv', index=False)
 
@@ -28,8 +32,7 @@ future_df['days_since_genesis'] = (future_df['date'] - genesis_date).dt.days
 future_df['support_price'] = 10**(-13.41344198) * (future_df['days_since_genesis']**4.218461)
 future_df['resistance_price'] = 10**(-13.10611888) * (future_df['days_since_genesis']**4.218461)
 future_df['fair_price'] = 10**(-13.25978043) * (future_df['days_since_genesis']**4.218461)
+future_df['predicted_price'] = future_df['fair_price']  # Utilisation de 'predicted_price' pour correspondre à votre fonction
 
 # Enregistrer les données futures dans un CSV
 future_df.to_csv('future_prices_kas.csv', index=False)
-
-

@@ -160,11 +160,10 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
 
 
 def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_prices_df):
-
     try:
         days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                                             min_value=1, 
-                                            max_value=365,  # Changer à 10 ans
+                                            max_value=365,  # Vous pouvez ajuster cette valeur
                                             value=30)
         st.markdown(f"<h2 style='text-align: center;'>{instrument.upper()} Power Law Prediction</h2>", unsafe_allow_html=True)
 
@@ -212,6 +211,10 @@ def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_pr
             fig.update_layout(xaxis_title='Date', yaxis=dict(type='log', title='Price'), xaxis_rangeslider_visible=False)
 
         st.plotly_chart(fig, use_container_width=True)
+
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
+
         expander = st.expander('Explications')
         expander.write('''
         #### Future Power Law
