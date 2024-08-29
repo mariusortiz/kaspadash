@@ -310,9 +310,6 @@ def load_data(currency):
 def main():
     st.set_page_config(layout="wide")
 
-    # Clear cache data to ensure the latest data is loaded
-    st.cache_data.clear()
-
     instrument = st.sidebar.selectbox(
         label='Choix de la monnaie',
         options=['Kaspa (KAS)', 'Bitcoin (BTC)']
