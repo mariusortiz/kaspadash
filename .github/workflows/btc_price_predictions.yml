@@ -1,4 +1,4 @@
-name: Run Calculations and Push Results
+name: Run BTC Calculations and Push Results
 
 on:
   schedule:
@@ -23,16 +23,16 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run script_calcul.py
+    - name: Run script_calcul_btc.py
       run: |
-        python script_calcul.py
+        python script_calcul_btc.py
 
     - name: Commit and push changes
       run: |
         git config --local user.email "marius.ortiz@10h11.com"
-        git config --local user.name "mariusortiz"
-        git add btc_d.csv
-        git commit -m "Update Bitcoin data"
-        git push
+          git config --local user.name "mariusortiz"
+          git add btc_d.csv
+          git commit -m "Update Bitcoin prediction data"
+          git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
