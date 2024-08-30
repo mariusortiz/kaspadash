@@ -1,4 +1,4 @@
-name: Run Calculations and Push Results
+name: Run KAS Calculations and Push Results
 
 on:
   schedule:
