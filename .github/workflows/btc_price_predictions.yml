@@ -3,7 +3,7 @@ name: Run BTC Calculations and Push Results
 on:
   schedule:
     # Runs at 2:00 AM UTC daily
-    - cron: "0 2 * * *"
+    - cron: "0 4 * * *"
 
 jobs:
   build:
@@ -30,9 +30,9 @@ jobs:
     - name: Commit and push changes
       run: |
         git config --local user.email "marius.ortiz@10h11.com"
-          git config --local user.name "mariusortiz"
-          git add btc_d.csv
-          git commit -m "Update Bitcoin prediction data"
-          git push
+        git config --local user.name "mariusortiz"
+        git add .  # Ajoute tous les fichiers modifiés
+        git commit -m "Update Bitcoin prediction data"
+        git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
