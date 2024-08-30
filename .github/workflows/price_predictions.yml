@@ -3,7 +3,7 @@ name: Run KAS Calculations and Push Results
 on:
   schedule:
     # Runs at 2:00 AM UTC daily
-    - cron: "0 4 * * *"
+    - cron: "0 2 * * *"
 
 jobs:
   build:
@@ -31,7 +31,7 @@ jobs:
       run: |
         git config --local user.email "marius.ortiz@10h11.com"
         git config --local user.name "mariusortiz"
-        git add btc_d.csv
+        git add .  # Ajoute tous les fichiers modifiés
         git commit -m "Update Bitcoin data"
         git push
       env:
