@@ -122,7 +122,7 @@ def plot_sma_chart(df, instrument):
 ''')
 
     # Ajouter la bannière cliquable
-    add_clickable_banner("https://www.for-mining.fr/", "images/banner_formining_space.jpeg", "Cliquez ici pour plus d'informations")
+    add_clickable_banner("https://www.for-mining.fr/", "images/banner_formining_space.jpg", "Cliquez ici pour plus d'informations")
 
 def plot_rainbow_chart(df, rainbow_df, instrument):
 
