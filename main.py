@@ -17,7 +17,7 @@ def exponential_smoothing(series, alpha):
 def add_clickable_banner(url, image_path, alt_text=""):
     st.markdown(f"""
         <a href="{url}" target="_blank">
-            <img src="{image_path}" alt="{alt_text}" style="display: block; margin-left: auto; margin-right: auto; width: 100%;">
+            <img src="{image_path}" alt="{alt_text}" style="display: block; margin-left: auto; margin-right: auto; margin-bottom:30px; width: 100%;">
         </a>
     """, unsafe_allow_html=True)
 
