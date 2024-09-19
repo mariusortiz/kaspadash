@@ -23,6 +23,10 @@ def add_clickable_banner(url, image_path, alt_text=""):
 
 
 def plot_sma_chart(df, instrument):
+    
+    # Ajouter la bannière cliquable
+    add_clickable_banner("https://www.for-mining.fr/", "https://i.ibb.co/3dmBXXP/banner-formining-space.jpg", "Cliquez ici pour plus d'informations")
+
     st.markdown(f"<h2 style='text-align: center;'>{instrument.upper()} SMA Crossover Chart</h2>", unsafe_allow_html=True)
 
     # Déterminer les périodes de SMA en fonction de la monnaie sélectionnée
@@ -121,8 +125,6 @@ def plot_sma_chart(df, instrument):
     Le SMA Crossover Chart est particulièrement utile pour les traders et les investisseurs qui cherchent à identifier des points d'entrée ou de sortie basés sur les signaux de croisement des moyennes mobiles. Les croisements des SMA sur 66 et 85 jours offrent un indicateur intermédiaire qui est sensible aux changements de tendance à moyen terme. En utilisant ce graphique, les utilisateurs peuvent repérer les signaux haussiers ou baissiers potentiels et ajuster leurs stratégies d'investissement en conséquence.
 ''')
 
-    # Ajouter la bannière cliquable
-    add_clickable_banner("https://www.for-mining.fr/", "https://i.ibb.co/3dmBXXP/banner-formining-space.jpg", "Cliquez ici pour plus d'informations")
 
 def plot_rainbow_chart(df, rainbow_df, instrument):
 
