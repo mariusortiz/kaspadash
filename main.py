@@ -128,6 +128,9 @@ def plot_sma_chart(df, instrument):
 
 def plot_rainbow_chart(df, rainbow_df, instrument):
 
+    # Ajouter la bannière cliquable
+    add_clickable_banner("https://www.for-mining.fr/", "https://i.ibb.co/3dmBXXP/banner-formining-space.jpg", "Cliquez ici pour plus d'informations")
+
     st.markdown(f"<h2 style='text-align: center;'>{instrument.upper()} Rainbow Chart</h2>", unsafe_allow_html=True)
     
     df['date'] = pd.to_datetime(df['date'])
@@ -194,6 +197,9 @@ def plot_rainbow_chart(df, rainbow_df, instrument):
 
 
 def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_prices_df):
+    # Ajouter la bannière cliquable
+    add_clickable_banner("https://www.for-mining.fr/", "https://i.ibb.co/3dmBXXP/banner-formining-space.jpg", "Cliquez ici pour plus d'informations")
+
     try:
         days_from_today = st.sidebar.slider('Select number of days from today for prediction:', 
                                             min_value=1, 
@@ -269,6 +275,9 @@ def plot_future_power_law(df, instrument, historical_fair_price_df, predicted_pr
         st.error(f"An error occurred: {e}")
 
 def plot_risk_visualization(df, instrument): 
+    # Ajouter la bannière cliquable
+    add_clickable_banner("https://www.for-mining.fr/", "https://i.ibb.co/3dmBXXP/banner-formining-space.jpg", "Cliquez ici pour plus d'informations")
+
     st.markdown(f"<h2 style='text-align: center;'>{instrument.upper()} Risk Visualization</h2>", unsafe_allow_html=True)
     
     chart_type = st.sidebar.select_slider(
