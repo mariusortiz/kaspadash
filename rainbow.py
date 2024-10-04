@@ -19,13 +19,13 @@ fair_coefficient = 10**-13.25978043  # Coefficient pour la bande jaune (juste va
 
 # Multiplier pour écarter les bandes (logique x1,5)
 multipliers = {
-    'purple': 0.38,   # "Bad news"
-    'dark_blue': 0.57, # "Buy"
-    'light_blue': 0.88, # "Cheap"
-    'green': 1.33,    # "Fair Price"
-    'yellow': 1.99,  # "Pricey"
-    'orange': 2.985, # "Expensive"
-    'red': 4.47    # "Sell"
+    'purple': 0.253,   # "Bad news"
+    'dark_blue': 0.38, # "Buy"
+    'light_blue': 0.57, # "Cheap"
+    'green': 0.88,    # "Fair Price"
+    'yellow': 1.33,  # "Pricey"
+    'orange': 1.99, # "Expensive"
+    'red': 2.985    # "Sell"
 }
 
 # Calculer les prix pour chaque bande
